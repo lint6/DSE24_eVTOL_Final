@@ -20,7 +20,7 @@ def SCfunc_FlightSimulation(Run=True, dt=0.1):
     if Run:
         print('Warning: Simulation Running')
 
-        #sum inertias
+        #initializing
         mass = sum()
         i_xx = 0
         i_yy = 0
@@ -28,7 +28,25 @@ def SCfunc_FlightSimulation(Run=True, dt=0.1):
         i_xy = 0
         i_xz = 0
         i_yz = 0
-
+        lat_acc_x = 0
+        lat_acc_y = 0
+        lat_acc_z = 0
+        ang_acc_x = 0
+        ang_acc_y = 0
+        ang_acc_z = 0
+        vel_x = 0
+        vel_y = 0
+        vel_z = 0
+        rot_x = 0
+        rot_y = 0
+        rot_z = 0
+        pos_x = 0
+        pos_y = 0
+        pos_z = 0
+        ang_x = 0
+        ang_y = 0
+        ang_z = 0
+        
         while Run:
             '''Exit Conditions'''
             
@@ -67,3 +85,4 @@ def SCfunc_FlightSimulation(Run=True, dt=0.1):
             
             #update forces
             
+            #log data

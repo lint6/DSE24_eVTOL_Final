@@ -23,9 +23,6 @@ class SCobj_ForcePoint(): #1 rotor+motor of the copter, using local coordinate s
         self.moments = moment
         self.mass = mass
         self.inertia = inertia #array with 7 elements
-        #to be removed later, not being used.... 
-        #self.magnitude = misc.SCfunc_ForceVector()[0]
-        #self.unit_vector = misc.SCfunc_ForceVector()[1]
         self.position_array = SCobj_BodyState.matrix_construction()[0]
         self.euler_array = SCobj_BodyState.matrix_construction()[1]
         self.state_array = SCobj_BodyState.matrix_construction()[2]
@@ -45,7 +42,7 @@ class SCobj_BodyState(): # linking local coordinate system to global
         self.pos_array = None 
         self.euler_angle_array = None 
         self.state_array = None 
-        return
+        return 
     
     def matrix_construction(self):
         self.pos_array = np.array([self.x, self.y, self.z])
@@ -53,9 +50,9 @@ class SCobj_BodyState(): # linking local coordinate system to global
         self.state_array = np.array([self.x, self.y, self.z, self.theta, self.phi, self.psi ])
         return self.pos_array, self.euler_angle_array, self.state_array
     
-class SCobj_ParentState():
-    def __init__(self, children):
-        state_vector = SCobj_BodyState()
+class SCobj_Aircraft():
+    def __init__(self, statevector, children):
+        state_vector = SCobj_BodyState(statevector)
         children = children 
 
     def gather_phy_child(self):

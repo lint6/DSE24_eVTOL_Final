@@ -13,3 +13,5 @@ Downstream
 None
 '''
 
+import numpy as np
+from classbank import SCobj_ForcePoint, SCobj_Aircraft
