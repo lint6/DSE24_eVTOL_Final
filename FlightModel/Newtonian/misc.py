@@ -28,6 +28,7 @@ def SCfunc_EulerRotation():
     import numpy as np 
     from scipy.spatial.transform import Rotation  as R 
 
+    print("in degrees")
     delta_euler_angle = [input("yaw angle"), input("pitch angle"), input("roll angle") ]
 
     rotation_sequence = "zyx"
@@ -39,7 +40,7 @@ def SCfunc_EulerRotation():
     print ("rotation matrix is", rotation_matrix)
 
     # applying rotation to my vector 
-    local_vector = np.array([1,1,1])
+    local_vector = np.array([input("x"), input("y"), input("z")], dtype=float)
     transformed_vector = rotation.apply(local_vector)
     print("It was", local_vector, "but now in global axis its", transformed_vector)
 
@@ -47,6 +48,6 @@ def SCfunc_EulerRotation():
     inverse_rotation = rotation.inv()
     inverse_transformed_vector = inverse_rotation.apply(transformed_vector)
     print("Inverting the matrix back to local axis system", inverse_transformed_vector)
-    
 
+print (SCfunc_EulerRotation())
 
