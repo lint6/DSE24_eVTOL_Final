@@ -18,20 +18,18 @@ import numpy as np
 import misc as misc
 
 class SCobj_ForcePoint(): #1 rotor+motor of the copter, using local coordinate system
-    def __init__(self, force, moment, mass, inertia, ext_force):
-        self.force = force
+    def __init__(self, force, moment, mass, inertia):
+        self.force = force # purely in z direction [0,0,something] 
         self.moments = moment
         self.mass = mass
         self.inertia = inertia
-        self.ext_force = ext_force
-        self.magnitude = misc.SCfunc_ForceVector()[0]
-        self.unit_vector = misc.SCfunc_ForceVector()[1]
+        #to be removed later, not being used.... 
+        #self.magnitude = misc.SCfunc_ForceVector()[0]
+        #self.unit_vector = misc.SCfunc_ForceVector()[1]
         self.position_array = SCobj_BodyState.matrix_construction()[0]
         self.euler_array = SCobj_BodyState.matrix_construction()[1]
         self.state_array = SCobj_BodyState.matrix_construction()[2]
-        
-
-
+        return 
 
 
 
@@ -43,12 +41,11 @@ class SCobj_BodyState(): # linking local coordinate system to global
         self.z = z 
         self.theta = theta 
         self.phi = phi
-        self.psi = psi 
+        self.psi = psi
         self.pos_array = None 
         self.euler_angle_array = None 
         self.state_array = None 
-
-        return 
+        return
     
     def matrix_construction(self):
         self.pos_array = np.array([self.x, self.y, self.z])
@@ -56,4 +53,15 @@ class SCobj_BodyState(): # linking local coordinate system to global
         self.state_array = np.array([self.x, self.y, self.z, self.theta, self.phi, self.psi ])
         return self.pos_array, self.euler_angle_array, self.state_array
     
-    def force_vector_contruction(self):
+class SCobj_ParentState():
+    def __init__(self, children):
+        state_vector = SCobj_BodyState()
+        children = children 
+
+    def gather_phy_child(self):
+
+        
+
+
+    
+    

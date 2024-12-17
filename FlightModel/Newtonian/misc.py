@@ -16,6 +16,7 @@ All
 
 import numpy as np
 
+
 def SCfunc_ForceVector(force_in):
     if type(force_in) == float or type(force_in) == int:
         raise ValueError('SCfunc_ForceVector: Non-vector force encountered')
@@ -23,3 +24,6 @@ def SCfunc_ForceVector(force_in):
     magnitude = np.linalg.norm(force_in)
     unit_vector = force_in/magnitude
     return magnitude, unit_vector
+
+def SCfunc_EulerRotation():
+    
