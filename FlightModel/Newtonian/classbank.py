@@ -50,9 +50,18 @@ class SCobj_BodyState(): # linking local coordinate system to global
         self.state_array = np.array([self.x, self.y, self.z, self.theta, self.phi, self.psi ])
         return self.pos_array, self.euler_angle_array, self.state_array
     
+<<<<<<< HEAD:FlightModel/Newtonian/classbank.py
 class SCobj_Aircraft():
     def __init__(self, statevector, children):
         state_vector = SCobj_BodyState(statevector)
         children = children 
+=======
+class SCobj_ParentState():
+    def __init__(self, children):
+        self.state_vector = SCobj_BodyState.__init__()
+        self.children = children 
+        return 
+>>>>>>> aade9580b5daa0874c37fbd6a672bdc121a66e87:FlightModel/Newtonian/class.py
 
     def gather_phy_child(self):
+        return 
