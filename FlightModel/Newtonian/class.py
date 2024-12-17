@@ -22,7 +22,7 @@ class SCobj_ForcePoint(): #1 rotor+motor of the copter, using local coordinate s
         self.force = force # purely in z direction [0,0,something] 
         self.moments = moment
         self.mass = mass
-        self.inertia = inertia
+        self.inertia = inertia #array with 7 elements
         #to be removed later, not being used.... 
         #self.magnitude = misc.SCfunc_ForceVector()[0]
         #self.unit_vector = misc.SCfunc_ForceVector()[1]
@@ -59,9 +59,3 @@ class SCobj_ParentState():
         children = children 
 
     def gather_phy_child(self):
-
-        
-
-
-    
-    
