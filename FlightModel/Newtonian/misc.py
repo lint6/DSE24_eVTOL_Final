@@ -21,4 +21,5 @@ def SCfunc_ForceVector(force_in):
         raise ValueError('SCfunc_ForceVector: Non-vector force encountered')
     force_in = np.array(force_in)
     magnitude = np.linalg.norm(force_in)
-    
+    unit_vector = force_in/magnitude
+    return magnitude, unit_vector
