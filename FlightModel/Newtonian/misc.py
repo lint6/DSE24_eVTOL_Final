@@ -85,13 +85,13 @@ def SCfunc_EulerRotation_TM():
 
     # Combine the rotation matrices based on the desired sequence
     # ZYX sequence (yaw, pitch, roll)
-    rotation_matrix = Rz @ Ry @ Rx  
+    rotation_matrix = Rx @ Ry @ Rz  
 
     print("Rotation Matrix:")
     print(rotation_matrix)
 
     # Define the vector to transform
-    local_vector = np.array([1, 0, 0])  # Example vector
+    local_vector = np.array([0.75, 0.4330127, -0.5])  # Example vector
 
     # Transform the vector using the rotation matrix
     transformed_vector = rotation_matrix @ local_vector
@@ -107,7 +107,7 @@ def SCfunc_EulerRotation_TM():
 
     print("\nInverse Transformed Vector (back to original):")
     print(inverse_transformed_vector)
-    return 
+    return transformed_vector, inverse_rotation_matrix
 
 print(SCfunc_EulerRotation_TM())
 
