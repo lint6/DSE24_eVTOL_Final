@@ -55,9 +55,9 @@ def SCfunc_EulerRotation_TM():
     import numpy as np
 
     # Define Euler angles (in degrees)
-    yaw = input("what is the rotation around z in degree")    # Rotation around Z-axis
-    pitch = input("what is the rotation around y in degree")  # Rotation around Y-axis
-    roll = input("what is the rotation around x in degree")  # Rotation around X-axis
+    yaw = float(input("what is the rotation around z in degree") )   # Rotation around Z-axis
+    pitch = float(input("what is the rotation around y in degree"))  # Rotation around Y-axis
+    roll = float(input("what is the rotation around x in degree"))  # Rotation around X-axis
 
     # Convert angles to radians
     yaw = np.radians(yaw)
@@ -109,6 +109,7 @@ def SCfunc_EulerRotation_TM():
     print(inverse_transformed_vector)
     return 
 
+print(SCfunc_EulerRotation_TM())
 
 
 
