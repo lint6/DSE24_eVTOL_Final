@@ -44,10 +44,73 @@ def SCfunc_EulerRotation():
     transformed_vector = rotation.apply(local_vector)
     print("It was", local_vector, "but now in global axis its", transformed_vector)
 
+
     #bring it back to normal 
     inverse_rotation = rotation.inv()
     inverse_transformed_vector = inverse_rotation.apply(transformed_vector)
     print("Inverting the matrix back to local axis system", inverse_transformed_vector)
+    return transformed_vector
 
-print (SCfunc_EulerRotation())
+def SCfunc_EulerRotation_TM():
+    import numpy as np
+
+    # Define Euler angles (in degrees)
+    yaw = input("what is the rotation around z in degree")    # Rotation around Z-axis
+    pitch = input("what is the rotation around y in degree")  # Rotation around Y-axis
+    roll = input("what is the rotation around x in degree")  # Rotation around X-axis
+
+    # Convert angles to radians
+    yaw = np.radians(yaw)
+    pitch = np.radians(pitch)
+    roll = np.radians(roll)
+
+    # Construct rotation matrices for each axis
+    Rz = np.array([
+        [np.cos(yaw), -np.sin(yaw), 0],
+        [np.sin(yaw),  np.cos(yaw), 0],
+        [0,            0,           1]
+    ])
+
+    Ry = np.array([
+        [np.cos(pitch),  0, np.sin(pitch)],
+        [0,              1, 0           ],
+        [-np.sin(pitch), 0, np.cos(pitch)]
+    ])
+
+    Rx = np.array([
+        [1, 0,           0          ],
+        [0, np.cos(roll), -np.sin(roll)],
+        [0, np.sin(roll),  np.cos(roll)]
+    ])
+
+    # Combine the rotation matrices based on the desired sequence
+    # ZYX sequence (yaw, pitch, roll)
+    rotation_matrix = Rz @ Ry @ Rx  
+
+    print("Rotation Matrix:")
+    print(rotation_matrix)
+
+    # Define the vector to transform
+    local_vector = np.array([1, 0, 0])  # Example vector
+
+    # Transform the vector using the rotation matrix
+    transformed_vector = rotation_matrix @ local_vector
+
+    print("\nOriginal Vector:")
+    print(local_vector)
+    print("Transformed Vector:")
+    print(transformed_vector)
+
+    # To apply the inverse transformation
+    inverse_rotation_matrix = np.linalg.inv(rotation_matrix)
+    inverse_transformed_vector = inverse_rotation_matrix @ transformed_vector
+
+    print("\nInverse Transformed Vector (back to original):")
+    print(inverse_transformed_vector)
+    return 
+
+
+
+
+
 
