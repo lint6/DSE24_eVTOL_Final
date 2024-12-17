@@ -55,7 +55,9 @@ class SCobj_BodyState(): # linking local coordinate system to global
     
 class SCobj_ParentState():
     def __init__(self, children):
-        state_vector = SCobj_BodyState()
-        children = children 
+        self.state_vector = SCobj_BodyState.__init__()
+        self.children = children 
+        return 
 
     def gather_phy_child(self):
+        return 
