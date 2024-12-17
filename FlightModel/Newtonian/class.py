@@ -17,7 +17,7 @@ model.py
 import numpy as np
 import misc as misc
 
-class SCobj_ForcePoint():
+class SCobj_ForcePoint(): #1 rotor+motor of the copter, using local coordinate system
     def __init__(self, force, moment, mass, inertia, ext_force):
         self.force = force
         self.moments = moment
@@ -26,10 +26,17 @@ class SCobj_ForcePoint():
         self.ext_force = ext_force
         self.magnitude = misc.SCfunc_ForceVector()[0]
         self.unit_vector = misc.SCfunc_ForceVector()[1]
+        self.position_array = SCobj_BodyState.matrix_construction()[0]
+        self.euler_array = SCobj_BodyState.matrix_construction()[1]
+        self.state_array = SCobj_BodyState.matrix_construction()[2]
+        
 
 
 
-class SCobj_BodyState():
+
+
+
+class SCobj_BodyState(): # linking local coordinate system to global  
     def __init__(self, x, y, z, theta, phi, psi):
         self.x = x 
         self.y = y 
