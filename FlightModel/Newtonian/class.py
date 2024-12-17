@@ -16,11 +16,33 @@ model.py
 
 import numpy as np
 
-
-
 class SCobj_ForcePoint():
     def __init__(self):
         self.force = 
         self.moments = 
         self.mass = 
         self.inertia = 
+
+
+class SCobj_BodyState():
+    def __init__(self, x, y, z, theta, phi, psi):
+        self.x = x 
+        self.y = y 
+        self.z = z 
+        self.theta = theta 
+        self.phi = phi
+        self.psi = psi 
+        self.pos_array = None 
+        self.euler_angle_array = None 
+        self.state_array = None 
+        return 
+    
+    def matrix_construction(self):
+        self.pos_array = np.array([self.x, self.y, self.z])
+        self.euler_angle_array = np.array([self.theta, self.phi, self.psi])
+        self.state_array = np.array([self.x, self.y, self.z, self.theta, self.phi, self.psi ])
+        return self.pos_array, self.euler_angle_array, self.state_array
+
+    
+
+        
