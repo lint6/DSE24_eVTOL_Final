@@ -58,6 +58,7 @@ class SCobj_Aircraft():
         self.cog = self.COG() #location of center of gravity
         self.inertia = self.Inertia() #find inertia tensor of the full aircraft
         self.force = self.Force()
+        self.moment = self.Moments()
 
     def Mass(self):
         mass = 0
