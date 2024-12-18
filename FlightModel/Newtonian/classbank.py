@@ -13,43 +13,71 @@ Downstream
 All
 
 '''
-
+import time
 import numpy as np
 from misc import *
-
+init_time = time.time()
 class SCobj_ForcePoint():
-    def __init__(self, forces, moments, mass, inertia, position, rotation, toggle):
-        self.forces_local = np.array(forces) #in local frame
-        self.moments_local = np.array(moments) #in local frame
-        self.mass = mass
-        self.inertia = np.array(inertia) #in local frame
-        self.position = np.array(position) #position of the point in body frame
-        self.rotation = np.array(rotation) #rotation of the point in body frame
+    def __init__(self, forces, moments, mass, inertia, position, rotation):
+        self.forces_func = forces #in local frame
+        self.moments_func = moments #in local frame
+        self.mass_func = mass
+        self.inertia_func = inertia #in local frame
+        self.position_func = position #position of the point in body frame
+        self.rotation_func = rotation #rotation of the point in body frame
         
-        self.rotation_mat = SCfunc_EulerRotation([0,0,0], self.rotation)[1]
-        self.rotation_mat_inv = SCfunc_EulerRotation([0,0,0], self.rotation)[2]
-        ''' IMPORTANT'''
-        ''' All force and moments stored in this class is already rotated to be the next level of reference frame
-            !!But the translation component is not included here!!'''
-        self.forces  = self.rotation_mat @ np.array(forces) 
-        self.moments = self.rotation_mat @ np.array(moments)
-        self.inertia = self.rotation_mat @ np.array(inertia) @ self.rotation_mat.T
+        self.forces = [0,0,0]
+        self.moments = [0,0,0]
+        self.mass = 0
+        self.inertia = [[0,0,0],
+                        [0,0,0],
+                        [0,0,0]]
+        self.position = [0,0,0]
+        self.rotation = [0,0,0]
+        
+        self.Update()
+
     
     def Update(self, #variables to update, one element for each term. 
-               u_forces=[[0],[0],[0]], 
+               u_forces=[[1],[0],[0]], 
                u_moments=[[0],[0],[0]],
-               u_mass=[[0],[0],[0]],
-               u_inertia=[[0],[0],[0]],
+               u_mass=[0],
+               u_inertia=[[0,0,0],
+                          [0,0,0],
+                          [0,0,0]],
                u_position=[[0],[0],[0]],
                u_rotation=[[0],[0],[0]]):
-        self.forces_local = [self.forces_local[0](np.array(u_forces[0])), 
-                             self.forces_local[1](np.array(u_forces[1])), 
-                             self.forces_local[2](np.array(u_forces[2]))]
-        self.moments_local = np.array(moments) #in local frame
-        self.mass = mass
-        self.inertia_local = np.array(inertia) #in local frame
-        self.position = np.array(position) #position of the point in body frame
-        self.rotation = np.array(rotation) #rotation of the point in body frame
+        
+        function_def = type(lambda x: x) #telling Python what a lambda function is so we can do conditions later
+        
+        for i in range(len(self.forces_func)): #update force base on functions
+            if type(self.forces_func[i]) == function_def:
+                self.forces[i] = float(self.forces_func[i](np.array(u_forces[i])))
+        self.forces_local = np.array(self.forces)
+
+        for i in range(len(self.moments_func)): #update moments base on functions
+            if type(self.moments_func[i]) == function_def:
+                self.moments[i] = float(self.moments_func[i](np.array(u_moments[i])))
+        self.moments_local = np.array(self.moments)
+        
+        if type(self.mass_func) == function_def: #update mass base on functions
+            self.mass = float(self.mass_func(u_mass))
+        
+        for i in range(len(self.inertia_func)): #update inertia base on functions
+            for j in range(len(self.inertia_func[i])):
+                if type(self.inertia_func[i][j]) == function_def:
+                    self.inertia[i] = float(self.inertia_func[i][j](np.array(u_inertia[i][j])))
+        self.inertia_local = np.array(self.inertia)
+
+        for i in range(len(self.position_func)): #update position base on functions
+            if type(self.position_func[i]) == function_def:
+                self.position[i] = float(self.position_func[i](np.array(u_position[i])))
+        self.position = np.array(self.position)
+        
+        for i in range(len(self.rotation_func)): #update rotation base on functions
+            if type(self.rotation_func[i]) == function_def:
+                self.rotation[i] = float(self.rotation_func[i](np.array(u_rotation[i])))
+        self.rotation = np.array(self.rotation)
         
         self.rotation_mat = SCfunc_EulerRotation([0,0,0], self.rotation)[1]
         self.rotation_mat_inv = SCfunc_EulerRotation([0,0,0], self.rotation)[2]
@@ -105,7 +133,7 @@ class SCobj_Aircraft():
         cog = [0,0,0]
         for i in range(len(self.points)):
             cog = np.add(cog, self.points[i].mass * self.points[i].position)
-        cog = cog/self.mass
+        cog = np.array(cog)/self.mass
         return cog
             
     def Inertia(self): #find inertia tensor of the full aircraft

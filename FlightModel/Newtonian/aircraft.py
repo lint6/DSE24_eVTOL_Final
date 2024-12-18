@@ -3,7 +3,7 @@ Created by Lintong
 
 Aircraft file
 DO define function
-DO NOT define class
+DO define class
 DO NOT script
 
 Upstream
@@ -25,13 +25,16 @@ def ExampleFunction(Constant): #the input modify the function that is to be retu
 
 def SCfunc_CreateAircraft():
     '''Points'''
-    example_point = SCobj_ForcePoint(forces=ExampleFunction(1),
+    example_point = SCobj_ForcePoint(forces=[ExampleFunction(1),0,ExampleFunction(1)],
                                      moments=[0,0,0],
                                      mass=0,
-                                     inertia=[[0,0,0],[0,0,0],[0,0,0]],
+                                     inertia=[[0,0,0],
+                                              [0,0,0],
+                                              [0,0,0]],
                                      position = [0,0,0],
-                                     rotation = [0,0,0],
-                                     toggle=[0,0,0,0,0,0])
+                                     rotation = [0,0,0],)
     
     '''Aircraft'''
-    aircraft = SCobj_Aircraft()
+    aircraft = SCobj_Aircraft(points=[], position=[0,0,0], rotation=[0,0,0])
+    
+SCfunc_CreateAircraft()

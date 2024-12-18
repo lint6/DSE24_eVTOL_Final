@@ -15,6 +15,7 @@ physics.py
 
 '''
 import numpy as np
+import classbank
 class InnerClass():
     def __init__(self,value):
         self.value = value
@@ -40,10 +41,20 @@ class TestClassWrapper():
 obj1 = InnerClass(value=lambda x: x[0]*1+x[1])
 obj2 = InnerClass(value=lambda x: x[0]*2+x[1])
 obj3 = InnerClass(value=lambda x: x[0]*3+x[1])
+
+# obj1([0,1])
+
 classes = [obj1,
            obj2,
            obj3]
 
 Wrapper = TestClassWrapper(classes=classes)
 Wrapper.UpdateInnerClass()
-print(list(0))
+value=lambda x: x[0]*3+x[1]
+print(type(value))
+print(type(12))
+
+testlist = list(np.arange(1,10))
+print(testlist)
+testlist = [i+1 if i<5 else i for i in testlist]
+print(testlist)
