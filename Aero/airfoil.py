@@ -68,4 +68,4 @@ if __name__ == "__main__":
     closest_CL, closest_CD = airfoil_data.find_cl_cd_for_alpha(alpha_input)
     
     # Print the results
-    print(f"For alpha = {alpha_input}, CL = {closest_CL}, CD = {closest_CD}")
+    print(airfoil_data.find_cl_cd_for_alpha(alpha_input)[0])

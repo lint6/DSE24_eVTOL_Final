@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
+from
 
 class Performance:
 
@@ -32,6 +32,8 @@ class Performance:
         self.pitch_tip = pitch_tip * self.deg_to_rad # pitch at the tip in [rad]
 
         # to be added: twist, cutout, airfoil data
+        self.airfoil_data = AirfoilData()
+
 
     
     def power_hover(self):
@@ -46,6 +48,8 @@ class Performance:
         pitch = []
         inflow = []
         aoa = []
+        cl_local = []
+        cd_local = []
 
         # Calculate segment size
         segment_size = self.R / self.n_elements
@@ -84,6 +88,12 @@ class Performance:
             # Calculate local angle of attack
             alpha = pitch_calc - np.arctan(inflow_angle)
             aoa.append(alpha)
+
+            # Calculate corresponding local CL and CD
+            cl = self.airfoil_data.find_cl_cd_for_alpha(alpha)[0]
+            cl_local.append(cl)
+            cd = self.airfoil_data.find_cl_cd_for_alpha(alpha)[1]
+            cd_local.append(cd)
 
         return r_over_R, c_over_R, M, pitch, aoa
     
