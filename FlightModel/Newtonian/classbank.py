@@ -17,18 +17,19 @@ model.py
 import numpy as np
 from misc import *
 
-class SCobj_ForcePoint(): #1 rotor+motor of the copter, using local coordinate system
-    def __init__(self, force, moment, mass, inertia, position, rotation):
-        self.force = np.array(force) # purely in z direction [0,0,something] 
-        self.moments = np.array(moment)
+class SCobj_ForcePoint():
+    def __init__(self, forces, moments, mass, inertia, position, rotation):
         self.mass = mass
-        self.inertia = np.array(inertia) #3x3 tensor
-        self.position = np.array(position)
-        self.rotation = np.array(rotation)
-        
+        self.position = np.array(position) #position of the point in body frame
+        self.rotation = np.array(rotation) #rotation of the point in body frame
         self.rotation_mat = SCfunc_EulerRotation([0,0,0], self.rotation)[1]
         self.rotation_mat_inv = SCfunc_EulerRotation([0,0,0], self.rotation)[2]
-        
+        ''' IMPORTANT'''
+        ''' All force and moments stored in this class is already rotated to be the next level of reference frame
+            !!But the translation component is not included here!!'''
+        self.forces  = self.rotation_mat @ np.array(forces)
+        self.moments = self.rotation_mat @ np.array(moments)
+        self.inertia = self.rotation_mat @ np.array(inertia) @ self.rotation_mat.T
         
 class SCobj_BodyState(): # linking local coordinate system to global UNUSED  
     def __init__(self, x, y, z, theta, phi, psi):
@@ -52,43 +53,49 @@ class SCobj_BodyState(): # linking local coordinate system to global UNUSED
 class SCobj_Aircraft():
     def __init__(self, points, position, rotation):
         self.points = points #list of ForcePoint objects
-        self.position = position #position of the aircraft in global space
-        self.rotation = rotation #rotation of the aircraft in global space
+        self.position = np.array(position) #position of the aircraft in global space
+        self.rotation = np.array(rotation) #rotation of the aircraft in global space
+        self.rotation_mat = SCfunc_EulerRotation([0,0,0], self.rotation)[1]
+        self.rotation_mat_inv = SCfunc_EulerRotation([0,0,0], self.rotation)[2]
         self.mass = self.Mass() #total mass of all points attached to the aircraft
-        self.cog = self.COG() #location of center of gravity
-        self.inertia = self.Inertia() #find inertia tensor of the full aircraft
-        self.force = self.Force()
-        self.moment = self.Moments()
+        self.cog = self.COG() #location of center of gravity, in body frame
+        ''' IMPORTANT'''
+        ''' All force and moments stored in this class is already rotated to be the next level of reference frame
+            !!But the translation component is not included here!!'''
+        self.forces  = self.rotation_mat @ self.Forces() #total force experianced by the aircraft
+        self.moments = self.rotation_mat @ self.Moments() #total moments experianced by the aircraft
+        self.inertia = self.rotation_mat @ self.Inertia() @ self.rotation_mat.T #inertia tensor of the full aircraft
 
-    def Mass(self):
+    def Mass(self): #total mass of all points
         mass = 0
         for i in range(len(self.points)):
             mass += self.points[i].mass
         return mass
     
-    def COG(self): #TODO add in COG calc
-        pass
-    
-    def Inertia(self):
+    def COG(self): #location of center of gravity, in body frame
+        cog = [0,0,0]
+        for i in range(len(self.points)):
+            cog = np.add(cog, self.points[i].mass * self.points[i].position)
+        cog = cog/self.mass
+        return cog
+            
+    def Inertia(self): #find inertia tensor of the full aircraft
         inertia = np.array([[0,0,0],[0,0,0],[0,0,0]])
         for i in range(len(self.points)):
-            intertia_pt = self.points[i].rotation_mat @ self.points[i].inertia @ self.points[i].rotation_mat.T
-            intertia_pt = np.add(intertia_pt, self.points[i].mass * (np.dot(self.points[i].position, self.points[i].position)*np.identity(3) - np.outer(self.points[i].position, self.points[i].position)))
-            inertia = np.add(intertia_pt, inertia)
-        inertia = np.add(inertia, self.mass * (np.dot(self.cog, self.cog)*np.identity(3) - np.outer(self.cog, self.cog)))
+            intertia_pt = np.add(intertia_pt, self.points[i].mass * (np.dot(self.points[i].position, self.points[i].position)*np.identity(3) - np.outer(self.points[i].position, self.points[i].position))) #parallel axis theorem
+            inertia = np.add(intertia_pt, inertia) 
+        inertia = np.add(inertia, self.mass * (np.dot(self.cog, self.cog)*np.identity(3) - np.outer(self.cog, self.cog))) #parallel axis theorem w.r.t. the cog
         return inertia
     
-    def Force(self):
-        force = np.array([0,0,0])
+    def Forces(self):
+        forces = np.array([0,0,0])
         for i in range(len(self.points)):
-            force_pt = self.points[i].force @ self.points[i].rotation_mat
-            force = np.add(force, force_pt)
-        return force
+            forces = np.add(forces, self.points[i].forces)
+        return forces
     
     def Moments(self):
-        moments = [0,0,0]
+        moments = np.array([0,0,0])
         for i in range(len(self.points)):
-            force_pt = self.points[i].force @ self.points[i].rotation_mat
-            moments_pt = np.add(self.points[i].moments, np.cross(self.points[i].position, force_pt))
+            moments_pt = np.add(self.points[i].moments, np.cross(self.points[i].position + self.cog, self.points[i].forces))
             moments = np.add(moments, moments_pt)
         return moments

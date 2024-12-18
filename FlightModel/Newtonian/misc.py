@@ -93,6 +93,6 @@ def SCfunc_EulerRotation(input_vector, rotation):
 
     return transformed_vector, rotation_matrix, inverse_rotation_matrix
 
-DEBUG = True
+DEBUG = False
 if DEBUG:
     print(SCfunc_EulerRotation([1,0,0],[10,5,10])[0])
