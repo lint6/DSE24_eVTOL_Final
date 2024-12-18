@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib as plt
+import math
 
 class BEMT():
     # coding on blade-element momentum theory
@@ -14,10 +15,10 @@ class BEMT():
 
         # specify initial rotor sizing parameters
         self.R = 5 # m, the rotor radius in meters
+        self.b = 1 # - , number of blades
 
-
-
-
+    def discretization(self):
+        print("Hello")
 
 
     def lift_drag(self, omega=None, theta_r=None, c_r=None, r=None, dr=None, V_c=None):
@@ -26,8 +27,10 @@ class BEMT():
         V_t = omega * self.R
 
         # compute induced velocity at point r
-        v_r = 1
-
+        induced_1 = self.a_r * self.b * c_r
+        induced_2 = -1 * ((induced_1 / (16 * math.pi * self.R)) + (V_c / (2 * V_t)))
+        induced_3 = math.sqrt(((induced_1 / (16 * math.pi * self.R)) + (V_c /(2 * V_t))))**2 + ((induced_1 / (8 * math.pi * self.R)) * ((r_bar * theta_r) - (V_c / V_t)))
+        v_r = V_t * (induced_2 + induced_3)
 
         # lift for a blade element of size dr
         dL_r = 0.5 * self.a_r * self.rho * (theta_r - (V_c + v_r)/(omega * r)) * c_r * ((omega * r)**2) * dr
@@ -40,6 +43,12 @@ class BEMT():
 
         # torque needed for a blade element of size dr
         dQ_r = (dL_r * ((V_c + v_r)/(omega * r)) + dDp_r) * r
+
+
+if __name__ == '__main__':
+    BEMT = BEMT()
+    BEMT.discretization()
+
 
 
 
