@@ -109,9 +109,6 @@ def SCfunc_EulerRotation_TM():
     print(inverse_transformed_vector)
     return transformed_vector, inverse_rotation_matrix
 
-print(SCfunc_EulerRotation_TM())
-
-
 
 
 
