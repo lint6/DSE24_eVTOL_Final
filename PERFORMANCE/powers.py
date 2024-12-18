@@ -38,13 +38,14 @@ class Performance:
 
         # hover power calculation using blade elemnet theory mixed with momentum theory 
 
-        # Initialize lists to store results
+        # Initialize lists to store results of each element
         r_over_R = []
         c_over_R = []
         M = []
         a_slope = []
         pitch = []
         inflow = []
+        aoa = []
 
         # Calculate segment size
         segment_size = self.R / self.n_elements
@@ -74,13 +75,17 @@ class Performance:
             # !!!assumes ideal twist distribution!!!
             pitch_calc = self.pitch_tip / r_R #!!! ideal twist assumed
             pitch.append(pitch_calc)
-            
-            #Calculate local inflow angle
+
+            # Calculate local inflow angle
             # a and pitch must be in [rad]]
             inflow_angle = (a*self.n_bl)/(16*np.pi) * (c_R/r_R) * (-1 + np.sqrt(1+((32*np.pi*pitch_calc*r_R)/(a*self.n_bl*c_R))))
             inflow.append(inflow_angle)
 
-        return r_over_R, c_over_R, M, pitch
+            # Calculate local angle of attack
+            alpha = pitch_calc - np.arctan(inflow_angle)
+            aoa.append(alpha)
+
+        return r_over_R, c_over_R, M, pitch, aoa
     
 # run file
 if __name__ == "__main__":
@@ -92,11 +97,11 @@ if __name__ == "__main__":
         chord=0.2,         # Chord length [m]
         V_tip=167.64,      # Tip speed [m/s]
         n_elements=5,       # Number of blade elements
-        a_airfoil=5.73,     # Lift curve slope
+        a_airfoil=5.73,     # Lift curve slope	[1/rad]
         pitch_tip=6         # Collective pitch angle [deg]
     )
 
     # Call the power_hover method
-    r_over_R, c_over_R, M, pitch = perf.power_hover()
-    print(pitch)
+    r_over_R, c_over_R, M, pitch, aoa = perf.power_hover()
+    print(aoa)
 
