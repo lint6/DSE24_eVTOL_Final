@@ -24,47 +24,47 @@ def SCfunc_ForceVector(force_in):
     unit_vector = force_in/magnitude
     return magnitude, unit_vector
 
-def SCfunc_EulerRotation():
-    import numpy as np 
-    from scipy.spatial.transform import Rotation  as R 
+# def SCfunc_EulerRotation():
+#     import numpy as np 
+#     from scipy.spatial.transform import Rotation  as R 
 
-    print("in degrees")
-    delta_euler_angle = [input("yaw angle"), input("pitch angle"), input("roll angle") ]
+#     print("in degrees")
+#     delta_euler_angle = [input("yaw angle"), input("pitch angle"), input("roll angle") ]
 
-    rotation_sequence = "zyx"
+#     rotation_sequence = "zyx"
 
-    rotation = R.from_euler(rotation_sequence, delta_euler_angle, degrees=True)
+#     rotation = R.from_euler(rotation_sequence, delta_euler_angle, degrees=True)
 
-    rotation_matrix = rotation.as_matrix()
+#     rotation_matrix = rotation.as_matrix()
 
-    print ("rotation matrix is", rotation_matrix)
+#     print ("rotation matrix is", rotation_matrix)
 
-    # applying rotation to my vector 
-    local_vector = np.array([input("x"), input("y"), input("z")], dtype=float)
-    transformed_vector = rotation.apply(local_vector)
-    print("It was", local_vector, "but now in global axis its", transformed_vector)
+#     # applying rotation to my vector 
+#     local_vector = np.array([input("x"), input("y"), input("z")], dtype=float)
+#     transformed_vector = rotation.apply(local_vector)
+#     print("It was", local_vector, "but now in global axis its", transformed_vector)
 
 
-    #bring it back to normal 
-    inverse_rotation = rotation.inv()
-    inverse_transformed_vector = inverse_rotation.apply(transformed_vector)
-    print("Inverting the matrix back to local axis system", inverse_transformed_vector)
-    return transformed_vector
+#     #bring it back to normal 
+#     inverse_rotation = rotation.inv()
+#     inverse_transformed_vector = inverse_rotation.apply(transformed_vector)
+#     print("Inverting the matrix back to local axis system", inverse_transformed_vector)
+#     return transformed_vector
 
-def SCfunc_EulerRotation_TM():
+def SCfunc_EulerRotation(input_vector, rotation):
     import numpy as np
 
     # Define Euler angles (in degrees)
-    yaw = float(input("what is the rotation around z in degree") )   # Rotation around Z-axis
-    pitch = float(input("what is the rotation around y in degree"))  # Rotation around Y-axis
-    roll = float(input("what is the rotation around x in degree"))  # Rotation around X-axis
+    yaw   = rotation[2] # Rotation around Z-axis
+    pitch = rotation[1] # Rotation around Y-axis
+    roll  = rotation[0] # Rotation around X-axis
 
     # Convert angles to radians
     yaw = np.radians(yaw)
     pitch = np.radians(pitch)
     roll = np.radians(roll)
 
-    # Construct rotation matrices for each axis
+    # Rotation matrices
     Rz = np.array([
         [np.cos(yaw), -np.sin(yaw), 0],
         [np.sin(yaw),  np.cos(yaw), 0],
@@ -85,30 +85,14 @@ def SCfunc_EulerRotation_TM():
 
     # Combine the rotation matrices based on the desired sequence
     # ZYX sequence (yaw, pitch, roll)
-    rotation_matrix = Rx @ Ry @ Rz  
-
-    print("Rotation Matrix:")
-    print(rotation_matrix)
-
-    # Define the vector to transform
-    local_vector = np.array([0.75, 0.4330127, -0.5])  # Example vector
-
+    rotation_matrix = Rz @ Ry @ Rx  
     # Transform the vector using the rotation matrix
-    transformed_vector = rotation_matrix @ local_vector
-
-    print("\nOriginal Vector:")
-    print(local_vector)
-    print("Transformed Vector:")
-    print(transformed_vector)
-
+    transformed_vector = rotation_matrix @ input_vector
     # To apply the inverse transformation
     inverse_rotation_matrix = np.linalg.inv(rotation_matrix)
-    inverse_transformed_vector = inverse_rotation_matrix @ transformed_vector
 
-    print("\nInverse Transformed Vector (back to original):")
-    print(inverse_transformed_vector)
-    return transformed_vector, inverse_rotation_matrix
+    return transformed_vector, rotation_matrix, inverse_rotation_matrix
 
-
-
-
+DEBUG = True
+if DEBUG:
+    print(SCfunc_EulerRotation([1,0,0],[10,5,10])[0])

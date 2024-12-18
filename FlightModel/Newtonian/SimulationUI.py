@@ -20,7 +20,8 @@ import numpy as np
 #                             moment=[0,0,0], 
 #                             mass=20, 
 #                             inertia=0)
-
+pos = np.array([1,0,1])
+A = np.array([[5,0,0],[0,5,0],[0,0,5]])
 print(
-    'hello world'
+    np.add(A, 10 * (np.dot(pos, pos)*np.identity(3) - np.outer(pos, pos)))
 )

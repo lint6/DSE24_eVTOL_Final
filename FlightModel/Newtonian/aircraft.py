@@ -21,5 +21,11 @@ from classbank import *
 
 def SCfunc_CreateAircraft():
     '''Points'''
-    example_point = SCobj_ForcePoint(force=[],
-                                     )
+    example_point = SCobj_ForcePoint(force=[0,0,0],
+                                     moment=[0,0,0],
+                                     mass=0,
+                                     inertia=[[0,0,0],[0,0,0],[0,0,0]],
+                                     position = [0,0,0],
+                                     rotation = [0,0,0])
+    
+    aircraft = SCobj_Aircraft()
