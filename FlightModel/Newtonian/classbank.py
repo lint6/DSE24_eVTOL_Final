@@ -10,7 +10,7 @@ Upstream
 None
 
 Downstream
-model.py
+All
 
 '''
 
@@ -18,18 +18,47 @@ import numpy as np
 from misc import *
 
 class SCobj_ForcePoint():
-    def __init__(self, forces, moments, mass, inertia, position, rotation):
+    def __init__(self, forces, moments, mass, inertia, position, rotation, toggle):
+        self.forces_local = np.array(forces) #in local frame
+        self.moments_local = np.array(moments) #in local frame
         self.mass = mass
+        self.inertia = np.array(inertia) #in local frame
         self.position = np.array(position) #position of the point in body frame
         self.rotation = np.array(rotation) #rotation of the point in body frame
+        
         self.rotation_mat = SCfunc_EulerRotation([0,0,0], self.rotation)[1]
         self.rotation_mat_inv = SCfunc_EulerRotation([0,0,0], self.rotation)[2]
         ''' IMPORTANT'''
         ''' All force and moments stored in this class is already rotated to be the next level of reference frame
             !!But the translation component is not included here!!'''
-        self.forces  = self.rotation_mat @ np.array(forces)
+        self.forces  = self.rotation_mat @ np.array(forces) 
         self.moments = self.rotation_mat @ np.array(moments)
         self.inertia = self.rotation_mat @ np.array(inertia) @ self.rotation_mat.T
+    
+    def Update(self, #variables to update, one element for each term. 
+               u_forces=[[0],[0],[0]], 
+               u_moments=[[0],[0],[0]],
+               u_mass=[[0],[0],[0]],
+               u_inertia=[[0],[0],[0]],
+               u_position=[[0],[0],[0]],
+               u_rotation=[[0],[0],[0]]):
+        self.forces_local = [self.forces_local[0](np.array(u_forces[0])), 
+                             self.forces_local[1](np.array(u_forces[1])), 
+                             self.forces_local[2](np.array(u_forces[2]))]
+        self.moments_local = np.array(moments) #in local frame
+        self.mass = mass
+        self.inertia_local = np.array(inertia) #in local frame
+        self.position = np.array(position) #position of the point in body frame
+        self.rotation = np.array(rotation) #rotation of the point in body frame
+        
+        self.rotation_mat = SCfunc_EulerRotation([0,0,0], self.rotation)[1]
+        self.rotation_mat_inv = SCfunc_EulerRotation([0,0,0], self.rotation)[2]
+        ''' IMPORTANT'''
+        ''' All force and moments stored in this class is already rotated to be the next level of reference frame
+            !!But the translation component is not included here!!'''
+        self.forces  = self.rotation_mat @ self.forces_local
+        self.moments = self.rotation_mat @ self.moments_local
+        self.inertia = self.rotation_mat @ self.inertia_local @ self.rotation_mat.T
         
 class SCobj_BodyState(): # linking local coordinate system to global UNUSED  
     def __init__(self, x, y, z, theta, phi, psi):
@@ -87,7 +116,7 @@ class SCobj_Aircraft():
         inertia = np.add(inertia, self.mass * (np.dot(self.cog, self.cog)*np.identity(3) - np.outer(self.cog, self.cog))) #parallel axis theorem w.r.t. the cog
         return inertia
     
-    def Forces(self):
+    def Forces(self): 
         forces = np.array([0,0,0])
         for i in range(len(self.points)):
             forces = np.add(forces, self.points[i].forces)
