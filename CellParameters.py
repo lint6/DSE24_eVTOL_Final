@@ -18,6 +18,8 @@ class CellParameters():
         self.n_c = self.V_D/self.IVCurves.v   #Number of cells
         self.A_c = self.P_D/(self.n_c*self.IVCurves.p) #Active cell area
 
+        self.MassFlows()
+
     def MassFlows(self):
         #Constants
         self.m_h =  2.01588e-3  #Molecular mass of H2 [kg/mol]
