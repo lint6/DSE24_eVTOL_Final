@@ -16,7 +16,7 @@ class CellParameters():
         #General parameters
         self.I_D = self.P_D/self.V_D  #Design current [Ampere]
         self.n_c = self.V_D/self.IVCurves.v   #Number of cells
-        self.A_c = self.P_D/(self.n_c*self.IVCurves.p) #Active cell area
+        self.A_c = self.P_D/(self.n_c*self.IVCurves.p) #Active cell area [cm^2]
 
         self.MassFlows()
 

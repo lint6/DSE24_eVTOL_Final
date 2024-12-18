@@ -102,7 +102,7 @@ class IVCurves:
         plt.plot(self.i, self.p, label='Power Density', color='green')
         plt.plot(self.i, self.q, label='Heat', color='red')
 
-        plt.title("IV Curves")
+        plt.title(f"IV Curves for {self.p_s/101325} atm")
         plt.legend(loc='upper left', fontsize='large')
         plt.grid(color='gray', linestyle=':', linewidth=0.5)
         plt.xlabel("Current density [A/cm^2]")
@@ -112,5 +112,5 @@ class IVCurves:
         plt.show()
 
 #This is just to get the curves for now, move to UI later
-object = IVCurves(p_s=2.5)
-object.PlotCurves()
+# object = IVCurves(p_s=2.50)
+# object.PlotCurves()

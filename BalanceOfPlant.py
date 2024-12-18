@@ -22,11 +22,14 @@ class BalanceOfPlant:
         self.p_ambient = 101325 #Ambient pressure [Pa]
 
         #Stack conditions
-        self.C_p_stack = 2000 #PLACEHOLDER 
-        self.stack_gamma = 1.3 #PLACEHOLDER
+        self.C_p_stack = 1009 #PLACEHOLDER 
+        self.stack_gamma = 1.399 #PLACEHOLDER
         self.p_s = self.IVCurves.p_s #Stack pressure
         self.T_s = self.IVCurves.T
         self.p_s_drop = self.CellParameters.p_s_drop
+
+        #Constants
+        self.SB_constant = 5.670367e-8 #Stefan-Boltzmann constant [W/m^2 K^4]
 
 
     def AirPower(self): #Assumes ISA SL conditions for now
@@ -46,11 +49,37 @@ class BalanceOfPlant:
 
         self.P_air = self.P_comp + self.P_turb
 
-    # def HTCPower(self):
-        #Still working on rest of BOP
+    def HTCPower(self):
+        #Calculate heat to be rejected
+
+        #Stack
+        self.Q_s = (self.IVCurves.E_h - self.IVCurves.v)*(self.CellParameters.P_D/self.IVCurves.v) #Stack heat [W]
+
+        #Air flow
+        self.Q_htc_out = self.C_p_stack*self.air_out_flow*(self.T_s-self.T_ambient) #Heat carried out by air [W]
+
+        #Dissipation
+        self.f_s = 0.6 #Fraction of stack active area that is exposed, assumed value
+        self.emissivity_s = 0.8 #Stack emissivity, assumed value
+        self.convec_coeff = 50 #Overall convection heat transfer coefficient [W/m^2 K], assumed value 
+        self.A_s = self.f_s * self.CellParameters.n_c * self.CellParameters.A_c * 1e-3 #Exposed stack area [m^2], 1e-3 for conversion from cm^2
+
+        self.Q_htc_d = self.A_s*self.convec_coeff*(self.T_s-self.T_ambient) + self.A_s*self.emissivity_s*self.SB_constant*(self.T_s**4-self.T_ambient**4)
+
+        #Total heat to be rejected [W]
+        self.Q_htc = self.Q_s - self.Q_htc_d - self.Q_htc_out
+
+        
+        #Calculate required coolant mass flow [kg/s]
+
+
+
+
+
+
 
 #Just stuff for code checking
-inputIV = IVCurves(p_s=2.5)
+inputIV = IVCurves(p_s=2.00)
 inputCell = CellParameters(IVCurves=inputIV)
 BOP = BalanceOfPlant(IVCurves=inputIV,CellParameters=inputCell)
 BOP.AirPower()
