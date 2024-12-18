@@ -59,10 +59,12 @@ class IVCurves:
         #Define max valid current density for model [A/cm^2]
         self.i_maxvalid = self.i_l - self.i_leak
 
+        self.p_s = p_s * 101325     #Stack pressure [Pascal]
+
         self.CalculateIV()
 
     def CalculateIV(self):
-        self.i = np.arange(0.00, self.i_maxvalid,0.01) #Set range for current density [A/cm^2]
+        self.i = np.arange(0.01, self.i_maxvalid,0.01) #Set range for current density [A/cm^2]
 
         #Anode fitting coefficents (2 is from number of moles of electrons at anode)
         self.a_a = -((self.R * self.T)/(self.alpha_a*2*self.F))*np.log(self.i0_a)
