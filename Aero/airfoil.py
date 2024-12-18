@@ -1,6 +1,4 @@
-# for a given file with csv data of the airfoil at a certain Reynolds number
-# the code below will load the data and find the closest CL and CD values for a given alpha value
-# this is used in calculating power_hover in PERFORMANCE/powers.py
+import numpy as np
 
 class AirfoilData:
     def __init__(self):
@@ -45,27 +43,35 @@ class AirfoilData:
         except FileNotFoundError:
             print(f"Error: The file {self.filename} was not found.")
 
-    def find_cl_cd_for_alpha(self, alpha_input):
-        """Finds the closest CL and CD values for the given alpha_input."""
-        # Find the index of the closest alpha value to the input
-        closest_index = min(range(len(self.alpha)), key=lambda i: abs(self.alpha[i] - alpha_input))
+    def interpolate_cl_cd(self, alpha_input):
+        """Interpolates CL and CD values for a given alpha_input using linear interpolation."""
+        # Convert alpha, CL, and CD to numpy arrays for easier interpolation
+        alpha_array = np.array(self.alpha)
+        CL_array = np.array(self.CL)
+        CD_array = np.array(self.CD)
         
-        # Return the corresponding CL and CD for the closest alpha
-        closest_CL = self.CL[closest_index]
-        closest_CD = self.CD[closest_index]
+        # Check if alpha_input is within the range of available alpha values
+        if alpha_input < alpha_array[0] or alpha_input > alpha_array[-1]:
+            print("Warning: alpha_input is out of the range of available alpha values.")
+            return None, None  # Return None if out of range
         
-        return closest_CL, closest_CD
+        # Perform linear interpolation to find CL and CD for the exact alpha_input
+        CL_interp = np.interp(alpha_input, alpha_array, CL_array)
+        CD_interp = np.interp(alpha_input, alpha_array, CD_array)
+        
+        return CL_interp, CD_interp
 
-# Example usage to find CL and CD for a given alpha value
+# Example usage to find interpolated CL and CD for a given alpha value
 if __name__ == "__main__":
     # Initialize the AirfoilData object
     airfoil_data = AirfoilData()
     
     # Input alpha value for which we want to find the corresponding CL and CD
-    alpha_input = 5.0  # Example: replace with your desired alpha value
+    alpha_input = 5.2  # Example: replace with your desired alpha value
     
-    # Find the closest CL and CD for the given alpha input
-    closest_CL, closest_CD = airfoil_data.find_cl_cd_for_alpha(alpha_input)
+    # Interpolate CL and CD for the given alpha input
+    interpolated_CL, interpolated_CD = airfoil_data.interpolate_cl_cd(alpha_input)
     
     # Print the results
-    print(airfoil_data.find_cl_cd_for_alpha(alpha_input)[0])
+    if interpolated_CL is not None and interpolated_CD is not None:
+        print(f"Interpolated CL: {interpolated_CL}, Interpolated CD: {interpolated_CD}")

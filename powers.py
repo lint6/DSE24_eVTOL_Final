@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from
+from Aero.airfoil import AirfoilData
 
 class Performance:
 
@@ -90,12 +90,14 @@ class Performance:
             aoa.append(alpha)
 
             # Calculate corresponding local CL and CD
-            cl = self.airfoil_data.find_cl_cd_for_alpha(alpha)[0]
+            cl = self.airfoil_data.interpolate_cl_cd(alpha)[0]
             cl_local.append(cl)
-            cd = self.airfoil_data.find_cl_cd_for_alpha(alpha)[1]
+            cd = self.airfoil_data.interpolate_cl_cd(alpha)[1]
             cd_local.append(cd)
 
-        return r_over_R, c_over_R, M, pitch, aoa
+            thrust_loading = (self.n_bl*(r_R**2)*c_R*cl) / (2*np.pi)
+
+        return r_over_R, c_over_R, M, pitch, aoa, cl_local, cd_local
     
 # run file
 if __name__ == "__main__":
@@ -112,6 +114,6 @@ if __name__ == "__main__":
     )
 
     # Call the power_hover method
-    r_over_R, c_over_R, M, pitch, aoa = perf.power_hover()
-    print(aoa)
+    r_over_R, c_over_R, M, pitch, aoa, cl_local, cd_local = perf.power_hover()
+    print(aoa, cl_local)
 
