@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-class RotorAnalysis:
+class DLvsRadius:
     def __init__(self, mtow_kg=718.89, n_rotors=4, bank_angle=30, v_max_kmh=150):
         # Constants
         self.MTOW_KG = mtow_kg  # Maximum Takeoff Weight in kg
@@ -44,8 +44,8 @@ class RotorAnalysis:
         plt.show()
 
 if __name__ == "__main__":
-    rotor_analysis = RotorAnalysis()
-    rotor_analysis.calculate_radius()
+    DLRadius = DLvsRadius()
+    DLRadius.calculate_radius()
         # mtow_pounds = self.MTOW_KG * self.POUNDS_PER_KG
         # radius_ft = np.sqrt((mtow_pounds / self.N_rotors) / (self.DL_IMPERIAL * np.pi))
         # radius_m = radius_ft / self.FT_TO_M
