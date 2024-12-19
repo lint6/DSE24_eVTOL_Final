@@ -44,9 +44,9 @@ def SCfunc_FlightSimulation(Run=True, dt=0.1):
         pos_x = 0
         pos_y = 0
         pos_z = 0
-        ang_x = 0
-        ang_y = 0
-        ang_z = 0
+        ang_pos_x = 0
+        ang_pos_y = 0
+        ang_pos_z = 0
         
         while Run:
             '''Exit Conditions'''
@@ -86,4 +86,4 @@ def SCfunc_FlightSimulation(Run=True, dt=0.1):
             
             #update forces
             #log data
-            return pos_x, pos_y, pos_z
+            return pos_x, pos_y, pos_z, ang
