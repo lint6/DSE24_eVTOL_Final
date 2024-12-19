@@ -52,23 +52,30 @@ def SCfunc_FlightSimulation(Run=True, dt=0.1):
             '''Exit Conditions'''
             
             '''Simulation Loop'''
-            #sum forces
-            f_x = sum()
-            f_y = sum()
-            f_z = sum()
-            m_x = sum()
-            m_y = sum()
-            m_z = sum()
+            #Below is the information we have when we cerate an object using Aircraft
+
+            """
+            class SCobj_Aircraft():
+                def __init__(self, points, position, rotation):
+                    self.points = points #list of ForcePoint objects
+                    self.mass = None 
+                    self.cog = None # 1x3 matrix 
+                    self.intertia = None #Tensor
+                    self.forces = None # 1x3 matrix
+                    self.position = np.array(position) #position of the aircraft in global space 1x3 matrix
+                    self.rotation = np.array(rotation) #rotation of the aircraft in global space 1x3 matrix
+                    self.UpdatePoints()
+            """
             
-            #get acceleration
-            lat_acc_x = aircraft.force[0] / aircraft.mass 
-            lat_acc_y = aircraft.force[1] / aircraft.mass
-            lat_acc_z = aircraft.force[2] / aircraft.mass
+            #get current acceleration
+            lat_acc_x = aircraft.force[0] / (aircraft.mass * 9.81) 
+            lat_acc_y = aircraft.force[1] / (aircraft.mass * 9.81) 
+            lat_acc_z = aircraft.force[2] / (aircraft.mass * 9.81) 
             ang_acc_x = aircraft.moment[0] / aircraft.inertia[0]
             ang_acc_y = aircraft.moment[1] / aircraft.inertia[1]
             ang_acc_z = aircraft.moment[2] / aircraft.inertia[2]
             
-            #get velocity
+            #new velocity
             vel_x = aircraft.vel_x + lat_acc_x * dt
             vel_y = aircraft.vel_y + lat_acc_y * dt
             vel_z = aircraft.vel_z + lat_acc_z * dt 
@@ -76,14 +83,13 @@ def SCfunc_FlightSimulation(Run=True, dt=0.1):
             rot_y = aircraft.rot_vel_y + ang_acc_y * dt 
             rot_z = aircraft.rot_vel_z + ang_acc_z * dt 
             
-            #get position
-            pos_x += vel_x * dt
-            pos_y += vel_y * dt 
-            pos_z += vel_z * dt
-            ang_pos_x += rot_x * dt
-            ang_pos_y += rot_y * dt
-            ang_pos_z += rot_z * dt 
-            
-            #update forces
-            #log data
-            return pos_x, pos_y, pos_z, ang
+            #new position
+            pos_x = pos_x + vel_x * dt
+            pos_y = pos_y + vel_y * dt 
+            pos_z = pos_z + vel_z * dt
+            ang_pos_x = ang_pos_x + rot_x * dt
+            ang_pos_y = ang_pos_y + rot_y * dt
+            ang_pos_z = ang_pos_z + rot_z * dt 
+           
+            return pos_x, pos_y, pos_z, ang_pos_x, ang_pos_y, ang_pos_z
+        
