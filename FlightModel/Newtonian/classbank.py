@@ -20,7 +20,7 @@ init_time = time.time()
 class SCobj_ForcePoint():
     def __init__(self, forces, moments, mass, inertia, position, rotation):
         #Functions
-        self.forces_func = forces
+        self.forces_func = forces  # [0,0,0]
         print(type(self.forces_func))
         self.moments_func = moments
         self.mass_func = mass
@@ -92,7 +92,7 @@ class SCobj_ForcePoint():
         self.moments = self.rotation_mat @ self.moments_local
         self.inertia = self.rotation_mat @ self.inertia_local @ self.rotation_mat.T
         
-class SCobj_BodyState(): # linking local coordinate system to global UNUSED  
+#class SCobj_BodyState(): # linking local coordinate system to global UNUSED  
     def __init__(self, x, y, z, theta, phi, psi):
         self.x = x 
         self.y = y 
@@ -161,6 +161,7 @@ class SCobj_Aircraft():
             moments = np.add(moments, moments_pt)
         return moments
     
+
     def UpdatePoints(self, update_variables =  [[[0],[0],[0]],
                                                 [[0],[0],[0]],
                                                 [0],          

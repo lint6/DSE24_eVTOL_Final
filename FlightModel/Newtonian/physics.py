@@ -90,6 +90,10 @@ def SCfunc_FlightSimulation(Run=True, dt=0.1):
             ang_pos_x = ang_pos_x + rot_x * dt
             ang_pos_y = ang_pos_y + rot_y * dt
             ang_pos_z = ang_pos_z + rot_z * dt 
+
+            # side slip angle
+            # angtle of atack -- geomatry how force functino, hiahdfbvjkadbfjkhadbfv
+
            
             return pos_x, pos_y, pos_z, ang_pos_x, ang_pos_y, ang_pos_z
         
