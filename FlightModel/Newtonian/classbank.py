@@ -21,35 +21,42 @@ class SCobj_ForcePoint():
     def __init__(self, forces, moments, mass, inertia, position, rotation):
         #Functions
         self.forces_func = forces
+        print(type(self.forces_func))
         self.moments_func = moments
         self.mass_func = mass
         self.inertia_func = inertia
         self.position_func = position
         self.rotation_func = rotation
         #Values
-        self.forces = self.forces_func
+        self.forces = [0,0,0]
         self.moments = self.moments_func
         self.mass = self.mass_func
         self.inertia = self.inertia_func
         self.position = self.position_func
         self.rotation = self.rotation_func
         self.Update()
+        ''' IMPORTANT'''
+        ''' All force and moments stored in this class is already rotated to be in the body frame
+            !!positions and rotation are in body frame!!'''
 
     def Update(self, #variables to update, one element for each term. 
-               u_forces =[[0],[0],[0]], 
-               u_moments=[[0],[0],[0]],
-               u_mass   =[0],
-               u_inertia=[[0,0,0],
-                          [0,0,0],
-                          [0,0,0]],
-               u_position=[[0],[0],[0]],
-               u_rotation=[[0],[0],[0]]):
-        
+               u_forces   = [[0],[0],[0]],  #VARIABLES ONLY IF THE FORCE IS GIVEN BY A FUNCTION
+               u_moments  = [[0],[0],[0]],  
+               u_mass     =  [0],            
+               u_inertia  = [[0,0,0],       
+                             [0,0,0],       
+                             [0,0,0]],      
+               u_position = [[0],[0],[0]], 
+               u_rotation = [[0],[0],[0]]):
+
         function_def = type(lambda x: x) #telling Python what a lambda function is so we can do conditions later
-        
         for i in range(len(self.forces_func)): #update force base on functions
+            print(self.forces_func[i])
+            print(type(self.forces_func[i]))
+            print('force func in update')
             if type(self.forces_func[i]) == function_def:
                 self.forces[i] = float(self.forces_func[i](np.array(u_forces[i])))
+                print(self.forces_func[i])
         self.forces_local = np.array(self.forces)
 
         for i in range(len(self.moments_func)): #update moments base on functions
@@ -109,8 +116,17 @@ class SCobj_Aircraft():
         self.points = points #list of ForcePoint objects
         self.position = np.array(position) #position of the aircraft in global space
         self.rotation = np.array(rotation) #rotation of the aircraft in global space
+        self.mass = self.Mass() #total mass of all points attached to the aircraft
+        self.cog = self.COG() #location of center of gravity, in body frame
+        self.forces_body = self.Forces()
+        self.moments_body = self.Moments()
+        self.mass = self.Mass()
+        self.inertia_body = self.Inertia()
         self.UpdatePoints()
-
+        ''' IMPORTANT'''
+        ''' All force and moments stored in this class is already rotated to be in the earth frame
+            !!positions and rotation are in earth frame!!'''
+        
     def Mass(self): #total mass of all points
         mass = 0
         for i in range(len(self.points)):
@@ -145,9 +161,21 @@ class SCobj_Aircraft():
             moments = np.add(moments, moments_pt)
         return moments
     
-    def UpdatePoints(self, update_variables = []):
+    def UpdatePoints(self, update_variables =  [[[0],[0],[0]],
+                                                [[0],[0],[0]],
+                                                [0],          
+                                                [[0,0,0],     
+                                                 [0,0,0],     
+                                                 [0,0,0]],    
+                                                [[0],[0],[0]],
+                                                [[0],[0],[0]]]):
         for i in range(len(self.points)):
-            self.points[i].Update(u_forces=update_variables[0])
+            self.points[i].Update(u_forces   = update_variables[0],
+                                  u_moments  = update_variables[1],
+                                  u_mass     = update_variables[2],
+                                  u_inertia  = update_variables[3],
+                                  u_position = update_variables[4],
+                                  u_rotation = update_variables[5])
             
         self.mass = self.Mass() #total mass of all points attached to the aircraft
         self.cog = self.COG() #location of center of gravity, in body frame
