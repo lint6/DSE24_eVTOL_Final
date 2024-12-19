@@ -15,6 +15,7 @@ All
 '''
 import time
 import numpy as np
+import numpy.linalg
 from misc import *
 init_time = time.time()
 class SCobj_ForcePoint():
@@ -27,12 +28,12 @@ class SCobj_ForcePoint():
         self.position_func = position
         self.rotation_func = rotation
         #Values
-        self.forces = np.copy(forces)
-        self.moments = np.copy(moments)
-        self.mass = np.copy(mass)
-        self.inertia = np.copy(inertia)
-        self.position = np.copy(position)
-        self.rotation = np.copy(rotation)
+        self.forces = forces*1
+        self.moments = moments*1
+        self.mass = mass*1
+        self.inertia = inertia*1
+        self.position = position*1
+        self.rotation = rotation*1
         self.Update()
         ''' IMPORTANT'''
         ''' All force and moments stored in this class is already rotated to be in the body frame
@@ -50,13 +51,9 @@ class SCobj_ForcePoint():
 
         function_def = type(lambda x: x) #telling Python what a lambda function is so we can do conditions later
         for i in range(len(self.forces_func)): #update force base on functions
-            print(self.forces_func[i])
-            print(type(self.forces_func[i]))
-            print('force func in update')
             if type(self.forces_func[i]) == function_def:
                 self.forces[i] = float(self.forces_func[i](np.array(u_forces[i])))
         self.forces_local = np.array(self.forces)
-        print(self.forces_local)
 
         for i in range(len(self.moments_func)): #update moments base on functions
             if type(self.moments_func[i]) == function_def:
@@ -158,11 +155,7 @@ class SCobj_Aircraft():
     def Moments(self):
         moments = np.array([0,0,0])
         for i in range(len(self.points)):
-            print(type(self.points[i].forces[0]))
-            print(type(self.points[i].forces[1]))
-            print(type(self.points[i].forces[2]))
-            np.cross((self.points[i].position + self.cog), self.points[i].forces)
-            moments_pt = np.add(self.points[i].moments, np.cross((self.points[i].position + self.cog), self.points[i].forces))
+            moments_pt = np.add(self.points[i].moments, np.cross(self.points[i].position + self.cog, self.points[i].forces))
             moments = np.add(moments, moments_pt)
         return moments
     

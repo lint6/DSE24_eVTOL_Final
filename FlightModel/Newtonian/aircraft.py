@@ -35,7 +35,7 @@ def SCfunc_UpdateAssembly(u_forces   = [[0],[0],[0]],
 
 def SCfunc_PointGeneration(): #Returns a list of points with ForcePoint class, modify this function to add or remove points from the aicraft
     '''Points'''
-    example_point = SCobj_ForcePoint(forces   = [0,10,ExampleFunction(50)], #[N, WITHOUT gravitational froce]
+    example_point = SCobj_ForcePoint(forces   = [0,10,ExampleFunction(3)], #[N, WITHOUT gravitational froce]
                                      moments  = [0,0,0],   #[N*m]
                                      mass     =  10,       #[kg] 
                                      inertia  =[[0,0,0],   # [....]
@@ -53,4 +53,7 @@ aircraft = SCobj_Aircraft(points=SCfunc_PointGeneration(), position=[0,0,0], rot
 print(aircraft.forces)
 print('---------Updating Points------------')
 aircraft.UpdatePoints(update_variables=SCfunc_UpdateAssembly(u_forces=[[0],[0],[2]]))
+print(aircraft.forces)
+print('---------Updating Points------------')
+aircraft.UpdatePoints(update_variables=SCfunc_UpdateAssembly(u_forces=[[0],[0],[5]]))
 print(aircraft.forces)
