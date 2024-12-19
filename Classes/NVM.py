@@ -58,18 +58,6 @@ class NVM:
         sigma = (max_Mx * y)/self.I - (max_My * x) / (Iyy * (0.001)**4)
         print(sigma/10**6)
         return sigma
-    
-    ###         CONFIG 1  (H-beam)      ###
-    # Top Box: 170 x 10 (width x thickness)
-    # Web: 180 x 10 (height x thickness)
-    # Lower Box: 170 x 10 (width x thickness)
-
-    def config1_top_box(self):
-        
-
-
-
-
 
 
     ###     PLOTTING    ###
