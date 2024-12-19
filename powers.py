@@ -104,6 +104,7 @@ class Performance:
 
             r_thurst = (self.n_bl * (r_R**2) * c_R * cl) / (2 * np.pi)
             running_thrust.append(r_thurst)
+            
 
             # Calculate local torques
             r_torque_profile = (self.n_bl * (r_R**3) * c_R * cd) / (2 * np.pi)
@@ -132,6 +133,8 @@ class Performance:
 
     
         total_c_t = sum(running_thrust) * dr  # Numerical integration thrust
+        #tip_loss_factor = 1 - np.sqrt(2*total_c_t) / self.n_bl
+        tip_loss_factor = 1- 0.06/self.n_bl
         total_c_q_p = sum(running_torque_profile) * dr  # Numerical integration profile torque
         total_c_q_i = sum(running_torque_induced) * dr   # Numerical integration induced torque
         total_c_q = total_c_q_p + total_c_q_i
@@ -144,16 +147,16 @@ class Performance:
         DL = total_c_t * self.rho * self.V_tip**2
 
 
-        return r_over_R, running_thrust, total_c_t, total_thrust, total_power, DL
+        return r_over_R, running_thrust, total_c_t, total_thrust, total_power, DL, tip_loss_factor
     
 # run file
 if __name__ == "__main__":
     # Initialize the Performance instance
     perf = Performance(
-        mtow=709,          # Maximum takeoff weight [kg]
-        n_bl=4,            # Number of blades
-        R=5,               # Rotor radius [m]
-        chord=0.2,         # Chord length [m]
+        mtow=718.89,          # Maximum takeoff weight [kg]
+        n_bl=3,            # Number of blades
+        R=2.01,               # Rotor radius [m]
+        chord=0.127,         # Chord length [m]
         V_tip=167.64,      # Tip speed [m/s]
         n_elements=10,       # Number of blade elements
         a_airfoil=5.73,     # Lift curve slope	[1/rad]
@@ -161,10 +164,10 @@ if __name__ == "__main__":
     )
 
     # Call the power_hover method
-    r_over_R, running_thrust, total_c_t, total_thrust, total_power, DL = perf.power_hover()
+    r_over_R, running_thrust, total_c_t, total_thrust, total_power, DL, tip_loss_factor = perf.power_hover()
 
     #print(r_over_R, running_thrust)
-    print(total_c_t, total_thrust, total_power, DL)
+    print(total_c_t, total_thrust, total_power, DL, tip_loss_factor)
     #Plot the results
     # plt.figure()
     # plt.plot(r_over_R, running_thrust, marker='o')
