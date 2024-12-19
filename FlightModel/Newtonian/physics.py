@@ -72,17 +72,17 @@ def SCfunc_FlightSimulation(Run=True, dt=0.1):
             vel_x = aircraft.vel_x + lat_acc_x * dt
             vel_y = aircraft.vel_y + lat_acc_y * dt
             vel_z = aircraft.vel_z + lat_acc_z * dt 
-            rot_x = 0
-            rot_y = 0
-            rot_z = 0
+            rot_x = aircraft.rot_vel_x + ang_acc_x * dt 
+            rot_y = aircraft.rot_vel_y + ang_acc_y * dt 
+            rot_z = aircraft.rot_vel_z + ang_acc_z * dt 
             
             #get position
             pos_x += vel_x * dt
             pos_y += vel_y * dt 
             pos_z += vel_z * dt
-            ang_x = 0
-            ang_y = 0
-            ang_z = 0
+            ang_pos_x += rot_x * dt
+            ang_pos_y += rot_y * dt
+            ang_pos_z += rot_z * dt 
             
             #update forces
             #log data
