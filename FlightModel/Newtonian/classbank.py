@@ -21,19 +21,18 @@ class SCobj_ForcePoint():
     def __init__(self, forces, moments, mass, inertia, position, rotation):
         #Functions
         self.forces_func = forces  # [0,0,0]
-        print(type(self.forces_func))
         self.moments_func = moments
         self.mass_func = mass
         self.inertia_func = inertia
         self.position_func = position
         self.rotation_func = rotation
         #Values
-        self.forces = [0,0,0]
-        self.moments = self.moments_func
-        self.mass = self.mass_func
-        self.inertia = self.inertia_func
-        self.position = self.position_func
-        self.rotation = self.rotation_func
+        self.forces = np.copy(forces)
+        self.moments = np.copy(moments)
+        self.mass = np.copy(mass)
+        self.inertia = np.copy(inertia)
+        self.position = np.copy(position)
+        self.rotation = np.copy(rotation)
         self.Update()
         ''' IMPORTANT'''
         ''' All force and moments stored in this class is already rotated to be in the body frame
@@ -56,8 +55,8 @@ class SCobj_ForcePoint():
             print('force func in update')
             if type(self.forces_func[i]) == function_def:
                 self.forces[i] = float(self.forces_func[i](np.array(u_forces[i])))
-                print(self.forces_func[i])
         self.forces_local = np.array(self.forces)
+        print(self.forces_local)
 
         for i in range(len(self.moments_func)): #update moments base on functions
             if type(self.moments_func[i]) == function_def:
@@ -91,8 +90,9 @@ class SCobj_ForcePoint():
         self.forces  = self.rotation_mat @ self.forces_local
         self.moments = self.rotation_mat @ self.moments_local
         self.inertia = self.rotation_mat @ self.inertia_local @ self.rotation_mat.T
-        
-#class SCobj_BodyState(): # linking local coordinate system to global UNUSED  
+
+'''
+# class SCobj_BodyState(): # linking local coordinate system to global UNUSED  
     def __init__(self, x, y, z, theta, phi, psi):
         self.x = x 
         self.y = y 
@@ -110,7 +110,8 @@ class SCobj_ForcePoint():
         self.euler_angle_array = np.array([self.theta, self.phi, self.psi])
         self.state_array = np.array([self.x, self.y, self.z, self.theta, self.phi, self.psi ])
         return self.pos_array, self.euler_angle_array, self.state_array
-    
+'''   
+
 class SCobj_Aircraft():
     def __init__(self, points, position, rotation):
         self.points = points #list of ForcePoint objects
@@ -157,7 +158,11 @@ class SCobj_Aircraft():
     def Moments(self):
         moments = np.array([0,0,0])
         for i in range(len(self.points)):
-            moments_pt = np.add(self.points[i].moments, np.cross(self.points[i].position + self.cog, self.points[i].forces))
+            print(type(self.points[i].forces[0]))
+            print(type(self.points[i].forces[1]))
+            print(type(self.points[i].forces[2]))
+            np.cross((self.points[i].position + self.cog), self.points[i].forces)
+            moments_pt = np.add(self.points[i].moments, np.cross((self.points[i].position + self.cog), self.points[i].forces))
             moments = np.add(moments, moments_pt)
         return moments
     

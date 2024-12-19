@@ -35,15 +35,15 @@ def SCfunc_UpdateAssembly(u_forces   = [[0],[0],[0]],
 
 def SCfunc_PointGeneration(): #Returns a list of points with ForcePoint class, modify this function to add or remove points from the aicraft
     '''Points'''
-    example_point = SCobj_ForcePoint(forces   = [0,0,ExampleFunction(50)], #[N, WITHOUT gravitational froce]
-                                     moments  = [0,0,0], #[N*m]
-                                     mass     =  10, #[kg] 
-                                     inertia  =[[0,0,0], # [....]
+    example_point = SCobj_ForcePoint(forces   = [0,10,ExampleFunction(50)], #[N, WITHOUT gravitational froce]
+                                     moments  = [0,0,0],   #[N*m]
+                                     mass     =  10,       #[kg] 
+                                     inertia  =[[0,0,0],   # [....]
                                                 [0,0,0],
                                                 [0,0,0]],
-                                     position = [0,0,0], # [m from the body axis origin ]
-                                     rotation = [0,0,0],) # euler angle degrees 
-    print(example_point.forces_func)
+                                     position = [0,0,0],   # [m from the body axis origin ]
+                                     rotation = [0,0,0],)  # euler angle degrees 
+
     '''Collect Points'''
     points = [example_point]
     return points
