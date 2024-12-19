@@ -3,7 +3,7 @@ import numpy as np
 class AirfoilData:
     def __init__(self):
         # Define the filename
-        self.filename = r'C:\\Users\\Jan\\Documents\\GitHub\\DSE24_eVTOL_Final\\Aero\\xf-n0012-il-500000.csv'
+        self.filename = r'/Users/florenspetersen/Documents/GitHub/DSE24_eVTOL_Final/Aero/xf-n0012-il-500000.csv'
         
         # Initialize lists to store the data
         self.alpha = []
@@ -39,7 +39,8 @@ class AirfoilData:
                             self.bot_xtr.append(float(parts[6]))
                         except ValueError:
                             # If there's a non-numeric value, handle it (e.g., skip that line)
-                            print(f"Skipping invalid line: {line}")
+                            #print(f"Skipping invalid line: {line}")
+                            pass
         except FileNotFoundError:
             print(f"Error: The file {self.filename} was not found.")
 
