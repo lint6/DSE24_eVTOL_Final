@@ -42,18 +42,30 @@ def SCfunc_PointGeneration(): #Returns a list of points with ForcePoint class, m
                                                 [0,0,0],
                                                 [0,0,0]],
                                      position = [0,0,0],   # [m from the body axis origin ]
+                                     rotation = [0,20,0],)  # euler angle degrees 
+    
+    example_point2 = SCobj_ForcePoint(forces  = [0,10,ExampleFunction(3)], #[N, WITHOUT gravitational froce]
+                                     moments  = [0,0,0],   #[N*m]
+                                     mass     =  10,       #[kg] 
+                                     inertia  =[[0,0,0],   # [....]
+                                                [0,0,0],
+                                                [0,0,0]],
+                                     position = [0,0,0],   # [m from the body axis origin ]
                                      rotation = [0,0,0],)  # euler angle degrees 
 
     '''Collect Points'''
-    points = [example_point]
+    points = [example_point, example_point2]
     return points
-    
     
 aircraft = SCobj_Aircraft(points=SCfunc_PointGeneration(), position=[0,0,0], rotation=[0,0,0])
 print(aircraft.forces)
 print('---------Updating Points------------')
-aircraft.UpdatePoints(update_variables=SCfunc_UpdateAssembly(u_forces=[[0],[0],[2]]))
+updates = [SCfunc_UpdateAssembly(u_forces=[[0],[0],[2]]), 
+           SCfunc_UpdateAssembly(u_forces=[[0],[0],[5]])]
+aircraft.UpdatePoints(update_variables=updates)
 print(aircraft.forces)
 print('---------Updating Points------------')
-aircraft.UpdatePoints(update_variables=SCfunc_UpdateAssembly(u_forces=[[0],[0],[5]]))
+updates = [SCfunc_UpdateAssembly(u_forces=[[0],[0],[4]]), 
+           SCfunc_UpdateAssembly(u_forces=[[0],[0],[8]])]
+aircraft.UpdatePoints(update_variables=updates)
 print(aircraft.forces)

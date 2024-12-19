@@ -13,11 +13,9 @@ Downstream
 All
 
 '''
-import time
 import numpy as np
-import numpy.linalg
 from misc import *
-init_time = time.time()
+
 class SCobj_ForcePoint():
     def __init__(self, forces, moments, mass, inertia, position, rotation):
         #Functions
@@ -34,6 +32,9 @@ class SCobj_ForcePoint():
         self.inertia = inertia*1
         self.position = position*1
         self.rotation = rotation*1
+        #rotation matrices
+        self.rotation_mat = SCfunc_EulerRotation([0,0,0], self.rotation)[1]
+        self.rotation_mat_inv = SCfunc_EulerRotation([0,0,0], self.rotation)[2]
         self.Update()
         ''' IMPORTANT'''
         ''' All force and moments stored in this class is already rotated to be in the body frame
@@ -120,6 +121,8 @@ class SCobj_Aircraft():
         self.moments_body = self.Moments()
         self.mass = self.Mass()
         self.inertia_body = self.Inertia()
+        self.rotation_mat = SCfunc_EulerRotation([0,0,0], self.rotation)[1]
+        self.rotation_mat_inv = SCfunc_EulerRotation([0,0,0], self.rotation)[2]
         self.UpdatePoints()
         ''' IMPORTANT'''
         ''' All force and moments stored in this class is already rotated to be in the earth frame
@@ -160,21 +163,28 @@ class SCobj_Aircraft():
         return moments
     
 
-    def UpdatePoints(self, update_variables =  [[[0],[0],[0]],
-                                                [[0],[0],[0]],
-                                                [0],          
-                                                [[0,0,0],     
-                                                 [0,0,0],     
-                                                 [0,0,0]],    
-                                                [[0],[0],[0]],
-                                                [[0],[0],[0]]]):
-        for i in range(len(self.points)):
-            self.points[i].Update(u_forces   = update_variables[0],
-                                  u_moments  = update_variables[1],
-                                  u_mass     = update_variables[2],
-                                  u_inertia  = update_variables[3],
-                                  u_position = update_variables[4],
-                                  u_rotation = update_variables[5])
+    def UpdatePoints(self, update_variables=None):
+        '''
+        Notes about the update_variables list
+        The update_variables are are list of the full set of variables to update, 
+        see aircraft.SCfunc_UpdateAssembly() for the structure of one entry.
+        even if there is nothing to update generate a empty list so the loop doesnt break
+        '''
+        if update_variables:
+            for i in range(len(self.points)):
+                update_variables_rot = update_variables[i]
+                for j in range(len(update_variables_rot)):
+                    if np.array(update_variables_rot[j]).size == 3:
+                        update_variables_rot[j] = self.points[i].rotation_mat_inv @ update_variables_rot[j]
+                    if np.array(update_variables_rot[j]).size == 9:
+                        update_variables_rot[j] = self.points[i].rotation_mat_inv @ update_variables_rot[j] @ self.points[i].rotation_mat_inv.T
+                        
+                self.points[i].Update(u_forces   = update_variables_rot[0],
+                                    u_moments  = update_variables_rot[1],
+                                    u_mass     = update_variables_rot[2],
+                                    u_inertia  = update_variables_rot[3],
+                                    u_position = update_variables_rot[4],
+                                    u_rotation = update_variables_rot[5])
             
         self.mass = self.Mass() #total mass of all points attached to the aircraft
         self.cog = self.COG() #location of center of gravity, in body frame
