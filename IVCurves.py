@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+#Code written by Jorrit
 #This class focuses on drawing the i-v, i-p, and i-q curves for a user-specified stack pressure (1.0,1.25,1.5,2.0,2.5 atm) 
 #It assumes a stack operating temperature of 80 degrees Celsius. 
 #The values for modeling the losses are taken from Table 9 of the Datta PEMFC paper
@@ -94,6 +95,18 @@ class IVCurves:
 
         #Calculate heat [W/cm^2]
         self.q = self.i * (self.E_h - self.v)
+
+        # #For testing, just use one point for now:
+        # self.p_max = max(self.p)
+        # index = 0
+        # for i in range(len(self.p)):
+        #     if self.p[i] == self.p_max:
+        #         index = i
+        
+        # self.v = self.v[index]
+        # self.p = self.p[index]
+        # self.q = self.q[index]
+        # print(f"The current design point is {self.v} V, {self.p} W/cm^2 power, and {self.q} W/cm^2 heat")
 
 
     def PlotCurves(self):

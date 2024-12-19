@@ -2,7 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from IVCurves import IVCurves
 
-#Class explanation goes here
+#Code written by Jorrit
+#This class is used to calculate some general cell parameters and the required mass flows. 
 
 class CellParameters():
     def __init__(self,IVCurves,P_D=96000,V_D=840, p_s_drop=30000):
@@ -67,11 +68,17 @@ class CellParameters():
                 self.water_liquid_flow.append(self.water_flow[i]-self.water_vapour_flow[i])
                 # print(f"A cathode humidifier is not required")
 
+        #Testing stuff
+        print(f"Hydrogen mass flow is {np.mean(self.H2_flow)} kg/s")
+        print(f"Oxygen mass flow is {np.mean(self.O2_flow)} kg/s")
+        print(f"Air in mass flow is {np.mean(self.air_in_flow)} kg/s")
+        print(f"Air out mass flow is {np.mean(self.air_out_flow)} kg/s")
+        print(f"Water mass flow is {np.mean(self.water_flow)} kg/s")
+
         
 #Just here for intermediate testing, move to UI later
 # inputIV = IVCurves(p_s=2.5)
 # Cell = CellParameters(IVCurves=inputIV)
-# Cell.MassFlows()
 
 
         
