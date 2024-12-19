@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from Aero.airfoil import AirfoilData
+from scipy.integrate import quad
 
 class Performance:
 
@@ -50,9 +51,15 @@ class Performance:
         aoa = []
         cl_local = []
         cd_local = []
+        #ct_noloss = []
+        #ct_final = []
+        running_thrust = []
+        running_torque_profile = []
+        running_torque_induced = []
 
         # Calculate segment size
         segment_size = self.R / self.n_elements
+        dr = segment_size / self.R              # Normalized segment length
 
         # Loop through each segment and calculate values
         for i in range(self.n_elements):
@@ -95,9 +102,49 @@ class Performance:
             cd = self.airfoil_data.interpolate_cl_cd(alpha)[1]
             cd_local.append(cd)
 
-            thrust_loading = (self.n_bl*(r_R**2)*c_R*cl) / (2*np.pi)
+            r_thurst = (self.n_bl * (r_R**2) * c_R * cl) / (2 * np.pi)
+            running_thrust.append(r_thurst)
 
-        return r_over_R, c_over_R, M, pitch, aoa, cl_local, cd_local
+            # Calculate local torques
+            r_torque_profile = (self.n_bl * (r_R**3) * c_R * cd) / (2 * np.pi)
+            running_torque_profile.append(r_torque_profile)
+            r_torque_induced = (self.n_bl * (r_R**3) * c_R * cl * inflow_angle) / (2 * np.pi)
+            running_torque_induced.append(r_torque_induced)
+    
+
+            #SOMETHING IS WRONG FROM NOW ON
+            # maybe i should just be adding all ct's at the end, instead of integrating?
+
+            # Define thrust loading function inside the loop
+            # thrust_loading = lambda r_R: (self.n_bl * (r_R**2) * c_R * cl) / (2 * np.pi)
+
+            # # Integrate thrust loading over the blade segment using `quad`
+            # t_noloss, error = quad(thrust_loading, 0.15, 1) # assume blade starts at 15% radius
+            # ct_noloss.append(t_noloss)
+
+            # # Calculate tip loss factor
+            # B = 1 - np.sqrt(2*t_noloss)/self.n_bl
+
+            # # Calculate corrected thrust coefficient
+            # t_loss, error = quad(thrust_loading, B, 1)
+            # ct = t_noloss - t_loss
+            # ct_final.append(ct)
+
+    
+        total_c_t = sum(running_thrust) * dr  # Numerical integration thrust
+        total_c_q_p = sum(running_torque_profile) * dr  # Numerical integration profile torque
+        total_c_q_i = sum(running_torque_induced) * dr   # Numerical integration induced torque
+        total_c_q = total_c_q_p + total_c_q_i
+
+            # Convert total thrust coefficient to physical thrust
+        rotor_area = np.pi * self.R**2
+        total_thrust = total_c_t * self.rho * rotor_area * self.V_tip**2
+        total_power = total_c_q * self.rho * rotor_area * self.V_tip**3
+
+        DL = total_c_t * self.rho * self.V_tip**2
+
+
+        return r_over_R, running_thrust, total_c_t, total_thrust, total_power, DL
     
 # run file
 if __name__ == "__main__":
@@ -105,15 +152,25 @@ if __name__ == "__main__":
     perf = Performance(
         mtow=709,          # Maximum takeoff weight [kg]
         n_bl=4,            # Number of blades
-        R=3,               # Rotor radius [m]
+        R=5,               # Rotor radius [m]
         chord=0.2,         # Chord length [m]
         V_tip=167.64,      # Tip speed [m/s]
-        n_elements=5,       # Number of blade elements
+        n_elements=10,       # Number of blade elements
         a_airfoil=5.73,     # Lift curve slope	[1/rad]
-        pitch_tip=6         # Collective pitch angle [deg]
+        pitch_tip=8         # Collective pitch angle [deg]
     )
 
     # Call the power_hover method
-    r_over_R, c_over_R, M, pitch, aoa, cl_local, cd_local = perf.power_hover()
-    print(aoa, cl_local)
+    r_over_R, running_thrust, total_c_t, total_thrust, total_power, DL = perf.power_hover()
+
+    #print(r_over_R, running_thrust)
+    print(total_c_t, total_thrust, total_power, DL)
+    #Plot the results
+    # plt.figure()
+    # plt.plot(r_over_R, running_thrust, marker='o')
+    # plt.xlabel("r/R")
+    # plt.ylabel("Thrust")
+    # plt.title("Thrust Distribution in Hover")
+    # plt.grid()
+    # plt.show()
 
