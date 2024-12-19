@@ -97,3 +97,26 @@ def SCfunc_FlightSimulation(Run=True, dt=0.1):
            
             return pos_x, pos_y, pos_z, ang_pos_x, ang_pos_y, ang_pos_z
         
+
+def ExampleFunction(Constant): #the input modify the function that is to be returned
+    return lambda variable: variable*Constant #Return a function that can be stored in a variable
+
+
+#x = [u,w] should have u and w in the x list
+def SCfunc_parameter_velo():
+    return lambda x : np.sqrt(x[0]**2 + x[1]**2)
+
+#x = [u,w,theta]
+def SCfunc_parameter_alpha_attack():
+    return lambda x : x[2] - np.arctan(x[1]/x[0])
+
+var = SCfunc_parameter_velo()
+var1 = 
+#x = [var(x),omega, ]
+def SCfun_parameter_Mu():
+    return 
+
+def SCfun_parameter_llambda():
+    return 
+
+def 
