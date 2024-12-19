@@ -34,7 +34,7 @@ def SCfunc_PointGeneration():
                                      position = [0,0,0],
                                      rotation = [0,0,0],)
     
-    '''Aircraft'''
+    '''Collect Points'''
     points = [example_point]
     return points
     
