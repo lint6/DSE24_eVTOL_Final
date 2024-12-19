@@ -102,21 +102,21 @@ def ExampleFunction(Constant): #the input modify the function that is to be retu
     return lambda variable: variable*Constant #Return a function that can be stored in a variable
 
 
-#x = [u,w] should have u and w in the x list
+#x = [u,w, theta, R, omega] should have u and w in the x list
 def SCfunc_parameter_velo():
     return lambda x : np.sqrt(x[0]**2 + x[1]**2)
 
-#x = [u,w,theta]
 def SCfunc_parameter_alpha_attack():
     return lambda x : x[2] - np.arctan(x[1]/x[0])
 
 var = SCfunc_parameter_velo()
-var1 = 
-#x = [var(x),omega, ]
+var1 = SCfunc_parameter_alpha_attack()
+
+# x.append(var)
+# x.append(var1)
+# x = [u,w,theta, R, omega, var(x), var1(x)]
 def SCfun_parameter_Mu():
-    return 
+    return lambda x : x[5]/(x[4]*x[3]) * np.cos(x[6])
 
-def SCfun_parameter_llambda():
-    return 
-
-def 
+def SCfun_parameter_llambda_c():
+    return  lambda x : x[5]/(x[4]*x[3]) * np.sin(x[6])
