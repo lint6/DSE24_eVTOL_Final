@@ -228,7 +228,7 @@ class RotorSizing:
         rotor_radius = []
         for dl in disc_loading:
             self.iterate_design(new_disc_loading=dl)
-            rotor_radius.append(self.rotor_radius)
+            rotor_radius.append(self.rotor_radius)  
         plt.figure(figsize=(10, 6))
         plt.plot(disc_loading, rotor_radius, marker='o', label='Rotor Radius')
         plt.title('Effect of Disc Loading on Rotor Radius')
@@ -267,6 +267,22 @@ class RotorSizing:
         plt.grid(True)
         plt.legend()
         plt.show()
+    
+    def RPM_vs_disc_loading(self):
+        disc_loading = np.arange(1, 50, 1)
+        RPMs = []
+        for dl in disc_loading:
+            self.iterate_design(new_disc_loading=dl)
+            RPMs.append(self.RPM)
+        plt.figure(figsize=(10, 6))
+        plt.plot(disc_loading, RPMs, marker='o', label='RPM')
+        plt.title('Effect of Disc Loading on RPM')
+        plt.xlabel('Disc Loading [kg/m^2]')
+        plt.ylabel('RPM')
+        plt.grid(True)
+        plt.legend()
+        plt.show()
+
 
 if __name__ == "__main__":
      RotorSize = RotorSizing()
@@ -276,3 +292,5 @@ if __name__ == "__main__":
      RotorSize.disc_loading_vs_radius()
      RotorSize.disc_loading_vs_aspect_ratios()
      RotorSize.MTOW_vs_radius()
+     RotorSize.RPM_vs_disc_loading() 
+     RotorSize.display_parameters()
