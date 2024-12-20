@@ -69,11 +69,11 @@ class CellParameters():
                 # print(f"A cathode humidifier is not required")
 
         #Testing stuff
-        print(f"Hydrogen mass flow is {np.mean(self.H2_flow)} kg/s")
-        print(f"Oxygen mass flow is {np.mean(self.O2_flow)} kg/s")
-        print(f"Air in mass flow is {np.mean(self.air_in_flow)} kg/s")
-        print(f"Air out mass flow is {np.mean(self.air_out_flow)} kg/s")
-        print(f"Water mass flow is {np.mean(self.water_flow)} kg/s")
+        # print(f"Hydrogen mass flow is {np.mean(self.H2_flow)} kg/s")
+        # print(f"Oxygen mass flow is {np.mean(self.O2_flow)} kg/s")
+        # print(f"Air in mass flow is {np.mean(self.air_in_flow)} kg/s")
+        # print(f"Air out mass flow is {np.mean(self.air_out_flow)} kg/s")
+        # print(f"Water mass flow is {np.mean(self.water_flow)} kg/s")
 
         
 #Just here for intermediate testing, move to UI later

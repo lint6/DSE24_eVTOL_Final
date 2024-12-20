@@ -51,18 +51,18 @@ class BalanceOfPlant:
 
         self.P_air = self.P_comp + self.P_turb
         self.P_air_max = max(self.P_air)
-        print(f"Max CEM power is {self.P_air_max:.2f} W")
+        # print(f"Max CEM power is {self.P_air_max:.2f} W")
 
     def HTCPower(self):
         #Calculate heat to be rejected
 
         #Stack
         self.Q_s = (self.IVCurves.E_h - self.IVCurves.v)*(self.CellParameters.P_D/self.IVCurves.v) #Stack heat [W]
-        print(f"Max stack heat is {self.Q_s[-1]}")
+        # print(f"Max stack heat is {self.Q_s[-1]}")
 
         #Air flow
         self.Q_htc_out = self.C_p_stack*self.air_out_flow*(self.T_s-self.T_ambient) #Heat carried out by air [W]
-        print(f"Heat carried out by air {self.Q_htc_out[-1]}")
+        # print(f"Heat carried out by air {self.Q_htc_out[-1]}")
 
         #Dissipation
         self.f_s = 0.6 #Fraction of stack active area that is exposed, assumed value
@@ -71,7 +71,7 @@ class BalanceOfPlant:
         self.A_s = self.f_s * self.CellParameters.n_c * self.CellParameters.A_c * 1e-4 #Exposed stack area [m^2], 1e-3 for conversion from cm^2
 
         self.Q_htc_d = self.A_s*self.convec_coeff*(self.T_s-self.T_ambient) + self.A_s*self.emissivity_s*self.SB_constant*(self.T_s**4-self.T_ambient**4)
-        print(f"Heat dissipated by stack {self.Q_htc_d[-1]}")
+        # print(f"Heat dissipated by stack {self.Q_htc_d[-1]}")
 
         #Total heat to be rejected [W], if statement to avoid negative values
         self.Q_htc = np.zeros(len(self.Q_htc_d))
@@ -79,7 +79,7 @@ class BalanceOfPlant:
             self.Q_htc[i] = self.Q_s[i] - self.Q_htc_d[i] - self.Q_htc_out[i]  
             if self.Q_htc[i] < 0:
                 self.Q_htc[i] = 0
-        print(f"The heat to be rejected is {self.Q_htc[-1]:.2f} W")
+        # print(f"The heat to be rejected is {self.Q_htc[-1]:.2f} W")
         
         #Calculate required coolant mass flow [kg/s]
         self.C_p_HTC_coolant = 4.18e3 #Specific heat of coolant (assumed to be water) [J/kg-K]
@@ -92,7 +92,7 @@ class BalanceOfPlant:
         self.HTC_rad_emissivity = 0.8 #HTC radiator emissivity
 
         self.HTC_A_r = self.Q_htc/(self.HTC_rad_convec_coeff*(self.HTC_rad_Tr-self.T_ambient)+self.HTC_rad_emissivity*self.SB_constant*(self.HTC_rad_Tr**4-self.T_ambient**4)) #HTC Radiator area [m^2]
-        print(f"HTC Radiator area {self.HTC_A_r[-1]:.2f} m^2")
+        # print(f"HTC Radiator area {self.HTC_A_r[-1]:.2f} m^2")
 
         #Set up coefficients & exponents, from Datta
         self.k_HTCPower = 300
@@ -101,7 +101,7 @@ class BalanceOfPlant:
 
         #Calculate HTC power [W]
         self.P_HTC = self.k_HTCPower*(self.Q_htc**self.e_HTCPower)*(self.HTC_coolant_flow**self.f_HTCPower) 
-        print(f"Max HTC Power is {max(self.P_HTC):.2f} W")
+        # print(f"Max HTC Power is {max(self.P_HTC):.2f} W")
 
 
     def LTCPower(self):
@@ -114,14 +114,14 @@ class BalanceOfPlant:
         for i in range(len(self.Q_ltc)):
             if self.Q_ltc[i] < 0:
                 self.Q_ltc[i] = 0
-        print(f"Mean heat to be rejected {np.mean(self.Q_ltc):.2f} W")
+        # print(f"Mean heat to be rejected {np.mean(self.Q_ltc):.2f} W")
 
         self.C_p_LTC_coolant = 4.18e3 #Specific heat of coolant (assumed to be water) [J/kg-K]
         self.delta_T_LTC_coolant = 10 #Rise in coolant temp as it absorbs heat from air [K], assumed value
 
         #Total heat to be rejected by LTC [W].
         self.LTC_coolant_flow = self.Q_ltc/(self.C_p_LTC_coolant*self.delta_T_LTC_coolant) #Required mass flow of LTC coolant [kg/s]
-        print(f"Mean coolant flow {np.mean(self.LTC_coolant_flow):.2f} kg/s")
+        # print(f"Mean coolant flow {np.mean(self.LTC_coolant_flow):.2f} kg/s")
 
          #Calculate radiator area. 
         self.LTC_rad_convec_coeff = 1015+273.15 #HTC radiator heat transfer coefficient [W/m^2-K]
@@ -129,7 +129,7 @@ class BalanceOfPlant:
         self.LTC_rad_emissivity = 0.8 #HTC radiator emissivity
 
         self.LTC_A_r = self.Q_ltc/(self.LTC_rad_convec_coeff*(self.LTC_rad_Tr-self.T_ambient)+self.LTC_rad_emissivity*self.SB_constant*(self.LTC_rad_Tr**4-self.T_ambient**4)) #LTC Radiator area [m^2]
-        print(f"LTC Radiator area {np.mean(self.LTC_A_r):.2f} m^2")
+        # print(f"LTC Radiator area {np.mean(self.LTC_A_r):.2f} m^2")
 
         #Set up coefficients & exponents, from Datta
         self.k_LTCPower = 300
@@ -138,7 +138,7 @@ class BalanceOfPlant:
 
         #Calculate LTC power [W]
         self.P_LTC = self.k_LTCPower*(self.Q_ltc**self.e_LTCPower)*(self.LTC_coolant_flow**self.f_LTCPower) 
-        print(f"Max LTC Power is {max(self.P_LTC):.2f} W")
+        # print(f"Max LTC Power is {max(self.P_LTC):.2f} W")
     
     def WaterPower(self):
         #Set up coefficients & exponents

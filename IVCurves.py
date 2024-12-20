@@ -23,37 +23,15 @@ class IVCurves:
         self.i_l = [1.75, 1.85, 1.95, 2.25, 2.45] #Limiting current [Ampere / cm^2]
         self.i_leak = [0.15, 0.15, 0.20, 0.25, 0.30] #Leak current [Ampere / cm^2]
         self.C = [0.03, 0.035, 0.035, 0.035, 0.035] #Concentration loss fitting constant [V]
+        self.p = [1.00,1.25,1.50,2.00,2.50] #Corresponding pressures [atm]
         
-        if p_s == 1.0:
-            self.E_r = self.E_r[0]
-            self.alpha_c = self.alpha_c[0]
-            self.i_l = self.i_l[0]
-            self.i_leak = self.i_leak[0]
-            self.C = self.C[0]
-        if p_s == 1.25:
-            self.E_r = self.E_r[1]
-            self.alpha_c = self.alpha_c[1]
-            self.i_l = self.i_l[1]
-            self.i_leak = self.i_leak[1]
-            self.C = self.C[1]
-        if p_s == 1.5:
-            self.E_r = self.E_r[2]
-            self.alpha_c = self.alpha_c[2]
-            self.i_l = self.i_l[2]
-            self.i_leak = self.i_leak[2]
-            self.C = self.C[2]
-        if p_s == 2:
-            self.E_r = self.E_r[3]
-            self.alpha_c = self.alpha_c[3]
-            self.i_l = self.i_l[3]
-            self.i_leak = self.i_leak[3]
-            self.C = self.C[3]
-        if p_s == 2.5:
-            self.E_r = self.E_r[4]
-            self.alpha_c = self.alpha_c[4]
-            self.i_l = self.i_l[4]
-            self.i_leak = self.i_leak[4]
-            self.C = self.C[4]
+        if 1.00 <= p_s <= 2.50:
+            self.E_r = np.interp(p_s,self.p,self.E_r)
+            self.alpha_c = np.interp(p_s,self.p,self.alpha_c)
+            self.i_l = np.interp(p_s,self.p,self.i_l)
+            self.i_leak = np.interp(p_s,self.p,self.i_leak)
+            self.C = np.interp(p_s,self.p,self.C)
+            
         if p_s == 4.0: #Just as a test, data from different PEMFC
             self.E_r = 1.1819
             self.alpha_c = 0.16
@@ -61,9 +39,6 @@ class IVCurves:
             self.i_l = 1.23
             self.i_leak = 0.01
             self.C = 0.12
-
-        else:
-            print(f"Please specify a valid pressure")
         
         #Define max valid current density for model [A/cm^2]
         self.i_maxvalid = self.i_l - self.i_leak

@@ -242,7 +242,7 @@ class CellWeights:
 
 
 
-#Testing
+#Testing (uncomment this is you want total output)
 inputIV = IVCurves(p_s=2.50)
 inputCell = CellParameters(IVCurves=inputIV,P_D=105000,V_D=840)
 BOP = BalanceOfPlant(IVCurves=inputIV,CellParameters=inputCell)
@@ -265,4 +265,3 @@ Weights.TotalWeight()
 Weights.WeightsPieChart()
 Weights.FindDesignPoint()
 Weights.OutputCharacteristics()
-    
