@@ -134,12 +134,12 @@ class HBeamStress:
 # Example usage
 if __name__ == '__main__':
     # Bending moments
-    Mx = 5000  # Nm
+    Mx = 1000  # Nm
     My = 2000  # Nm
 
     # Moments of inertia
-    Ixx = 8.2 * 10**6 * (0.001)**4 # m^4
-    Iyy = 6.5 * 10**6 * (0.001)**4 # m^4
+    Ixx = 3.5573 * 10**-5 # m^4
+    Iyy = 8.2 * 10**-6 # m^4
 
     # I-beam dimensions
     top_box = (0.170, 0.010)  # width x thickness in m
