@@ -108,6 +108,10 @@ class BalanceOfPlant:
         self.C_p_output_comp = ThermoDynamicProperties(T=self.T_output_comp).C_p #Specific heat of air at compressor output, [J/kg-K]
         self.delta_T_output_comp_stack = self.T_output_comp - self.T_s  #Temperature change from compressor output to stack [K]
         self.Q_ltc = self.C_p_output_comp * self.air_in_flow * self.delta_T_output_comp_stack  #Heat to be rejected by LTC system [W]
+        #Avoid negative values
+        for i in range(len(self.Q_ltc)):
+            if self.Q_ltc[i] < 0:
+                self.Q_ltc[i] = 0
         print(f"Mean heat to be rejected {np.mean(self.Q_ltc):.2f} W")
 
         self.C_p_LTC_coolant = 4.18e3 #Specific heat of coolant (assumed to be water) [J/kg-K]
@@ -161,7 +165,7 @@ class BalanceOfPlant:
         labels = ["Air", "HTC", "LTC", "Water", "Electronics"]
         values = [np.median(self.P_air)/self.CellParameters.P_D, np.median(self.P_HTC)/self.CellParameters.P_D, np.median(self.P_LTC)/self.CellParameters.P_D, np.median(self.P_Water)/self.CellParameters.P_D, np.median(self.P_Elec)/self.CellParameters.P_D]
 
-        plt.pie(values, labels=labels)
+        plt.pie(values, labels=labels, autopct='%1.1f%%')
         plt.title("BOP Power Components")
         plt.axis("equal")
         plt.show()
@@ -173,15 +177,15 @@ class BalanceOfPlant:
 
 
 #Just stuff for code checking
-inputIV = IVCurves(p_s=2.50)
+inputIV = IVCurves(p_s=1.00)
 # inputIV.PlotCurves()
-inputCell = CellParameters(IVCurves=inputIV)
-BOP = BalanceOfPlant(IVCurves=inputIV,CellParameters=inputCell)
-BOP.AirPower()
-BOP.HTCPower()
-BOP.LTCPower()
-BOP.WaterPower()
-BOP.ElecPower()
-BOP.BOPPower()
-BOP.BOPPieChart()
+# inputCell = CellParameters(IVCurves=inputIV)
+# BOP = BalanceOfPlant(IVCurves=inputIV,CellParameters=inputCell)
+# BOP.AirPower()
+# BOP.HTCPower()
+# BOP.LTCPower()
+# BOP.WaterPower()
+# BOP.ElecPower()
+# BOP.BOPPower()
+# BOP.BOPPieChart()
 
