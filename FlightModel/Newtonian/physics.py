@@ -16,10 +16,12 @@ Main.py
 '''
 import numpy as np
 import classbank 
+import time
 
 def SCfunc_FlightSimulation(Run=True, dt=0.1):
     if Run:
         print('Warning: Simulation Running')
+        start_time = time.time()
         aircraft = classbank.SCobj_Aircraft()
         #initializing
         mass = sum()
@@ -50,7 +52,9 @@ def SCfunc_FlightSimulation(Run=True, dt=0.1):
         
         while Run:
             '''Exit Conditions'''
-            
+            if time.time() - start_time > 60:
+                Run = False
+                print('Run time reached, simulation exited')
             '''Simulation Loop'''
             #Below is the information we have when we cerate an object using Aircraft
 
