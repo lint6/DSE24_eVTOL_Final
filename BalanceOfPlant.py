@@ -58,17 +58,20 @@ class BalanceOfPlant:
 
         #Stack
         self.Q_s = (self.IVCurves.E_h - self.IVCurves.v)*(self.CellParameters.P_D/self.IVCurves.v) #Stack heat [W]
+        print(f"Max stack heat is {self.Q_s[-1]}")
 
         #Air flow
         self.Q_htc_out = self.C_p_stack*self.air_out_flow*(self.T_s-self.T_ambient) #Heat carried out by air [W]
+        print(f"Heat carried out by air {self.Q_htc_out[-1]}")
 
         #Dissipation
         self.f_s = 0.6 #Fraction of stack active area that is exposed, assumed value
         self.emissivity_s = 0.8 #Stack emissivity, assumed value
         self.convec_coeff = 3 #Overall convection heat transfer coefficient [W/m^2 K], assumed value 
-        self.A_s = self.f_s * self.CellParameters.n_c * self.CellParameters.A_c * 1e-3 #Exposed stack area [m^2], 1e-3 for conversion from cm^2
+        self.A_s = self.f_s * self.CellParameters.n_c * self.CellParameters.A_c * 1e-4 #Exposed stack area [m^2], 1e-3 for conversion from cm^2
 
         self.Q_htc_d = self.A_s*self.convec_coeff*(self.T_s-self.T_ambient) + self.A_s*self.emissivity_s*self.SB_constant*(self.T_s**4-self.T_ambient**4)
+        print(f"Heat dissipated by stack {self.Q_htc_d[-1]}")
 
         #Total heat to be rejected [W], if statement to avoid negative values
         self.Q_htc = np.zeros(len(self.Q_htc_d))
@@ -76,8 +79,7 @@ class BalanceOfPlant:
             self.Q_htc[i] = self.Q_s[i] - self.Q_htc_d[i] - self.Q_htc_out[i]  
             if self.Q_htc[i] < 0:
                 self.Q_htc[i] = 0
-        print(f"The heat to be rejected is {np.mean(self.Q_htc):.2f} W")
-        print(self.Q_htc)
+        print(f"The heat to be rejected is {self.Q_htc[-1]:.2f} W")
         
         #Calculate required coolant mass flow [kg/s]
         self.C_p_HTC_coolant = 4.18e3 #Specific heat of coolant (assumed to be water) [J/kg-K]
@@ -90,7 +92,7 @@ class BalanceOfPlant:
         self.HTC_rad_emissivity = 0.8 #HTC radiator emissivity
 
         self.HTC_A_r = self.Q_htc/(self.HTC_rad_convec_coeff*(self.HTC_rad_Tr-self.T_ambient)+self.HTC_rad_emissivity*self.SB_constant*(self.HTC_rad_Tr**4-self.T_ambient**4)) #HTC Radiator area [m^2]
-        print(f"HTC Radiator area {np.mean(self.HTC_A_r):.2f} m^2")
+        print(f"HTC Radiator area {self.HTC_A_r[-1]:.2f} m^2")
 
         #Set up coefficients & exponents, from Datta
         self.k_HTCPower = 300
@@ -141,12 +143,11 @@ class BalanceOfPlant:
     def WaterPower(self):
         #Set up coefficients & exponents
         self.k_WaterPower = 1e3 #Coefficient to liquid water flow, CHECK THIS VALUE
-        self.e_WaterPower = 1 #Exponent to liquid water flow, from Datta
 
         #Calculate water power [W]
-        self.P_Water = self.k_WaterPower*(max(self.CellParameters.water_liquid_flow)**self.e_WaterPower) #Power to circulate water [W]
+        self.P_Water = self.k_WaterPower*(max(self.CellParameters.water_liquid_flow)) #Power to circulate water [W]
         # print(max(self.CellParameters.water_liquid_flow))
-        print(f"Max water power is {self.P_Water:.2f} W")
+        # print(f"Max water power is {max(self.P_Water):.2f} W")
     
     def ElecPower(self):
         #Set up coefficients & exponents
@@ -154,12 +155,12 @@ class BalanceOfPlant:
         self.e_ElecPower = 1
 
         self.P_Elec = self.k_ElecPower*(self.CellParameters.P_D**self.e_ElecPower)
-        print(f"Electric power is {self.P_Elec:.2f} W")
+        # print(f"Electric power is {self.P_Elec:.2f} W")
     
     def BOPPower(self):
         #Calculate total power required for BOP systems [W]
         self.P_BOP = self.P_air+self.P_HTC+self.P_LTC+self.P_Water+self.P_Elec
-        print(f"Mean BOP power is {np.mean(self.P_BOP):.2f} W, which is {(np.mean(self.P_BOP)/self.CellParameters.P_D)*100:.2f} % of total cell power")
+        # print(f"Mean BOP power is {np.mean(self.P_BOP):.2f} W, which is {(np.mean(self.P_BOP)/self.CellParameters.P_D)*100:.2f} % of total cell power")
     
     def BOPPieChart(self):
         labels = ["Air", "HTC", "LTC", "Water", "Electronics"]
@@ -177,14 +178,14 @@ class BalanceOfPlant:
 
 
 #Just stuff for code checking
-inputIV = IVCurves(p_s=1.00)
+inputIV = IVCurves(p_s=2.50)
 # inputIV.PlotCurves()
-# inputCell = CellParameters(IVCurves=inputIV)
-# BOP = BalanceOfPlant(IVCurves=inputIV,CellParameters=inputCell)
+inputCell = CellParameters(IVCurves=inputIV)
+BOP = BalanceOfPlant(IVCurves=inputIV,CellParameters=inputCell)
 # BOP.AirPower()
 # BOP.HTCPower()
 # BOP.LTCPower()
-# BOP.WaterPower()
+BOP.WaterPower()
 # BOP.ElecPower()
 # BOP.BOPPower()
 # BOP.BOPPieChart()

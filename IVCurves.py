@@ -54,6 +54,14 @@ class IVCurves:
             self.i_l = self.i_l[4]
             self.i_leak = self.i_leak[4]
             self.C = self.C[4]
+        if p_s == 4.0: #Just as a test, data from different PEMFC
+            self.E_r = 1.1819
+            self.alpha_c = 0.16
+            self.ASR = 0.06
+            self.i_l = 1.23
+            self.i_leak = 0.01
+            self.C = 0.12
+
         else:
             print(f"Please specify a valid pressure")
         
