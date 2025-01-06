@@ -21,6 +21,11 @@ class CellWeights:
         self.kappa_stack = 4 #Stack weight design factor [kg/m^2], assumed value (Datta)
         self.W_stack = self.kappa_stack*(self.CellParameters.A_c*1e-4)*self.CellParameters.n_c
         # print(f"Stack weight is {min(self.W_stack)} to {max(self.W_stack)} kg")
+
+        #Calculate stack volume 
+        self.t_cell = 0.001381 #Cell thickness [m] 
+        self.L_stack = self.t_cell * self.CellParameters.n_c #Stack length [m]
+        self.S_stack = self.L_stack * (self.CellParameters.A_c*1e-4) #Stack volume [m^3]
     
     def HydrogenWeight(self):
         self.W_hydrogen = self.CellParameters.H2_flow*self.missiontime #Calculate weight of hydrogen based on hydrogen mass flow and mission time [kg]
@@ -29,6 +34,9 @@ class CellWeights:
     def TankWeight(self):
         self.W_tank = 13.4*self.W_hydrogen + 13.3 #Hydrogen tank weight, based on regression from Powertrain sheet [kg], assumes 700 bar 
         # print(f"Required hydrogen tank weight is {np.median(self.W_tank)} kg") 
+
+        self.S_tank = (24.6*self.W_hydrogen + 0.796)*(1e-3) #Hydrogen tank volume, based on regression from Powertrain sheet [L], converted to [m^3]
+        #For actual tank dimensions, consult H2 tank specifications sheet
     
     def AirWeight(self): #Calculates the weights of the air system, based on fractions from Datta
         #Compressor weight [kg]
@@ -54,11 +62,16 @@ class CellWeights:
         #Total air system weight [kg]
         self.W_air = self.W_comp + self.W_air_filter + self.W_air_regulator + self.W_air_powersupply + self.W_air_humdifier
         # print(f"Air system weight is {self.W_air} kg")
+
+        #Calculate compressor volume (currently for CEM total)
+        self.k_S_comp = 4.14e-7 #Coefficent for compressor volume [m^3/W]
+        self.S_comp = self.k_S_comp*self.BalanceOfPlant.P_comp_max #Compressor volume [m^3]
     
     def HTCWeight(self):
-        #Coolant weight [kg]
-        self.k_W_HTC_coolant = 1e-6 #Coefficient for coolant weight, Datta
-        self.W_HTC_coolant = self.k_W_HTC_coolant*self.BalanceOfPlant.Q_htc
+        #Coolant weight [kg] 
+        self.k_W_HTC_coolant = 5 #Coefficient for coolant weight, Datta
+        self.W_HTC_coolant = self.k_W_HTC_coolant*self.BalanceOfPlant.HTC_coolant_flow
+        # print(self.W_HTC_coolant)
 
         #HTC radiator weight [kg]
         self.k_HTC_radiator = 3.5405 #Coefficient for HTC radiator weight [kg/m^2], Datta
@@ -79,6 +92,10 @@ class CellWeights:
         #Total HTC system weight [kg]
         self.W_HTC = self.W_HTC_coolant + self.W_HTC_radiator + self.W_HTC_filter + self.W_HTC_regulator + self.W_HTC_powersupply
         # print(f"HTC system weight is {np.median(self.W_HTC)} kg")
+
+        #Caluclate HTC radiator volume [m^3]
+        self.t_HTC_radiator = 0.035 #HTC radiator thickness [m], from Datta
+        self.S_HTC_radiator = self.t_HTC_radiator*self.BalanceOfPlant.HTC_A_r #Volume of HTC radiator [m^3]
 
     def LTCWeight(self):
         #Cooler weight [kg]
@@ -108,6 +125,10 @@ class CellWeights:
         #Total LTC system weight [kg]
         self.W_LTC = self.W_LTC_Cooler+ self.W_LTC_coolant + self.W_LTC_radiator + self.W_LTC_filter + self.W_LTC_regulator + self.W_LTC_powersupply
         # print(f"LTC system weight is {np.median(self.W_LTC)} kg")
+
+        #Caluclate LTC radiator volume [m^3]
+        self.t_LTC_radiator = 0.035 #LTC radiator thickness [m], from Datta
+        self.S_LTC_radiator = self.t_LTC_radiator*self.BalanceOfPlant.LTC_A_r #Volume of LTC radiator [m^3]
     
     def WaterWeight(self):
         #Current assumption is that we do not have a water tank as we just piss out the water, maybe estimate some plumbing and filter weights here?
@@ -180,7 +201,7 @@ class CellWeights:
         plt.legend(loc='upper left', fontsize='large')
         plt.grid(color='gray', linestyle=':', linewidth=0.5)
         plt.xlabel("Current density [A/cm^2]")
-        plt.ylabel("Cell voltage [V], Power density [A/cm^2], Heat [A/cm^2]")
+        plt.ylabel("Cell voltage [V], Power density [W/cm^2], Heat [W/cm^2]")
 
         plt.tight_layout()
         plt.show()
@@ -236,6 +257,14 @@ class CellWeights:
         print(f"LTC weight [kg]: {self.W_LTC[index]:.2f}")
         print(f"Electrical weight [kg]: {self.W_Elec:.2f}")
         print(f"Total PEMFC weight [kg]: {self.W_PEMFC[index]:.2f}")
+        
+        print(f"======DIMENSIONS=====")
+        print(f"HTC Radiator: {self.S_HTC_radiator[index]:.4f} [m^3] ({self.BalanceOfPlant.HTC_A_r[index]:.2f} [m^2] x {self.t_HTC_radiator:.4f} [m])")
+        print(f"LTC Radiator: {self.S_LTC_radiator[index]:.4f} [m^3] ({self.BalanceOfPlant.LTC_A_r[index]:.2f} [m^2] x {self.t_LTC_radiator:.4f} [m])")
+        print(f"CEM: {self.S_comp:.6f} [m^3]")
+        print(f"H2 tank: {self.S_tank[index]:.4f} [m^3]")
+        print(f"Stack: {self.S_stack[index]:.4f} [m^3] ({self.CellParameters.A_c[index]*1e-4:.2f} [m^2] x {self.L_stack[index]:.4f} [m])")
+
 
 
 
@@ -252,6 +281,7 @@ class CellWeights:
 # BOP.WaterPower()
 # BOP.ElecPower()
 # BOP.BOPPower()
+# BOP.BOPPieChart()
 # Weights = CellWeights(IVCurves=inputIV,CellParameters=inputCell,BalanceOfPlant=BOP)
 # Weights.StackWeight()
 # Weights.HydrogenWeight()

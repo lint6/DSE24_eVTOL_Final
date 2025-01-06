@@ -102,7 +102,7 @@ class IVCurves:
         plt.legend(loc='upper left', fontsize='large')
         plt.grid(color='gray', linestyle=':', linewidth=0.5)
         plt.xlabel("Current density [A/cm^2]")
-        plt.ylabel("Cell voltage [V], Power density [A/cm^2], Heat [A/cm^2]")
+        plt.ylabel("Cell voltage [V], Power density [W/cm^2], Heat [W/cm^2]")
 
         plt.tight_layout()
         plt.show()
