@@ -2,155 +2,124 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class HBeamStress:
-    def __init__(self, Mx, My, Ixx, Iyy, top_box, web, bottom_box):
-        """
-        Initialize the HBeamStress class with bending moments, moments of inertia, and H-beam dimensions.
 
-        Args:
-            Mx (float): Bending moment about the x-axis (Nm).
-            My (float): Bending moment about the y-axis (Nm).
-            Ixx (float): Second moment of area about the x-axis (mm^4).
-            Iyy (float): Second moment of area about the y-axis (mm^4).
-            top_box (tuple): Dimensions of the top box (width, thickness) in mm.
-            web (tuple): Dimensions of the web (height, thickness) in mm.
-            bottom_box (tuple): Dimensions of the bottom box (width, thickness) in mm.
-        """
+    def __init__(self, Mx=1000, My=2000, h_t=10, w_t=170, h_w=180, w_w=10, h_b=10, w_b=170, beam_length=3, density=2710):
+        ''' Initialize the HBeamStress Class'''
         self.Mx = Mx
         self.My = My
-        self.Ixx = Ixx
-        self.Iyy = Iyy
-        self.top_box = top_box
-        self.web = web
-        self.bottom_box = bottom_box
+        self.h_t = h_t / 1000
+        self.w_t = w_t / 1000
+        self.h_w = h_w / 1000
+        self.w_w = w_w / 1000
+        self.h_b = h_b / 1000
+        self.w_b = w_b / 1000
 
-    def sigma_z(self, x, y):
-        """
-        Calculate the bending stress (sigma_z) at a point (x, y) on the cross-section.
+        self.y_t = -self.h_w/2 - self.h_t/2
+        self.x_t = 0
+        self.y_w = 0
+        self.x_w = 0
+        self.y_b = self.h_w/2 + self.h_b/2
 
-        Args:
-            x (float): x-coordinate of the point (mm).
-            y (float): y-coordinate of the point (mm).
+        self.beam_length = beam_length # [m]
+        self.density = density # [kg/m^3]
 
-        Returns:
-            float: Bending stress (Pa).
-        """
-        sigma = (self.Mx * y) / self.Ixx - (self.My * x) / self.Iyy
-        return sigma
+    def calculate_cross_sectional_area(self):
+        A_t = self.w_t * self.h_t 
+        A_w = self.w_w * self.h_w 
+        A_b = self.w_b * self.h_b 
+        return A_t + A_w + A_b
+    
+    def calculate_volume(self):
+        return self.calculate_cross_sectional_area() * self.beam_length # [m^3]
+    
+    def calculate_weight(self): 
+        return self.calculate_volume() * self.density # [kg]
 
-    def generate_H_beam_coords(self):
-        """
-        Generate the coordinates of the edge points of an H-beam.
-        Only include coordinates along the web for accurate stress plotting.
-        """
-        top_width, top_thickness = self.top_box
-        web_height, web_thickness = self.web
-        bottom_width, bottom_thickness = self.bottom_box
+    def calculate_Ixx(self):
+        Ixx_t = (1/12)*self.w_t*(self.h_t**3) + (self.w_t * self.h_t * (self.y_t**2))
+        Ixx_w = (1/12)*self.w_w*(self.h_w**3) + (self.w_w * self.h_w * (self.y_w**2))
+        Ixx_b = (1/12)*self.w_b*(self.h_b**3) + (self.w_b * self.h_b * (self.y_b**2))
+        Ixx = Ixx_t + Ixx_w + Ixx_b
+        return Ixx
+    
+    def calculate_Iyy(self):
+        Iyy_t = (1/12)*self.h_t*(self.w_t**3) + (self.h_t * self.w_t * (self.x_t**2))
+        Iyy_w = (1/12)*self.h_w*(self.w_w**3) + (self.h_w * self.w_w * (self.x_w**2))
+        Iyy_b = (1/12)*self.h_b*(self.w_b**3) + (self.h_b * self.w_b * (self.x_w**2))
+        Iyy = Iyy_t + Iyy_w + Iyy_b
+        return Iyy 
+    
+    def calculate_stress_point(self, x, y):
+        sigma = (self.Mx * y) / self.calculate_Ixx() - (self.My * x) / self.calculate_Iyy()
+        return sigma 
+    
+    def calculate_stress_distribution(self, resolution=200):
+        y_top = np.linspace(-self.h_w/2 - self.h_t, -self.h_w/2, resolution) * 1000
+        y_web = np.linspace(-self.h_w/2, self.h_w/2, resolution) * 1000
+        y_bottom = np.linspace(self.h_w/2, self.h_w/2 + self.h_b, resolution) * 1000
 
-        coords = []
+        x_top = np.linspace(-self.w_t/2, self.w_t/2,resolution) * 1000
+        x_web = np.linspace(-self.w_w/2, self.w_w/2, resolution) * 1000
+        x_bottom = np.linspace(-self.w_b/2, self.w_b/2, resolution) * 1000
 
-        # Top box (upper edge)
-        coords.extend([(x, web_height / 2 + top_thickness) for x in np.linspace(-top_width / 2, top_width / 2, 500)])
+        x_coords = []
+        y_coords = []
+        stresses = []
+
+        for x in x_top:
+            for y in y_top:
+                stress = self.calculate_stress_point(x/1000, y/1000)
+                x_coords.append(x)
+                y_coords.append(y)
+                stresses.append(stress)
         
-        # Right edge of the web (only vertical line along the web)
-        coords.extend([(top_width / 2, y) for y in np.linspace(web_height / 2, -web_height / 2, 500)])
+        for x in x_web:
+            for y in y_web:
+                stress = self.calculate_stress_point(x/1000, y/1000)
+                x_coords.append(x)
+                y_coords.append(y)
+                stresses.append(stress)
+
+        for x in x_bottom:
+            for y in y_bottom:
+                stress = self.calculate_stress_point(x/1000, y/1000)
+                x_coords.append(x)
+                y_coords.append(y)
+                stresses.append(stress)
+
+        return np.array(x_coords), np.array(y_coords), np.array(stresses)
+    
+    def plot_stress_distribution(self):
+        ''' Plot the Stress Distribution along the H-Beam '''
+        x_coords, y_coords, stresses = self.calculate_stress_distribution()
+
+        plt.figure(figsize=(10, 5))
         
-        # Bottom box (lower edge)
-        coords.extend([(x, -web_height / 2 - bottom_thickness) for x in np.linspace(top_width / 2, -top_width / 2, 500)])
+        scatter = plt.scatter(x_coords, y_coords, c=stresses/(10**6), cmap='seismic', s=1)
+        plt.colorbar(scatter, label='Stress [MPa]')
+
+        plt.xlabel('x-axis [mm]')
+        plt.ylabel('y-axis [mm]')
         
-        # Left edge of the web (only vertical line along the web)
-        coords.extend([(-top_width / 2, y) for y in np.linspace(-web_height / 2, web_height / 2, 500)])
-        return coords
-
-
-    def generate_H_beam_shape(self):
-        """
-        Generate the vertices for plotting the H-beam shape.
-
-        Returns:
-            list: Lists of x and y coordinates for the H-beam outline.
-        """
-        top_width, top_thickness = self.top_box
-        web_height, web_thickness = self.web
-        bottom_width, bottom_thickness = self.bottom_box
-
-        x_coords = [
-            -top_width / 2, top_width / 2, top_width / 2, web_thickness / 2,
-            web_thickness / 2, bottom_width / 2, bottom_width / 2, -bottom_width / 2,
-            -bottom_width / 2, -web_thickness / 2, -web_thickness / 2, -top_width / 2
-        ]
-        y_coords = [
-            web_height / 2 + top_thickness, web_height / 2 + top_thickness, web_height / 2,
-            web_height / 2, -web_height / 2, -web_height / 2, -web_height / 2 - bottom_thickness,
-            -web_height / 2 - bottom_thickness, -web_height / 2, -web_height / 2,
-            web_height / 2, web_height / 2
-        ]
-
-        return x_coords, y_coords
-
-    def plot_stress_distribution_with_shape(self):
-        """
-        Plot the bending stress distribution along the edge of an H-beam with its shape.
-        """
-        coords = self.generate_H_beam_coords()
-        stresses = [self.sigma_z(x, y)/(10**6) for x, y in coords]
-
-        # I-beam shape
-        x_shape, y_shape = self.generate_H_beam_shape()
-
-        # Neutral Axis 
-        NA = (self.My * self.Ixx) / (self.Mx * self.Iyy) 
-        NA_angle = (np.arctan(NA) * 180) / np.pi # neutral axis degrees
-        x_NA = np.linspace(-self.top_box[0], self.top_box[0], 500)
-        y_NA = NA * x_NA
-
-        # Plotting
-        x_coords = [x for x, y in coords]
-        y_coords = [y for x, y in coords]
-
-        plt.figure(figsize=(10, 6))
-        plt.scatter(x_coords, y_coords, c=stresses, cmap='viridis', marker='o', label="Stress Points")
-        plt.plot(x_shape, y_shape, color='black', linestyle='-', linewidth=1.5, label="I-Beam Shape")
+        ax = plt.gca()
         
-        # Neutral Axis Line
-        plt.plot(x_NA, y_NA, color='red', linestyle='--', linewidth=0.5, label='Neutral Axis')
-
-        # Axis Lines
-        plt.axhline(y=0, color='black', linestyle='-', linewidth=0.5)
-        plt.axvline(x=0, color='black', linestyle='-', linewidth=0.5)
-
-        # Corrected small vertical outline in the upper left corner of the I-beam
-        plt.plot([-self.top_box[0] / 2, -self.top_box[0] / 2], 
-                 [self.web[0] / 2 + self.top_box[1], self.web[0] / 2],  # Corrected y-coordinate to close the shape
-                 color='black', linewidth=1.5, label="Small Vertical Outline")
-
-        plt.colorbar(label='Bending Stress (MPa)')
-        plt.title('Bending Stress Distribution')
-        plt.xlabel('x (m)')
-        plt.ylabel('y (m)')
-        plt.grid(False)
+        # Invert the axes to flip the signs
+        ax.invert_xaxis()  # Flip the x-axis
+        ax.invert_yaxis()  # Flip the y-axis
+        
+        plt.title('Stress Distribution along the H-Beam')
         plt.axis('equal')
+        plt.grid(False)
         plt.show()
 
-# Example usage
+
 if __name__ == '__main__':
-    # Bending moments
-    Mx = 1000  # Nm
-    My = 2000  # Nm
-
-    # Moments of inertia
-    Ixx = 3.5573 * 10**-5 # m^4
-    Iyy = 8.2 * 10**-6 # m^4
-
-    # I-beam dimensions
-    top_box = (0.170, 0.010)  # width x thickness in m
-    web = (0.180, 0.010)      # height x thickness in m
-    bottom_box = (0.170, 0.010)  # width x thickness in m
-
-    # Create an instance of HBeamStress
-    hbeam = HBeamStress(Mx, My, Ixx, Iyy, top_box, web, bottom_box)
-
-    # Plot stress distribution with I-beam shape
-    hbeam.plot_stress_distribution_with_shape()
-
-    # Example of calculating bending stress at a point (0.085, 0.100)
-    print(hbeam.sigma_z(0.085, 0.100)/(10**6))  # Stress in MPa
+    beam = HBeamStress()
+    beam.plot_stress_distribution()
+    print(f"Moment of Inertia (Ixx): {beam.calculate_Ixx()} [m^4]")
+    print(f"Moment of Inertia (Iyy): {beam.calculate_Iyy()} [m^4]")
+    print(f'Stress at Point 1: {round(beam.calculate_stress_point(0.085, -0.100)/10**6, 4)} [MPa]')
+    print(f'Stress at Point 2: {round(beam.calculate_stress_point(-0.085, -0.100)/10**6, 4)} [MPa]')
+    print(f'Stress at Point 3: {round(beam.calculate_stress_point(-0.085, 0.100)/10**6, 4)} [MPa]')
+    print(f'Stress at Point 4: {round(beam.calculate_stress_point(0.085, 0.100)/10**6, 4)} [MPa]')
+    print(f'Weight of the Beam: {round(beam.calculate_weight(), 4)} [kg]')

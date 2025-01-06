@@ -1,67 +1,85 @@
-import numpy as np 
-import matplotlib.pyplot as plt 
+import numpy as np
+import matplotlib.pyplot as plt
 
-class TubeBeamStress: 
-    def __init__(self, radius, thickness, Mx, My):
-        self.radius = radius 
-        self.thickness = thickness 
-        self.Mx = Mx 
-        self.My = My 
-        self.Ixx = (np.pi / 4) * (self.radius**4 - (self.radius - self.thickness)**4)
-        self.Iyy = self.Ixx
+class CircularBeamStress:
+
+    def __init__(self, Mx, My, D_outer, t, beam_length=3, density=2710):
+        ''' Initialize the CircularBeamStress Class'''
+        ### input Mx and My in [Nm], D_outer and t in [mm]
+        self.Mx = Mx  # in [Nm]
+        self.My = My  # in [Nm]
+        self.D_outer = D_outer / 1000  # in [m]
+        self.t = t / 1000  # in [m]
+        self.beam_length = beam_length # [m]
+        self.density = density # [kg/m^3]
+
+    def calculate_cross_sectional_area(self):
+        return (np.pi / 4) * (self.D_outer**2 - (self.D_outer - 2 * self.t)**2) # [m^2]
+
+    def calculate_volume(self):
+        return self.calculate_cross_sectional_area() * self.beam_length # [m^3]
     
-    def calculate_stress(self, x, y):
-        sigma = (self.Mx * y) / self.Ixx - (self.My * x) / self.Iyy 
-        return sigma 
-    
-    def generate_coordinates(self):
-        coords = []
+    def calculate_weight(self): 
+        return self.calculate_volume() * self.density # [kg]
 
-        theta = np.linspace(0, 2*np.pi, 500)
-        x_outer = self.radius * np.cos(theta)
-        y_outer = self.radius * np.sin(theta)
+    def calculate_Ixx_Iyy(self):
+        I_outer = (np.pi / 64) * (self.D_outer**4)
+        I_inner = (np.pi / 64) * ((self.D_outer - 2 * self.t)**4)
+        I = I_outer - I_inner
+        return I  # returns [m^4]
 
-        inner_radius = self.radius - self.thickness 
-        x_inner = inner_radius * np.cos(theta)
-        y_inner = inner_radius * np.sin(theta)
+    def calculate_stress_point(self, x, y):
+        I = self.calculate_Ixx_Iyy()
+        sigma = (self.Mx * y) / I - (self.My * x) / I
+        return sigma  # returns in [Pa]
 
-        return x_outer, y_outer, x_inner, y_inner
-    
+    def calculate_stress_distribution(self, resolution=500):
+        R_outer = self.D_outer / 2
+        R_inner = R_outer - self.t
+
+        theta = np.linspace(0, 2 * np.pi, resolution)
+        r = np.linspace(R_inner, R_outer, resolution)
+
+        x_coords = []
+        y_coords = []
+        stresses = []
+
+        for r_i in r:
+            for theta_i in theta:
+                x = r_i * np.cos(theta_i)
+                y = r_i * np.sin(theta_i)
+                stress = self.calculate_stress_point(x, y)
+                x_coords.append(x * 1000)
+                y_coords.append(y * 1000)
+                stresses.append(stress)
+
+        return np.array(x_coords), np.array(y_coords), np.array(stresses)
+
     def plot_stress_distribution(self):
-        x_outer, y_outer, x_inner, y_inner = self.generate_coordinates()
+        x_coords, y_coords, stresses = self.calculate_stress_distribution()
 
-        stresses = [self.calculate_stress(x, y) / (10**6) for x, y in zip(x_outer, y_outer)]
+        plt.figure(figsize=(12, 6))
 
-        x_NA = np.linspace(-self.radius, self.radius, 500)
-        y_NA = np.zeros_like(x_NA)
+        scatter = plt.scatter(x_coords, y_coords, c=stresses / (10**6), cmap='seismic', s=1)
+        plt.colorbar(scatter, label='Stress [MPa]')
+        plt.xlabel('x-axis [mm]')
+        plt.ylabel('y-axis [mm]')
 
-        plt.figure(figsize=(10, 6))
-        plt.scatter(x_outer, y_outer, c=stresses, cmap='viridis', marker='o', label='Stress Points')
+        ax = plt.gca()
+        ax.invert_xaxis()
+        ax.invert_yaxis()
 
-        plt.plot(x_outer, y_outer, color='black', linestyle='-', linewidth=1.5, label='Outer Circle Beam Shape')
-        plt.plot(x_inner, y_inner, color='black', linestyle='-', linewidth=1.5, label='Inner Circle Beam Shape')
-
-        plt.plot(x_NA, y_NA, color='red', linestyle='-', linewidth=0.5, label='Neutral Axis')
-
-        plt.axhline(y=0, color='black', linestyle='-', linewidth=0.5)
-        plt.axvline(x=0, color='black', linestyle='-', linewidth=0.5)
-
-        plt.colorbar(label='Stress (MPa)')
-        plt.title('Bending Stress Distribution')
-        plt.xlabel('x (m)')
-        plt.ylabel('y (m)')
-        plt.grid(False)
+        plt.title('Stress Distribution along the Circular Beam')
         plt.axis('equal')
+        plt.grid(False)
         plt.show()
 
-
 if __name__ == '__main__':
-    radius = 0.1 
-    thickness = 0.01 
-    Mx = 5000
-    My = 2000
-    beam = TubeBeamStress(radius, thickness, Mx, My)
+    beam = CircularBeamStress(1000, 2000, 200, 10)
     beam.plot_stress_distribution()
-    
-
-        
+    print(f"Moment of Inertia's (Ixx = Iyy): {beam.calculate_Ixx_Iyy()} [m^4]")
+    print(f'Stress at Point 1: {round(beam.calculate_stress_point(0, -0.1)/10**6, 4)} [MPa]')
+    print(f'Stress at Point 2: {round(beam.calculate_stress_point(-0.1, 0)/10**6, 4)} [MPa]')
+    print(f'Stress at Point 3: {round(beam.calculate_stress_point(0, 0.1)/10**6, 4)} [MPa]')
+    print(f'Stress at Point 4: {round(beam.calculate_stress_point(0.1, 0)/10**6, 4)} [MPa]')
+    print(f'Weight of the Beam: {round(beam.calculate_weight(), 4)} [kg]')

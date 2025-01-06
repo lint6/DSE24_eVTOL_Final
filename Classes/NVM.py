@@ -1,4 +1,3 @@
-import math
 import numpy as np 
 import matplotlib.pyplot as plt
 
@@ -11,12 +10,10 @@ class NVM:
         self.length = length # m
         self.rho = rho # kg / m^3
         self.area = area * (0.001)**2 # m^2
-        self.E = E * 10**9 # GPa
+        self.E = E * 10**9 # Pa
         self.I = I * (0.001)**4 # m^4
         self.thrust_load = thrust_load # N
         self.g = 9.80665 # m/s^2
-    
-
 
         # calculations based on inputs
         self.distributed_load = (self.rho * self.area * self.length * self.g) / self.length # N / m

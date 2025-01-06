@@ -1,95 +1,105 @@
-import numpy as np
-import matplotlib.pyplot as plt
+import numpy as np 
+import matplotlib.pyplot as plt 
 
-class SquareBeamStress:
-    def __init__(self, height, thickness, Mx, My):
-        self.height = height
-        self.thickness = thickness
-        self.Mx = Mx
-        self.My = My
-        self.Ixx = self.Iyy = (height**3) * thickness / 12  # Moments of inertia
+class SquareBeamStress: 
 
-    def calculate_stress(self, x, y):
-        """Calculate bending stress at a point (x, y)."""
-        return (self.Mx * y) / self.Ixx - (self.My * x) / self.Iyy
+    def __init__(self, Mx, My, h, t, beam_length=3, density=2710):
+        ''' Initialize the SquareBeamStress Class'''
+        ### input Mx and My in [Nm], h in [mm], t in [mm]
+        self.Mx = Mx # in [Nm]
+        self.My = My # in [Nm]
+        self.h = h / 1000 # in [m]
+        self.t = t / 1000 # in [m]
+        self.beam_length = beam_length # [m]
+        self.density = density # [kg/m^3]
 
-    def generate_coordinates(self):
-        """Generate the edge coordinates of the square beam."""
-        coords = []
+    def calculate_cross_sectional_area(self):
+        return self.h**2 - (self.h - 2*self.t)**2 # [m^2]
+    
+    def calculate_volume(self):
+        return self.calculate_cross_sectional_area() * self.beam_length # [m^3]
+    
+    def calculate_weight(self): 
+        return self.calculate_volume() * self.density # [kg]
 
-        # Outer boundary
-        coords.extend([(x, self.height / 2) for x in np.linspace(-self.height / 2, self.height / 2, 500)])  # Top edge
-        coords.extend([(self.height / 2, y) for y in np.linspace(self.height / 2, -self.height / 2, 500)])  # Right edge
-        coords.extend([(x, -self.height / 2) for x in np.linspace(self.height / 2, -self.height / 2, 500)])  # Bottom edge
-        coords.extend([(-self.height / 2, y) for y in np.linspace(-self.height / 2, self.height / 2, 500)])  # Left edge
+    def calculate_Ixx(self):
+        Ixx_outer = (1/12) * (self.h)**4
+        Ixx_inner = (1/12)* (self.h - 2*self.t)**4
+        Ixx = Ixx_outer - Ixx_inner 
+        return Ixx # returns [m^4]
+    
+    def calculate_Iyy(self):
+        return self.calculate_Ixx() # returns [m^4]
+    
+    def calculate_stress_point(self, x, y):
+        sigma = (self.Mx * y) / self.calculate_Ixx() - (self.My * x) / self.calculate_Iyy()
+        return sigma # returns in [Pa]
+    
+    def calculate_stress_distribution(self, resolution=200):
+        outer_length = self.h 
+        inner_length = self.h - 2*self.t
 
-        return coords
+        x_outer = np.linspace(-outer_length/2, outer_length/2, resolution) * 1000
+        y_outer = np.linspace(-outer_length/2, outer_length/2, resolution) * 1000 
 
-    def generate_shapes(self):
-        """Generate the outer and inner boundaries of the square beam."""
-        # Outer square
-        x_outer = [-self.height / 2, self.height / 2, self.height / 2, -self.height / 2, -self.height / 2]
-        y_outer = [self.height / 2, self.height / 2, -self.height / 2, -self.height / 2, self.height / 2]
+        x_coords = []
+        y_coords = []
+        stresses = []
 
-        # Inner square
-        inner_height = self.height - self.thickness
-        x_inner = [-inner_height / 2, inner_height / 2, inner_height / 2, -inner_height / 2, -inner_height / 2]
-        y_inner = [inner_height / 2, inner_height / 2, -inner_height / 2, -inner_height / 2, inner_height / 2]
+        # outer top and bottom flanges
+        for x in x_outer:
+            for y in np.linspace(-outer_length/2, -inner_length/2, resolution) * 1000:
+                stress = self.calculate_stress_point(x/1000, y/1000)
+                x_coords.append(x)
+                y_coords.append(y)
+                stresses.append(stress)
+            for y in np.linspace(inner_length/2, outer_length/2, resolution) * 1000:
+                stress = self.calculate_stress_point(x/1000, y/1000)
+                x_coords.append(x)
+                y_coords.append(y)
+                stresses.append(stress)
 
-        return x_outer, y_outer, x_inner, y_inner
-
+        # webs on the left and right side 
+        for y in y_outer:
+            for x in np.linspace(-outer_length/2, - inner_length/2, resolution) * 1000:
+                stress = self.calculate_stress_point(x/1000, y/1000)
+                x_coords.append(x)
+                y_coords.append(y)
+                stresses.append(stress)
+            for x in np.linspace(inner_length/2, outer_length/2, resolution) * 1000:
+                stress = self.calculate_stress_point(x/1000, y/1000)
+                x_coords.append(x)
+                y_coords.append(y)
+                stresses.append(stress)
+        
+        return np.array(x_coords), np.array(y_coords), np.array(stresses)
+    
     def plot_stress_distribution(self):
-        """Plot the stress distribution and the beam shape."""
-        coords = self.generate_coordinates()
-        stresses = [self.calculate_stress(x, y) / (10**6) for x, y in coords]
+        x_coords, y_coords, stresses = self.calculate_stress_distribution()
+        
+        plt.figure(figsize=(12, 6))
 
-        # Generate beam shapes
-        x_outer, y_outer, x_inner, y_inner = self.generate_shapes()
+        scatter = plt.scatter(x_coords, y_coords, c=stresses/(10**6), cmap='seismic', s=1)
+        plt.colorbar(scatter, label='Stress [MPa]')
+        plt.xlabel('x-axis [mm]')
+        plt.ylabel('y-axis [mm]')
 
-        # Neutral Axis
-        x_NA = np.linspace(-self.height / 2, self.height / 2, 500)
-        if self.Mx != 0 and self.My != 0:
-            NA = (self.My * self.Ixx) / (self.Mx * self.Iyy)
-            y_NA = NA * x_NA
-        else:
-            y_NA = np.zeros_like(x_NA)
+        ax = plt.gca()
+        ax.invert_xaxis()
+        ax.invert_yaxis()
 
-        # Plotting
-        x_coords = [x for x, y in coords]
-        y_coords = [y for x, y in coords]
-
-        plt.figure(figsize=(10, 6))
-        plt.scatter(x_coords, y_coords, c=stresses, cmap='viridis', marker='o', label="Stress Points")
-
-        # Plot outer and inner squares
-        plt.plot(x_outer, y_outer, color='black', linestyle='-', linewidth=1.5, label="Outer Square Beam Shape")
-        plt.plot(x_inner, y_inner, color='black', linestyle='-', linewidth=1.5, label="Inner Square Beam Shape")
-
-        # Neutral Axis Line
-        plt.plot(x_NA, y_NA, color='red', linestyle='--', linewidth=0.5, label='Neutral Axis')
-
-        # Axis Lines
-        plt.axhline(y=0, color='black', linestyle='-', linewidth=0.5)
-        plt.axvline(x=0, color='black', linestyle='-', linewidth=0.5)
-
-        plt.colorbar(label='Bending Stress (MPa)')
-        plt.title('Bending Stress Distribution')
-        plt.xlabel('x (m)')
-        plt.ylabel('y (m)')
-        plt.grid(False)
+        plt.title('Stress Distribution along the Square Beam')
         plt.axis('equal')
+        plt.grid(False)
         plt.show()
 
-# Example usage
+        
 if __name__ == '__main__':
-    # Parameters
-    height = 0.2  # m
-    thickness = 0.01  # m
-    Mx = 5000  # Nm
-    My = 2000  # Nm
-
-    # Create an instance of the SquareBeamStress class
-    beam = SquareBeamStress(height, thickness, Mx, My)
-
-    # Plot stress distribution
+    beam = SquareBeamStress(1000, 2000, 200, 10)
     beam.plot_stress_distribution()
+    print(f'Moment of Inertia (Ixx = Iyy) = {beam.calculate_Ixx()} [m^4]')
+    print(f'Stress at Point 1 = {round(beam.calculate_stress_point(0.1, -0.1)/10**6, 4)} [MPa]')
+    print(f'Stress at Point 2 = {round(beam.calculate_stress_point(-0.1, -0.1)/10**6, 4)} [MPa]')
+    print(f'Stress at Point 3 = {round(beam.calculate_stress_point(-0.1, 0.1)/10**6, 4)} [MPa]')
+    print(f'Stress at Point 4 = {round(beam.calculate_stress_point(0.1, 0.1)/10**6, 4)} [MPa]')
+    print(f'Weight of the Beam: {round(beam.calculate_weight(), 4)} [kg]')
