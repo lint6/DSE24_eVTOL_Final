@@ -4,7 +4,7 @@ import numpy as np
 class AirfoilData:
     def __init__(self):
         # Define the filename
-        self.filename = r'/Users/florenspetersen/Documents/GitHub/DSE24_eVTOL_Final/Aero/xf-n0012-il-500000.csv'
+        self.filename = r'xf-n0012-il-500000.csv'
 
         # Initialize lists to store the data
         self.alpha = []
