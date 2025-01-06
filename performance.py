@@ -117,6 +117,10 @@ class PerformanceAnalysis:
         self.P_hoge = self.P_i_hov + self.P_p_hov
         print(f"Hover out of ground effect power: {self.P_hoge/1000:.2f} kW")
 
+        self.P_vertical_climb = self.P_hoge + (self.MTOW_N * self.vertical_climb)/2 
+
+        self.P_vertical_descent = self.P_hoge + (self.MTOW_N * self.vertical_descent)/2
+
 def run():
     # Create an instance of PerformanceAnalysis
     analysis = PerformanceAnalysis()
