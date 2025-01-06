@@ -26,7 +26,7 @@ class PerformanceAnalysis:
         self.omega = 70 #rad/s
         self.C_l_alpha = 5.73 #1/rad
         self.solidity = 0.12
-        self.pitch_x = 2 # pitch angle variation over span aqs a function of x
+        self.pitch_x = 8 # pitch angle variation over span aqs a function of x
 
         # structural inputs, TODO: INPUT CORRECT VALUES LATER
         self.A_eq = 0.5
@@ -74,6 +74,7 @@ class PerformanceAnalysis:
             'HIGE2': None
         }
 
+
     def powers_in_flight(self):
         self.advance_ratio = self.V_point / (self.rotor_radius * self.omega) # advance ratio
 
@@ -104,9 +105,17 @@ class PerformanceAnalysis:
         # plt.grid()
         # plt.show()
 
+        # this should be lower then the same calculation using pure momentum disk theory
         self.P_i_hov = self.MTOW_N * self.v_i_hov # k factor is 1 as rotors are away from fuselage, assumed that Thrust = Weight; TODO: CHANGE WHEN ROTOR IS FINISHED
-        print(f"Hover induced power: {self.P_i_hov/1000:.2f} kW")
+        #print(f"Hover induced power: {self.P_i_hov/1000:.2f} kW")
         # profile power
+
+        self.C_D_p_bar = 0.01 # TODO: CHANGE LATER based on airfoil tools
+
+        self.P_p_hov = ((self.solidity*self.C_D_p_bar)/8) * self.rho *((self.omega*self.rotor_radius)**3)*(self.pi*(self.rotor_radius**2)) * self.number_of_rotors
+
+        self.P_hoge = self.P_i_hov + self.P_p_hov
+        print(f"Hover out of ground effect power: {self.P_hoge/1000:.2f} kW")
 
 def run():
     # Create an instance of PerformanceAnalysis
@@ -118,6 +127,7 @@ def run():
 
     # Display some key results
     print(f"Hover induced velocity: {analysis.v_i_hov:.2f} m/s")
+
 
 # Execute the run function
 if __name__ == "__main__":
