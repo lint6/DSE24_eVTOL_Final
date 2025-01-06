@@ -23,7 +23,7 @@ def find_roots(coefficients):
 
 
 
-class Vertical_Flight: #vertical flight
+class Ducted_Fan_1: #vertical flight
     def __init__(self, mass, radius=None, TWR= 1 , V_c=None, density=1.225, g0 = 9.80665, P_a = None): 
         # if V_c== None and P_a == None:
         #     raise Exception('Vertical rate and power are both none, need at least one')
@@ -169,8 +169,8 @@ class Vertical_Flight: #vertical flight
     '''
 
     
-class Forward_Flight: #pure horizontal NOT MOMEMTUM THEORY YET
-    def __init__(self, mass, V, Cd0, radius=0.625, TWR= 1 , gamma = 0, V_c=None, density=1.225, k_v_f = 1, related_vertical = None, P_a = None):	 
+class Ducted_Fan_2: #pure horizontal
+    def __init__(self, mass, Cd0, V, radius=0.625, TWR= 1 , gamma = 0, V_c=None, density=1.225, k_v_f = 1, related_fan = None): 
         # Required Inputs
         self.mass = mass  # Maximum takeoff weight
         self.radius = radius  # Fan radius (m)
@@ -178,109 +178,87 @@ class Forward_Flight: #pure horizontal NOT MOMEMTUM THEORY YET
         self.k_v_f = k_v_f 
         self.V = V # we need to know this somehow first .... 
         self.gamma = gamma
-        self.P_a = P_a # Power avilable set by the user
 
         # Optional Inputs with Defaults
         self.TWR = TWR  # Thrust-to-weight ratio
         self.V_c = V_c  # Climb freestream velocity (m/s)
         self.density = density  # Air density (kg/m^3)
         
-        self.rotor_alpha = None # Angle of attack of the rotor blade
-        self.V_dash = None # Scalar value for resultant speed flow at the disc
-        #self.V_dash_nd = None # Non-dimensionalised value for resultant speed flow at the disc
-        self.v_f = None # Induced velocity in forward flight
-        self.v_f_nd = None # Non-dimensionalised induced velocity in forward flight (Found via root calculation)
-        #self.T_axial = None # Generalised axial thrust
-        #self.v_f_nd_root = None # Root calculated value of Non-dimensionalised induced velocity in forward flight from root
-        self.V_c_f = None # Rate of climb in forward flight
-        self.V_ho = None # Horizontal velocity of the disc
-        self.D = None # Drag of the disc
-        self.D_ho = None # Horizontal drag of the disc
-        self.weight = None # Weight (N)
-        self.T = None # Thrust of the disc
-        self.P_id_f = None # Power ideal forward flight
+        self.D = None
+        self.D_h0 = None 
+        self.V_nd = None
+        self.T = None  # Thurst
+        self.mto_weight = None #weight
+        self.rotor_alpha = None #rotor blade pitch angle
+        self.v_f_root = None #induced velocity forward flgiht 
+        self.V_hor = None #horizontal velocity.
+        self.p_idf = None  #steady horizontal flgith ideal power for rotor
 
-        self.related_vertical = related_vertical
+        self.related_fan = related_fan
 
-    
     def calc_V_horizontal(self):
-        self.V_ho = self.V * np.cos(self.gamma)
-        return self.V_ho
-
+        self.V_hor = self.V * np.cos(self.gamma)
+        return self.V_hor
+    
+    def calc_V_nd(self):
+        self.V_nd = self.V / self.related_fan.v_h
+        return self.V_nd
+    
     def calc_D(self):
         self.D = (0.5) * self.density * (self.V **2) * self.Cd0 * (self.radius**2 * np.pi)
-        self.D_ho = self.D * np.cos(self.gamma)
-        return self.D, self.D_ho
-    
+        self.D_h0 = self.D * np.cos(self.gamma)
+        return self.D, self.D_h0
+
     def calc_weight(self):
-        self.weight = self.mass * 9.80665
-        return self.weight
+        self.mto_weight = self.mass * 9.80665
+        return self.mto_weight
     
     def calc_T(self):
         self.calc_D()
         self.calc_weight()
-        self.T = self.weight * np.sqrt(self.k_v_f**2 + (self.D_ho / self.weight)**2)
+        self.T = self.mto_weight * np.sqrt(self.k_v_f**2 + (self.D_h0 / self.mto_weight)**2 )
         return self.T
     
     def calc_rotor_alpha(self):
         self.calc_T()
         self.calc_D()
-        self.rotor_alpha = - np.arctan(int(self.D_ho) / int(self.T))
+        self.rotor_alpha = - np.arctan(int(self.D_h0) / int(self.T))
         # print( "rotor alpha is", self.rotor_alpha*180/np.pi )
         return self.rotor_alpha
-
-    def calc_V_nd(self):
-        V_nd = self.V / self.related_vertical.v_h
-        self.V_nd = V_nd
-        return self.V_nd
-    
-    def calc_v_f_nd(self): # Can be used to plot v_f_nd_root vs V_nd
-        self.calc_V_nd()
-        self.calc_rotor_alpha()
-        my_coefficient = [1, (-2 * self.V_nd * np.sin(self.rotor_alpha)), (self.V_nd **2), 0, -1 ]
-        # print("The coefficients are ", my_coefficient)
-        self.v_f_nd = find_roots(coefficients=my_coefficient) * self.related_vertical.v_h
-        return self.v_f_nd
     
     def calc_v_f(self):
-        self.calc_v_f_nd()
-        self.v_f = self.v_f_nd * self.related_vertical.v_h
-        return self.v_f
-
-    def calc_V_dash(self):
+        self.calc_rotor_alpha()
+        self.calc_V_nd()
+        my_coefficient = [1, (-2 * self.V_nd * np.sin(self.rotor_alpha)), (self.V_nd **2), 0, -1 ]
+        # print("The coefficients are ", my_coefficient)
+        self.v_f_root = find_roots(coefficients=my_coefficient) * self.related_fan.v_h
+        return self.v_f_root
+    
+    
+    def calc_p_idf(self):
+        self.calc_D()
+        self.calc_T()
+        self.calc_V_horizontal()
         self.calc_rotor_alpha()
         self.calc_v_f()
-        V_dash = np.sqrt((self.v_f - self.V * np.sin(self.rotor_alpha))**2 + (self.V * np.cos(self.rotor_alpha))**2)
-        self.V_dash = V_dash
-        return self.V_dash
-    
-    # def calc_T_axial(self):
-    #     self.calc_V_dash()
-    #     self.T_axial = 2 * np.pi * self.radius**2 * self.density * self.V_dash * self.v_f #eq 2.30
-    #     return self.T_axial
+        
+        power_induced = self.T * self.v_f_root # from speed, rotor 
+        power_parasitic = self.V_hor * self.D_h0 # CD.0 
+        self.p_idf = power_induced + power_parasitic
+        # print("v_horis ", self.V_hor)
+        # print("drag is", self.D_h0)
+        # print("thrust is", self.T)
+        # print("horizontal induced velocity is", self.v_f_root)
+        # print(f'Power: {self.p_idf}')
+        # print(f'power_induced: {power_induced}')
+        # print(f'power_parasitic: {power_parasitic}')
+        # print('----------------------------------')
+        return self.p_idf, power_induced, power_parasitic
+  
 
-    def calc_V_c_f(self): 
-        self.calc_V_horizontal()
-        self.calc_v_f()
-        self.calc_D()
-        self.calc_T()
-        self.calc_weight()
-        self.V_c_f = (self.P_a - (self.V_ho * self.D_ho + self.T * self.v_f)) / (self.k_v_f * self.weight)
-        return self.V_c_f
 
-    def calc_power_ideal_forwardflight(self):
-        self.calc_V_horizontal()
-        self.calc_v_f()
-        self.calc_D()
-        self.calc_T()
-        self.calc_weight()
-        self.calc_V_c_f()
-        self.P_id_f = (self.V_ho * self.D_ho) + (self.V_c_f * self.k_v_f * self.weight) + (self.T * self.v_f)
-        return self.P_id_f
-    
-
-class Angled_Climb: #angled climb
-    def __init__(self, mass, gamma, radius=0.625, TWR= 1 , V_c=None, V =4, density=1.225, D_h0 = 500, k_v_f = 1, P_a =45000,  related_vertical = None, related_forward = None): 
+class Ducted_Fan_3: #angled climb
+    def __init__(self, mass, gamma, radius=0.625, TWR= 1 , V_c=None, V =4, density=1.225, D_h0 = 500, k_v_f = 1, P_a =45000,  related_fan1 = None, related_fan2 = None): 
         # Required Inputs
         self.mass = mass  # Maximum takeoff weight
         self.radius = radius  # Fan radius (m)
@@ -303,20 +281,20 @@ class Angled_Climb: #angled climb
         self.V_c_slow = None 
         self.V_c_fast = None 
 
-        self.related_vertical = related_vertical
-        self.related_forward = related_forward
+        self.related_fan1 = related_fan1
+        self.related_fan2 = related_fan2
 
     def calc_V_c_slow(self):
-        V_c_slow = (self.P_a / (self.k_v_f * self.related_forward.weight)) - ((self.V) * (self.related_forward.rotor_alpha) + self.related_forward.v_f)
+        V_c_slow = (self.P_a / (self.k_v_f * self.related_fan2.mto_weight)) - ((self.V) * (self.related_fan2.rotor_alpha) + self.related_fan2.v_f_root)
         self.V_c_slow = V_c_slow
         return self.V_c_slow
   
     def calc_V_c_fast(self):
-        V_c_fast = (self.P_a - (self.related_forward.V_ho * self.D_h0 + self.related_forward.T * self.related_forward.v_f)) / (self.k_v_f * self.related_forward.weight)
+        V_c_fast = (self.P_a - (self.related_fan2.V_hor * self.D_h0 + self.related_fan2.T * self.related_fan2.v_f_root)) / (self.k_v_f * self.related_fan2.mto_weight)
         self.V_c_fast = V_c_fast
         return V_c_fast
 
-VerticalFlight = Vertical_Flight(mass=float(718/4))
-ForwardFlight = Forward_Flight(mass=float(718/4), Cd0=0.05, V= 3, related_vertical=VerticalFlight)
-AngledClimb = Angled_Climb(mass=float(718/4), gamma=0, related_vertical=VerticalFlight, related_forward = ForwardFlight)
+fan_1 = Ducted_Fan_1(mass=float(718/4))
+fan_2 = Ducted_Fan_2(mass=float(718/4), Cd0=0.05, V= 3, related_fan=fan_1)
+fan_3 = Ducted_Fan_3(mass=float(718/4), gamma=0, related_fan1=fan_1, related_fan2 = fan_2 )
 
