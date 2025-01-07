@@ -35,7 +35,7 @@ axs[1].set_ylabel('Pitch')
 axs[2].plot(log_time, np.array(log_state[1]).T[0], label = 'Aircraft')
 # axs[2].plot(log_time, log_extras[2], 'r', label = 'setpoint')
 axs[2].set_ylabel('Roll')
-print(log_extras[2])
+
 axs[3].plot(log_time, np.array(log_extras[2]).T[1], label = 'Aircraft')
 # axs[3].plot(log_time, log_extras[2], 'r', label = 'setpoint')
 axs[3].set_ylabel('Setpoint Pitch')

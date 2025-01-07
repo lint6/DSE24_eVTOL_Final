@@ -132,23 +132,20 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.5):
             else:
                 ang_diff = ang_tgt - ang_pos_z
             mag_diff = np.linalg.norm([setpoint_pos[1]-pos_x,setpoint_pos[0]-pos_y]) #magnitude of difference between planar elements
-            lat_diff = np.sin(np.radians(ang_diff)) * mag_diff
             lon_diff = np.cos(np.radians(ang_diff)) * mag_diff
-            
-            print(lon_diff)
-            
-            
-            log_error[0][0].append(lat_diff)
-            log_error[0][1].append(lon_diff)
+            lat_diff = np.sin(np.radians(ang_diff)) * mag_diff
+
+
+            log_error[0][0].append(lon_diff)
+            log_error[0][1].append(lat_diff)
             log_error[0][2].append(setpoint_pos[2] - pos_z)
             
             setpoint_ang[2] = ang_tgt #yaw angle
-            setpoint_ang[1] = np.clip(SCfunc_PIDController(log_error[0][1], k_p=0.02, t_i=500, t_d=0, dt=dt), a_min=-30, a_max=30) #pitch angle
-            setpoint_ang[0] = np.clip(-1 * SCfunc_PIDController(log_error[0][0], k_p=1, t_i=10, t_d=3.1, dt=dt), a_min=-30, a_max=30) #roll angle
+            setpoint_ang[1] = np.clip(SCfunc_PIDController(log_error[0][0], k_p=0.02, t_i=500, t_d=0, dt=dt), a_min=-30, a_max=30) #pitch angle
+            setpoint_ang[0] = np.clip(-1 * SCfunc_PIDController(log_error[0][1], k_p=1, t_i=10, t_d=3.1, dt=dt), a_min=-30, a_max=30) #roll angle
             
             log_error[1][0].append(setpoint_ang[0])
             log_error[1][1].append(setpoint_ang[1])
-            print(log_error[1][1][-1])
             log_error[1][2].append(ang_diff)
             # Controllers
             rpm_hover = np.ones(rotor_count) * SCfunc_PIDController(log_error[0][2], k_p=12.5, t_i=10, t_d=3.1, dt=dt)
@@ -188,7 +185,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.5):
             
             log_extras[0].append(rpm/4000)
             log_extras[1].append(setpoint_pos)
-            log_extras[2].append(setpoint_ang)
+            log_extras[2].append([setpoint_ang[0],setpoint_ang[1],setpoint_ang[2]])
 
             log_time.append(log_time[-1]+dt)
             
