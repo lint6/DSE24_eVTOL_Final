@@ -25,33 +25,35 @@ import matplotlib.pyplot as plt
 # - Side movement from 
 
 #Defining "constant" variable for now 
-rpm = 1 
-mass = 500
+rpm = 2000
+mass = 100
 g = 9.81 
 
 Inertia_matrix =np.array([[100, 0, 0],
                           [0, 100, 0],
                           [0, 0, 100]])
 #Angle in degrees 
-phi = 10
+phi = 0
 theta = 0 
 psi = 0
 
 #Inertia in x,y,z
-I_xx = 10
-I_yy = 10 
-I_zz = 10 
+I_xx = 100
+I_yy = 100 
+I_zz = 100 
 
 #forces from each rotor 
 T_1 = 5 * rpm  
 T_2 = 5 * rpm 
 T_3 = 5 * rpm
 T_4 = 5 * rpm 
+net_T = T_1 + T_2 + T_3 + T_4
 
 torque_1 = 0.025 * rpm 
-torque_2 = 0.025 * rpm 
+torque_2 = -0.025 * rpm 
 torque_3 = 0.025 * rpm 
-torque_4 = 0.025 * rpm 
+torque_4 = -0.025 * rpm 
+net_torque = torque_1 + torque_2 + torque_3 + torque_4
 
 # Generating emty matrix for storing y_d_d, z_d_d, and phi_d_d 
 
@@ -59,7 +61,8 @@ b_matrix = np.array([[-(1/mass) * np.sin(phi), 0],
                      [(1/mass) * np.cos(phi), 0],
                      [0, 1/I_xx]])
 
-u_matrix = np.array([2,3])
+u_matrix = np.array([net_T, net_torque ])
+print("u matrix is", u_matrix)
 
 planar_acceleration_1 = np.array([0, -g, 0])
 
@@ -69,7 +72,7 @@ planar_acceleration = planar_acceleration_1 + planar_acceleration_2
 print("the planar accelration terms are :", planar_acceleration)
 
 # Example inputs
-time = np.linspace(0, 1, 10)  # Time array (0 to 10 seconds, 100 points)
+time = np.linspace(0, 100, 100)  # Time array (0 to 1 seconds, 10 points)
 acceleration = planar_acceleration  # Constant acceleration [a_y, a_z, alpha_phi]
 
 # Expand acceleration to match time steps
@@ -81,8 +84,8 @@ velocity = cumtrapz(acceleration, time, initial=0, axis=0)
 # Integrate velocity to get distance (initial position = 0)
 distance = cumtrapz(velocity, time, initial=0, axis=0)
 
-print("the planar velocity terms are :", velocity)
-print("the planar distance terms are :", distance)
+#print("the planar velocity terms are :", velocity)
+#print("the planar distance terms are :", distance)
 
 
 # Plotting acceleration, velocity, and distance for each term
