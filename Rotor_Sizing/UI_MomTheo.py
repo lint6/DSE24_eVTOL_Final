@@ -1,4 +1,4 @@
-import Momentum_Theory as ducted_fan_calc
+import Momentum_Theory
 import matplotlib.pyplot as plt 
 import numpy as np
 
@@ -7,42 +7,56 @@ def func_min_locator(list1, list2): #find the minimum and its index in list2 and
     min_list2_index = list(list2).index(min_list2)
     return list1[min_list2_index], min_list2
 
-fan_1 = ducted_fan_calc.Ducted_Fan_1(mass=float(1069.137/4),radius=0.9652/2, P_a=42000)
+VertFli = Momentum_Theory.Vertical_Flight(mass=float(718.89/4),radius=2.01, P_a=42000)
 
 # Calculate hover induced velocity
-print(f"Hover Induced Velocity: {fan_1.calc_v_h():.2f}")
+print(f"Hover Induced Velocity: {VertFli.calc_v_h():.2f}")
 
 # Calculate thrust for hover
-print(f"Thrust for Hover: {fan_1.calc_thrust_hover():.2f}")
+print(f"Thrust for Hover: {VertFli.calc_thrust_hover():.2f}")
 
 # Calculate power for steady climb
-if fan_1.P_a == None: #give climb rate, not power
-    print(f"Given axial Rate of Climb: {fan_1.V_c:.2f}m/s")
-    print(f"Power needed for climb: {fan_1.calc_P_kappa():.2f}W")
+if VertFli.P_a == None: #give climb rate, not power
+    print(f"Given axial Rate of Climb: {VertFli.V_c:.2f}m/s")
+    print(f"Power needed for climb: {VertFli.calc_P_kappa():.2f}W")
 else: #give power, not climb rate
-    print(f"Given power available for climb: {fan_1.P_a:.2f}W")
-    print(f"Axial Rate of Climb achieved: {fan_1.calc_V_c_kappa()[0]:.2f}m/s")
-if fan_1.V_c < 0 and abs(fan_1.V_c)/fan_1.v_h >= 2:
-    raise Exception(f'V_c v_h ratio too negative, theory does not apply (current ratio {fan_1.V_c/fan_1.v_h}, needs to be greater than -2)')
+    print(f"Given power available for climb: {VertFli.P_a:.2f}W")
+    print(f"Axial Rate of Climb achieved: {VertFli.calc_V_c_kappa()[0]:.2f}m/s")
+if VertFli.V_c < 0 and abs(VertFli.V_c)/VertFli.v_h >= 2:
+    raise Exception(f'V_c v_h ratio too negative, theory does not apply (current ratio {VertFli.V_c/VertFli.v_h}, needs to be greater than -2)')
 
-print(f"calc_power_ideal_hover: {fan_1.calc_power_ideal_hover():.2f}")
+print(f"calc_power_ideal_hover: {VertFli.calc_power_ideal_hover():.2f}")
 
-print(f"Disc_loading: {fan_1.calc_disc_loading()[0]:.2f}")
-print(f"Power_loading: {(fan_1.calc_mass()[0]/(fan_1.calc_power_ideal_hover()/1000)):.2f}")
+print(f"Disc_loading: {VertFli.calc_disc_loading()[0]:.2f}")
+print(f"Power_loading: {(VertFli.calc_mass()[0]/(VertFli.calc_power_ideal_hover()/1000)):.2f}")
 
 vel = np.arange(0,100,0.01)
 power = []
 for i in vel :
-    fan_2 = ducted_fan_calc.Ducted_Fan_2(mass=float(1069.137/4), Cd0=0.05, V=i, related_fan=fan_1, radius = 0.625)
-    power.append(fan_2.calc_p_idf())
+    ForwFli = Momentum_Theory.Forward_Flight(mass=float(718.89/4), Cd0=0.05, V=i, related_vertical=VertFli, radius = 2.01, P_a=42000)    
+    # VertFli.calc_v_h()
+    # ForwFli.calc_V_horizontal()
+    # ForwFli.calc_D()
+    # ForwFli.calc_weight()
+    # ForwFli.calc_T()
+    # ForwFli.calc_rotor_alpha()
+    # ForwFli.calc_V_nd()
+    # ForwFli.calc_v_f_nd()
+    # ForwFli.calc_v_f()
+    # ForwFli.calc_V_dash()
+    # #ForwFli.calc_T_axial()
+    # ForwFli.calc_V_c_f()
+    # ForwFli.calc_power_ideal_forwardflight()
+    power.append(ForwFli.calc_power_ideal_forwardflight())
 power = np.array(power)/int(1000)
+print(power)
 
 
 '''Horizontal Flight'''
 # Power lines
 plt.plot(vel, power.T[0], "-", label="Total")  # You can use other types like plt.scatter, plt.bar, etc.
 plt.plot(vel, power.T[1], "--",label="Induced")
-plt.plot(vel, power.T[2], "--",label="parasitic")
+plt.plot(vel, power.T[2], "--",label="Parasitic")
 #Critical Points
 vel_power_min, power_min = func_min_locator(vel, power.T[0])
 plt.plot(vel_power_min, power_min, '.', label=f'Min. Power \nV = {vel_power_min:.1f}m/s \nP = {power_min:.2f}kW')
@@ -62,8 +76,8 @@ vertical_rate = np.arange(-max_rate,max_rate, max_rate/250)
 vertical_rate = np.sort(np.append(vertical_rate, 0))
 vertical_power = []
 for i in vertical_rate :
-    fan_1 = ducted_fan_calc.Ducted_Fan_1(mass=float(1069.137/4),radius=0.9652/2, V_c=i)
-    vertical_power.append(fan_1.calc_P_kappa())
+    VertFli = Momentum_Theory.Vertical_Flight(mass=float(718.89/4),radius=2.01, V_c=i)
+    vertical_power.append(VertFli.calc_P_kappa())
 vertical_power = np.array(vertical_power)/int(1000)
 
 plt.plot(vertical_rate, vertical_power, "-", label="Power Required")

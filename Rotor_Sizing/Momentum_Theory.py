@@ -24,7 +24,7 @@ def find_roots(coefficients):
 
 
 class Vertical_Flight: #vertical flight
-    def __init__(self, mass, radius=None, TWR= 1 , V_c=None, density=1.225, g0 = 9.80665, P_a = None): 
+    def __init__(self, mass, radius=2.01, TWR= 1 , V_c=None, density=1.225, g0 = 9.80665, P_a = None): 
         # if V_c== None and P_a == None:
         #     raise Exception('Vertical rate and power are both none, need at least one')
         # Required Inputs
@@ -169,8 +169,8 @@ class Vertical_Flight: #vertical flight
     '''
 
     
-class Forward_Flight: #pure horizontal NOT MOMEMTUM THEORY YET
-    def __init__(self, mass, V, Cd0, radius=0.625, TWR= 1 , gamma = 0, V_c=None, density=1.225, k_v_f = 1, related_vertical = None, P_a = None):	 
+class Forward_Flight: #forward flight
+    def __init__(self, mass, V, Cd0, radius=2.01, TWR= 1 , gamma = 0, V_c=None, density=1.225, k_v_f = 1, related_vertical = None, P_a = None):	 
         # Required Inputs
         self.mass = mass  # Maximum takeoff weight
         self.radius = radius  # Fan radius (m)
@@ -260,12 +260,14 @@ class Forward_Flight: #pure horizontal NOT MOMEMTUM THEORY YET
     #     return self.T_axial
 
     def calc_V_c_f(self): 
-        self.calc_V_horizontal()
-        self.calc_v_f()
-        self.calc_D()
-        self.calc_T()
-        self.calc_weight()
-        self.V_c_f = (self.P_a - (self.V_ho * self.D_ho + self.T * self.v_f)) / (self.k_v_f * self.weight)
+        # self.calc_V_horizontal()
+        # self.calc_v_f()
+        # self.calc_D()
+        # self.calc_T()
+        # self.calc_weight()
+        self.calc_V_dash()
+        self.V_c_f = self.V_dash * np.sin(self.gamma)
+        # self.V_c_f = (self.P_a - (self.V_ho * self.D_ho + self.T * self.v_f)) / (self.k_v_f * self.weight) 
         return self.V_c_f
 
     def calc_power_ideal_forwardflight(self):
@@ -275,16 +277,18 @@ class Forward_Flight: #pure horizontal NOT MOMEMTUM THEORY YET
         self.calc_T()
         self.calc_weight()
         self.calc_V_c_f()
-        self.P_id_f = (self.V_ho * self.D_ho) + (self.V_c_f * self.k_v_f * self.weight) + (self.T * self.v_f)
-        return self.P_id_f
+        power_induced = self.T * self.v_f # from speed, rotor 
+        power_parasitic = self.V_ho * self.D_ho # CD.0 
+        self.P_id_f = (self.V_ho * self.D_ho) + (self.V_c_f * self.k_v_f * self.weight) + (self.T * self.v_f) #eq.2.39
+        return self.P_id_f, power_induced, power_parasitic
     
 
 class Angled_Climb: #angled climb
-    def __init__(self, mass, gamma, radius=0.625, TWR= 1 , V_c=None, V =4, density=1.225, D_h0 = 500, k_v_f = 1, P_a =45000,  related_vertical = None, related_forward = None): 
+    def __init__(self, mass, gamma, radius=2.01, TWR= 1 , V_c=None, V =4, density=1.225, D_ho = 500, k_v_f = 1, P_a =45000,  related_vertical = None, related_forward = None): 
         # Required Inputs
         self.mass = mass  # Maximum takeoff weight
         self.radius = radius  # Fan radius (m)
-        self.D_h0 = D_h0 #Drag horizontal
+        self.D_ho = D_ho #Drag horizontal
         self.k_v_f = k_v_f  #coefficient of vertical drag ~ 1
         self.V = V # Velocity we give
         self.gamma = gamma # airpath angle
@@ -312,11 +316,36 @@ class Angled_Climb: #angled climb
         return self.V_c_slow
   
     def calc_V_c_fast(self):
-        V_c_fast = (self.P_a - (self.related_forward.V_ho * self.D_h0 + self.related_forward.T * self.related_forward.v_f)) / (self.k_v_f * self.related_forward.weight)
+        V_c_fast = (self.P_a - (self.related_forward.V_ho * self.D_ho + self.related_forward.T * self.related_forward.v_f)) / (self.k_v_f * self.related_forward.weight)
         self.V_c_fast = V_c_fast
         return V_c_fast
 
-VerticalFlight = Vertical_Flight(mass=float(718/4))
-ForwardFlight = Forward_Flight(mass=float(718/4), Cd0=0.05, V= 3, related_vertical=VerticalFlight)
-AngledClimb = Angled_Climb(mass=float(718/4), gamma=0, related_vertical=VerticalFlight, related_forward = ForwardFlight)
+VerticalFlight = Vertical_Flight(mass=float(718.89/4), P_a=42000)
+ForwardFlight = Forward_Flight(mass=float(718.89/4), Cd0=0.05, V=3, related_vertical=VerticalFlight, P_a=42000)
+AngledClimb = Angled_Climb(mass=float(718.89/4), gamma=0, related_vertical=VerticalFlight, related_forward = ForwardFlight)
 
+
+# VerticalFlight.calc_v_h()
+# ForwardFlight.calc_V_horizontal()
+# ForwardFlight.calc_D()
+# ForwardFlight.calc_weight()
+# ForwardFlight.calc_T()
+# ForwardFlight.calc_rotor_alpha()
+# ForwardFlight.calc_V_nd()
+# ForwardFlight.calc_v_f_nd()
+# ForwardFlight.calc_v_f()
+# ForwardFlight.calc_V_dash()
+# #ForwardFlight.calc_T_axial()
+# ForwardFlight.calc_V_c_f()
+# ForwardFlight.calc_power_ideal_forwardflight()
+
+# print("Hover Induced Velocity: ", VerticalFlight.v_h)
+# print("P_a is:", ForwardFlight.P_a)
+# print("V hor is:", ForwardFlight.V_ho)
+# print("D hor is:", ForwardFlight.D_ho)
+# print("T is:", ForwardFlight.T)
+# print("v f is:", ForwardFlight.v_f)
+# print("k_v_f is:", ForwardFlight.k_v_f)
+# print("weight is:", ForwardFlight.weight)
+# print("V_c_f is:", ForwardFlight.V_c_f)
+# print("P_id_f is:", ForwardFlight.P_id_f)

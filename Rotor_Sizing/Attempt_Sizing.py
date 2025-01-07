@@ -179,6 +179,7 @@ class RotorSizing:
         for blades in blade_numbers:
             self.iterate_design(new_n_blades=blades)
             aspect_ratios.append(self.aspect_ratio)
+        print(aspect_ratios)
         plt.figure(figsize=(10, 6))
         plt.plot(blade_numbers, aspect_ratios, marker='o', label='Aspect Ratio')
         plt.title('Effect of Blade Number on Aspect Ratio')

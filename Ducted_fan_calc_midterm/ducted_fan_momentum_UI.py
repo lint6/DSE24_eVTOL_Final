@@ -36,6 +36,7 @@ for i in vel :
     fan_2 = ducted_fan_calc.Ducted_Fan_2(mass=float(1069.137/4), Cd0=0.05, V=i, related_fan=fan_1, radius = 0.625)
     power.append(fan_2.calc_p_idf())
 power = np.array(power)/int(1000)
+print(power)
 
 
 '''Horizontal Flight'''
