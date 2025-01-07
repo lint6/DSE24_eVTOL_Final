@@ -149,6 +149,28 @@ class PerformanceAnalysis:
         # Total power
         self.P_ff = self.P_par_ff + self.P_i_ff + self.P_p_ff
 
+    def climb_descent_powers(self):	
+
+        # climb power
+        self.ROC = self.V_point * math.tan(math.radians(self.gamma_climb)) # rate of climb
+        self.P_loss_climb = self.MTOW_N * self.ROC # power loss due to climb
+        self.P_climb = self.P_loss_climb * 1.045 # TODO: CHECK THIS FACTOR
+
+        self.P_total_climb = self.P_ff + self.P_climb
+
+        # descent power
+        self.ROC_descent = self.V_point * math.tan(math.radians(self.gamma_descent)) # rate of descent
+        self.P_loss_descent = self.MTOW_N * self.ROC_descent # power loss due to descent
+        self.P_descent = self.P_loss_descent * 1.045 # TODO: CHECK THIS FACTOR
+
+        self.P_total_descent = self.P_ff + self.P_descent
+
+        # steep descent power
+        self.P_loss_steep_descent = self.MTOW_N * self.steep_descent # power loss due to steep descent
+        self.P_steep_descent = self.P_loss_steep_descent * 1.045 # TODO: CHECK THIS FACTOR
+
+        self.P_total_steep_descent = self.P_ff + self.P_steep_descent
+
     def iterate_design(self, new_MTOW_N=None, new_V_point=None, new_solidity=None, new_gamma_CD=None, new_rho=None, new_ROC_VCD=None, new_min_power_velocity_CD = None, new_min_power_velocity = None, new_min_power_velocity_descent = None, new_gamma_descent = None):
         if new_MTOW_N:
             self.MTOW_N = new_MTOW_N
