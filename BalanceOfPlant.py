@@ -178,14 +178,14 @@ class BalanceOfPlant:
 
 
 #Just stuff for code checking
-inputIV = IVCurves(p_s=2.50)
+# inputIV = IVCurves(p_s=2.50)
 # inputIV.PlotCurves()
-inputCell = CellParameters(IVCurves=inputIV)
-BOP = BalanceOfPlant(IVCurves=inputIV,CellParameters=inputCell)
+# inputCell = CellParameters(IVCurves=inputIV)
+# BOP = BalanceOfPlant(IVCurves=inputIV,CellParameters=inputCell)
 # BOP.AirPower()
 # BOP.HTCPower()
 # BOP.LTCPower()
-BOP.WaterPower()
+# BOP.WaterPower()
 # BOP.ElecPower()
 # BOP.BOPPower()
 # BOP.BOPPieChart()

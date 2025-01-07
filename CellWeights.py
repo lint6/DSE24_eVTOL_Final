@@ -216,11 +216,19 @@ class CellWeights:
         print(f"Design power [kW]: {self.CellParameters.P_D*1e-3:.2f}")
         print(f"Net power [kW]: {(self.CellParameters.P_D-self.BalanceOfPlant.P_BOP[index])*1e-3:.2f}")
         print(f"Design voltage [V]: {self.CellParameters.V_D:.2f}")
+        print(f"Design current [A]: {self.CellParameters.I_D:.2f}")
         print(f"Stack temperature [K]: {self.IVCurves.T:.2f}")
         print(f"Stack pressure [atm]: {self.IVCurves.p_s/101325:.2f}")
         print(f"Pressure drop [Pa]: {self.CellParameters.p_s_drop:.2f}")
+
+        print(f"======DESIGN POINT=====")
         print(f"Number of cells: {self.CellParameters.n_c[index]:.2f}")
         print(f"Active cell area [cm^2]: {self.CellParameters.A_c[index]:.2f}")
+        print(f"Cell voltage [V]: {self.IVCurves.v[index]:.4f}")
+        print(f"Cell power density [W/cm^2]: {self.IVCurves.p[index]:.4f}")
+        print(f"Cell heat [W/cm^2]: {self.IVCurves.q[index]:.4f}")
+        print(f"Efficiency: {self.IVCurves.v[index]/self.IVCurves.E_h:.4f}")
+        print(f"Specific power [kW/kg]: {((self.CellParameters.P_D-self.BalanceOfPlant.P_BOP[index])*1e-3)/self.W_PEMFC[index]:.4f}")
 
         print(f"======MASS FLOWS=====")
         print(f"H2 flow [kg/s]: {self.CellParameters.H2_flow[index]:.4f}")
@@ -232,6 +240,8 @@ class CellWeights:
         print(f"Water liquid flow [kg/s]: {self.CellParameters.water_liquid_flow[index]:.4f}")
         print(f"HTC coolant flow [kg/s]: {self.BalanceOfPlant.HTC_coolant_flow[index]:.4f}")
         print(f"LTC coolant flow [kg/s]: {self.BalanceOfPlant.LTC_coolant_flow[index]:.4f}")
+        print(f"Air in volume flow [m^3/s]: {self.CellParameters.air_in_volume_flow[index]:.4f}")
+
 
         print(f"======HEAT CHARACTERISTICS=====")
         print(f"Total heat to be rejected (HTC) [W]: {self.BalanceOfPlant.Q_htc[index]:.2f} ")
@@ -273,7 +283,7 @@ class CellWeights:
 
 #Testing (uncomment this is you want total output)
 # inputIV = IVCurves(p_s=1.50)
-# inputCell = CellParameters(IVCurves=inputIV,P_D=108208.21,V_D=840)
+# inputCell = CellParameters(IVCurves=inputIV,P_D=95e3,V_D=840)
 # BOP = BalanceOfPlant(IVCurves=inputIV,CellParameters=inputCell)
 # BOP.AirPower()
 # BOP.HTCPower()

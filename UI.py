@@ -25,10 +25,12 @@ P_D_list = []
 Weight_list = []
 counter = 0
 
+V_design = 840 #Design voltage [V]
+
 for j in input_pressures:
     inputIV = IVCurves(p_s=j)
     for i in P_iterate:
-        inputCell = CellParameters(IVCurves=inputIV,P_D=i,V_D=840)
+        inputCell = CellParameters(IVCurves=inputIV,P_D=i,V_D=V_design)
         BOP = BalanceOfPlant(IVCurves=inputIV,CellParameters=inputCell)
         BOP.AirPower()
         BOP.HTCPower()
@@ -73,7 +75,7 @@ print(f"The best combination for a PEMFC with a net power of {P_net:.2f} [W] is 
 
 #Get the best stack characteristics
 inputIV = IVCurves(p_s=input_pressures[bindex])
-inputCell = CellParameters(IVCurves=inputIV,P_D=P_D_list[bindex],V_D=840)
+inputCell = CellParameters(IVCurves=inputIV,P_D=P_D_list[bindex],V_D=V_design)
 BOP = BalanceOfPlant(IVCurves=inputIV,CellParameters=inputCell)
 BOP.AirPower()
 BOP.HTCPower()

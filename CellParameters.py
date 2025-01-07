@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from IVCurves import IVCurves
+import math
 
 #Code written by Jorrit
 #This class is used to calculate some general cell parameters and the required mass flows. 
@@ -16,7 +17,10 @@ class CellParameters():
 
         #General parameters
         self.I_D = self.P_D/self.V_D  #Design current [Ampere]
-        self.n_c = self.V_D/self.IVCurves.v   #Number of cells
+        self.n_c = np.zeros(len(self.IVCurves.v))
+        for i in range(len(self.IVCurves.v)):
+            self.n_c[i] = (float(math.ceil(self.V_D/self.IVCurves.v[i])))
+        # self.n_c = self.V_D/self.IVCurves.v   #Number of cells
         self.A_c = self.P_D/(self.n_c*self.IVCurves.p) #Active cell area [cm^2]
 
         self.MassFlows()
@@ -31,7 +35,7 @@ class CellParameters():
         self.f_a = 2.0          #Utilization fraction of air in, typically 1.5-2.5 according to Datta paper
 
         #Calculate hydrogen mass flow [kg/s]
-        self.H2_flow = (1/2)*(self.m_h/self.IVCurves.F)*self.I_D*self.n_c #1/2 is from ratio of moles of hydrogen to moles of electrons
+        self.H2_flow = (1/2)*(self.m_h/self.IVCurves.F)*self.I_D* self.n_c #1/2 is from ratio of moles of hydrogen to moles of electrons
 
         #Calculate oxygen mass flow [kg/s]
         self.O2_flow = (1/4)*(self.m_o/self.IVCurves.F)*self.I_D*self.n_c #1/4 is from ratio of moles of oxygen to moles of electrons
@@ -50,9 +54,10 @@ class CellParameters():
         self.water_flow = self.H2_flow + self.O2_flow
 
         #Calculate water products 
-        self.alpha_p_ws = (18.678-self.IVCurves.T/234.5)*(self.IVCurves.T/(257.14+self.IVCurves.T)) #Empirical Arden Buck Equations
+        self.alpha_p_ws = (18.678-(self.IVCurves.T-273.15)/234.5)*((self.IVCurves.T-273.15)/(257.14+(self.IVCurves.T-273.15))) #Empirical Arden Buck Equations, uses T in Celsius
         self.p_ws = 611.21*(np.e**self.alpha_p_ws)  #Water saturation pressure [Pa]
         self.humidity_s = (self.m_w/self.m_a)*(self.p_ws/(self.IVCurves.p_s-self.p_s_drop-self.p_ws))   #Maximum saturation humidity ratio
+        # print(self.humidity_s)
 
         self.water_vapour_flow = []
         self.water_liquid_flow = []
@@ -67,7 +72,8 @@ class CellParameters():
                 self.water_vapour_flow.append(self.humidity_s*self.air_out_flow[i])
                 self.water_liquid_flow.append(self.water_flow[i]-self.water_vapour_flow[i])
                 # print(f"A cathode humidifier is not required")
-
+        # print(self.water_vapour_flow)
+        # print(self.water_liquid_flow)
         #Testing stuff
         # print(f"Hydrogen mass flow is {np.mean(self.H2_flow)} kg/s")
         # print(f"Oxygen mass flow is {np.mean(self.O2_flow)} kg/s")
@@ -77,7 +83,7 @@ class CellParameters():
 
         
 #Just here for intermediate testing, move to UI later
-# inputIV = IVCurves(p_s=2.5)
+# inputIV = IVCurves(p_s=1.5)
 # Cell = CellParameters(IVCurves=inputIV)
 
 
