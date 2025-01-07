@@ -45,11 +45,15 @@ def SCfunc_FlightSimulation(aircraft, Run=True, dt=0.1):
         ang_pos_y = 0
         ang_pos_z = 0
         
+        # Contorller
+        i_error = 0
+        
+        
         # Logging
         log_state = [[[pos_x,pos_y,pos_z]],[[ang_pos_x,ang_pos_y,ang_pos_z]]]
         log_forces = [[0]]
-        log_extras = [[0],[0]]
-        log_errors = [0]
+        log_extras = [[0],[0],[0]]
+        log_error = [0]
         while Run:
             
             '''Exit Conditions'''
@@ -108,28 +112,22 @@ def SCfunc_FlightSimulation(aircraft, Run=True, dt=0.1):
             # angtle of atack -- geomatry how force functino, hiahdfbvjkadbfjkhadbfv
             
             # Controllers
-            if log_time[-1]<10:
-                desired = 100
-            elif log_time[-1]<30:
-                desired = 50
-            elif log_time[-1]<45:
-                desired = 150
-                
-            log_errors.append(-desired - pos_z)
-            integral_time = int(1 / dt)
-            if len(log_state[0])>=integral_time:
-                I_error = log_errors[-integral_time:]
-                I_error = np.array(I_error).T[-1]
-                I_error = np.sum(np.array(I_error)*dt)
-            else:
-                I_error = log_errors
-                I_error = np.array(I_error).T[-1]
-                I_error = np.sum(np.array(I_error)*dt)
-            Con_P = 5 * log_errors[-1]
-            Con_I = 150 * I_error
-            Con_D = 45 * (log_errors[-1]-log_errors[-2]) / dt
-            RPM = (Con_P + Con_I + Con_D) * -1
-            
+            # if log_time[-1]>=0:
+            #     setpoint = 100
+            # if log_time[-1]>=20:
+            #     setpoint = 50
+            # if log_time[-1]>=40:
+            #     setpoint = 200
+            setpoint = np.sin(log_time[-1]/5)*60 + 100 
+
+            log_error.append(-setpoint - pos_z)
+            p_error = log_error[-1]
+            i_error = np.sum(log_error) * dt
+            d_error = (log_error[-1]-log_error[-2])/dt
+            k_p = 12.5
+            t_i = 10
+            t_d = 3.1
+            RPM = -k_p * (p_error + i_error/t_i + d_error*t_d)
             
             
             
@@ -152,7 +150,7 @@ def SCfunc_FlightSimulation(aircraft, Run=True, dt=0.1):
             log_state[1].append([ang_pos_x,ang_pos_y,ang_pos_z]) 
             log_forces[0].append(aircraft.forces)
             log_extras[0].append(RPM/4000)
-            log_extras[1].append(desired)
+            log_extras[1].append(setpoint)
             log_time.append(log_time[-1]+dt)
         return log_state, log_forces, log_time, log_extras
         
