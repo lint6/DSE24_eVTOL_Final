@@ -660,6 +660,9 @@ class EnergyAnalysis:
 
 
 def run():
+
+    print(f"------------------------------------------------------")
+    print(f"\033[1mPerformance Analysis:\033[0m")
     # Create an instance of PerformanceAnalysis
     analysis = PerformanceAnalysis()
     
@@ -680,6 +683,9 @@ def run():
     # Final power
     analysis.final_power()
 
+    print(f"------------------------------------------------------")
+    print(f"\033[1mEnergy Analysis:\033[0m")
+
 
     # Instantiate the EnergyAnalysis class
     energy_analysis = EnergyAnalysis(performance=analysis)
@@ -693,13 +699,13 @@ def run():
     # Calculate amps
     amps = energy_analysis.calculate_amps()
 
-    print("Mission Phase Times:")
-    print(times)
+    #print("Mission Phase Times:")
+    #print(times)
     total_time = times['total']/60
     print(f'Total Mission time = {total_time:.2f} [min]')
 
-    print("\nMission Energies (Wh):")
-    print(energies)
+    #print("\nMission Energies (Wh):")
+    #print(energies)
     total_energy = energies['total']
     loiter_energy = energies['Loiter']
     loiter_time = times['Loiter']/60
@@ -709,14 +715,14 @@ def run():
     print(f'Loiter time = {loiter_time} [min]')
     print(f'Energy Consumption during loiter = {loiter_energy:.2f} [Wh]')
 
-    print("\nMission Amps:")
+    #print("\nMission Amps:")
     #print(amps)
     max_amps = amps['max']
     print(f'Max amps = {max_amps:.2f} [A]')
 
     # plot the PEMFC power vs mission phase/time
-    energy_analysis.visual_PEMFC_power()
-    energy_analysis.visual_PEMFC_energy()
+    #energy_analysis.visual_PEMFC_power()
+    #energy_analysis.visual_PEMFC_energy()
 
 # Execute the run function
 if __name__ == "__main__":
