@@ -50,6 +50,10 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
         # Aircraft Config
         rotor_count = 4
         
+        # Control Inputs
+        setpoint_pos = [0,0,-100]
+        setpoint_ang = [0,0,0]
+        
         # Misc
         time_mark = time.time()
         
@@ -59,6 +63,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
         log_forces = [[0]]
         log_extras = [[np.array([0,0,0,0])],[0],[0]]
         log_error= [[[0],[0],[0]],[[0],[0],[0]]]
+        log_acc = [[[0],[0],[0]],[[0],[0],[0]]]
         while Run:
             
             '''Simulation Loop'''
@@ -78,9 +83,9 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
             """
             
             #get current acceleration
-            lat_acc_x = aircraft.forces[0] / (aircraft.mass * 9.81) 
-            lat_acc_y = aircraft.forces[1] / (aircraft.mass * 9.81) 
-            lat_acc_z = aircraft.forces[2] / (aircraft.mass * 9.81) + 9.81
+            lat_acc_x = aircraft.forces[0] / (aircraft.mass) 
+            lat_acc_y = aircraft.forces[1] / (aircraft.mass) 
+            lat_acc_z = aircraft.forces[2] / (aircraft.mass) + 9.81
             
             ang_acc = np.linalg.inv(aircraft.inertia).dot(aircraft.moments)
             ang_acc_x = ang_acc[0]
@@ -99,8 +104,14 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
             pos_x = pos_x + vel_x * dt
             pos_y = pos_y + vel_y * dt 
             pos_z = pos_z + vel_z * dt
+            if pos_z > 0:
+                pos_z = 0
             ang_pos_x = ang_pos_x + rot_x * dt
             ang_pos_y = ang_pos_y + rot_y * dt
+            if ang_pos_z + rot_z * dt > 180:
+                ang_pos_z = ang_pos_z + rot_z * dt - 360
+            if ang_pos_z + rot_z * dt < -180:
+                ang_pos_z = ang_pos_z + rot_z * dt + 360
             ang_pos_z = ang_pos_z + rot_z * dt 
             ang_pos_x = np.clip(ang_pos_x, a_max=90, a_min=-90)
             ang_pos_y = np.clip(ang_pos_y, a_max=90, a_min=-90)
@@ -108,35 +119,45 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
             # side slip angle
             # angtle of atack -- geomatry how force functino, hiahdfbvjkadbfjkhadbfv
             
-            # Controllers
-            # Setpoints
-            if log_time[-1]>=0:
-                setpoint_pos_z = 100
-                setpoint_ang_pos_y = 0
-                setpoint_ang_pos_x = -10
-                setpoint_ang_pos_z = 0
-            if log_time[-1]>=20:
-                setpoint_pos_z = 50
-
-            if log_time[-1]>=40:
-                setpoint_pos_z = 100
-
+            # # Controllers
+            # # Angle Error
+            # ang_tgt = np.arctan2(setpoint_pos[1]-pos_x, setpoint_pos[0]-pos_y) * 180/np.pi #angle from the aicraft to the target
+            # print(f'ang_tgt {ang_tgt}')
+            # print(f'ang_pos_z {ang_pos_z}')
+            # if (ang_tgt - ang_pos_z) > 180:  #difference between the aircraft yaw and the yaw of the target
+            #     ang_diff = ang_tgt - ang_pos_z + 360
+            # if (ang_tgt - ang_pos_z) < -180:  
+            #     ang_diff = ang_tgt - ang_pos_z - 360
+            # else:
+            #     ang_diff = ang_tgt - ang_pos_z
+            # print(ang_diff)
+            # mag_diff = np.linalg.norm([setpoint_pos[1]-pos_x,setpoint_pos[0]-pos_y]) #magnitude of difference between planar elements
+            # lat_diff = np.sin(np.radians(ang_diff)) * mag_diff
+            # lon_diff = np.cos(np.radians(ang_diff)) * mag_diff
             
+            # log_error[0][0].append(lat_diff)
+            # log_error[0][1].append(lon_diff)
+            # log_error[0][2].append(setpoint_pos[2] - pos_z)
+            # print(setpoint_pos[2] - pos_z)
             
-
-            # Errors
+            # setpoint_ang[2] = ang_tgt #yaw angle
+            # setpoint_ang[1] = np.clip(SCfunc_PIDController(log_error[0][1], k_p=12.5, t_i=10, t_d=3.1, dt=dt), a_min=-30, a_max=30) #pitch angle
+            # setpoint_ang[0] = np.clip(SCfunc_PIDController(log_error[0][0], k_p=12.5, t_i=10, t_d=3.1, dt=dt), a_min=-30, a_max=30) #roll angle
             
-            log_error_pos_z.append(-setpoint_pos_z - pos_z)
-            log_error_ang_pos_x.append(setpoint_ang_pos_x - ang_pos_x)
-            log_error_ang_pos_y.append(setpoint_ang_pos_y - ang_pos_y)
-            log_error_ang_pos_z.append(setpoint_ang_pos_z - ang_pos_z)
-            # Controllers
-            rpm_hover = np.ones(rotor_count) * SCfunc_PIDController(log_error_pos_z, k_p=12.5, t_i=10, t_d=3.1, dt=dt)
-            rpm_rotate_x = np.array([-1,1,1,-1]) * -1 *SCfunc_PIDController(log_error_ang_pos_x, k_p=10, t_i=50, t_d=1, dt=dt)            
-            rpm_rotate_y = np.array([1,1,-1,-1]) * -1 *SCfunc_PIDController(log_error_ang_pos_y, k_p=10, t_i=50, t_d=1, dt=dt)
-            rpm_rotate_z = np.array([-1,1,-1,1]) * -1 *SCfunc_PIDController(log_error_ang_pos_z, k_p=50, t_i=50, t_d=5, dt=dt)
-            rpm = rpm_hover + rpm_rotate_x + rpm_rotate_y + rpm_rotate_z
+            # log_error[1][0].append(setpoint_ang[0])
+            # log_error[1][1].append(setpoint_ang[1])
+            # log_error[1][2].append(ang_diff)
+            # # Controllers
+            # rpm_hover = np.ones(rotor_count) * SCfunc_PIDController(log_error[0][1], k_p=12.5, t_i=10, t_d=3.1, dt=dt)
+            # rpm_rotate_x = np.array([-1,1,1,-1]) * -1 * SCfunc_PIDController(log_error[1][0], k_p=10, t_i=50, t_d=1, dt=dt)            
+            # rpm_rotate_y = np.array([1,1,-1,-1]) * -1 * SCfunc_PIDController(log_error[1][1], k_p=10, t_i=50, t_d=1, dt=dt)
+            # rpm_rotate_z = np.array([-1,1,-1,1]) * -1 * SCfunc_PIDController(log_error[1][2], k_p=50, t_i=50, t_d=5, dt=dt)
+            # rpm = rpm_hover + rpm_rotate_x + rpm_rotate_y + rpm_rotate_z
 
+
+            rpm = np.ones(4) * 2000
+            # print(rpm)
+            
             for i in range(len(rpm)):
                 if rpm[i] < 0:
                     rpm[i] = 0
@@ -144,6 +165,10 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
                     rpm[i] = 4000
             if pos_z > 0:
                 pos_z = 0
+                
+                
+                
+            
             # Update aircraft
             position = [pos_x, pos_y, pos_z]
             rotation = [ang_pos_x, ang_pos_y, ang_pos_z]
@@ -155,15 +180,20 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
                         SCfunc_UpdateAssembly(u_forces=[[0],[0],[rpm[3]]], u_moments=[[0],[0],[rpm[3]]]),
                         SCfunc_UpdateAssembly()]
             aircraft.UpdatePoints(update_variables = updates)
+            print(aircraft.forces)
             # Logging
             log_state[0].append(position)
             log_state[1].append(rotation)
             log_state[2].append(velocity)
             log_forces[0].append(aircraft.forces)
+            
             log_extras[0].append(rpm/4000)
-            log_extras[1].append(setpoint_pos_z)
-            log_extras[2].append(setpoint_ang_pos_y)
+            log_extras[1].append(setpoint_pos)
+            log_extras[2].append(setpoint_ang)
             log_time.append(log_time[-1]+dt)
+            
+            log_acc[0][2].append(lat_acc_z)
+            print(lat_acc_z)
             
             '''Exit Conditions'''
             if time.time() - start_time > 60:
@@ -175,7 +205,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
             if time.time() - time_mark > 5 :
                 print(f'Progress: {log_time[-1]/runtime*100 :.2f}%')
                 time_mark = time.time()
-        return log_state, log_forces, log_time, log_extras
+        return log_state, log_forces, log_time, log_extras, log_acc
         
 
 def ExampleFunction(Constant): #the input modify the function that is to be returned
