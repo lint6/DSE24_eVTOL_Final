@@ -29,7 +29,7 @@ class PerformanceAnalysis:
         self.pitch_x = 8 # pitch angle variation over span aqs a function of x
 
         # structural inputs, TODO: INPUT CORRECT VALUES LATER
-        self.A_eq = 0.5
+        self.A_eq = 0.75
 
         # mission inputs
         self.gamma_climb = climb_angle #degrees
@@ -75,8 +75,7 @@ class PerformanceAnalysis:
         }
 
 
-    def powers_in_flight(self):
-        self.advance_ratio = self.V_point / (self.rotor_radius * self.omega) # advance ratio
+    def hover_powers(self):
 
         # hover induced power
 
@@ -115,22 +114,146 @@ class PerformanceAnalysis:
         self.P_p_hov = ((self.solidity*self.C_D_p_bar)/8) * self.rho *((self.omega*self.rotor_radius)**3)*(self.pi*(self.rotor_radius**2)) * self.number_of_rotors
 
         self.P_hoge = self.P_i_hov + self.P_p_hov
+
+        # print statements
+        print(f"---------------------------------")
+        print(f"Hover induced velocity: {self.v_i_hov:.2f} m/s")
+        print(f"---------------------------------")
         print(f"Hover out of ground effect power: {self.P_hoge/1000:.2f} kW")
+        print(f"---------------------------------")
 
-        self.P_vertical_climb = self.P_hoge + (self.MTOW_N * self.vertical_climb)/2 # diktaat
+    def vertical_climb_descent_powers(self):
+        # vertical climb and descent powers
+        self.P_vertical_climb = self.P_hoge + (self.MTOW_N * self.vertical_climb) / 2  # diktaat
+        self.P_vertical_descent = self.P_hoge + (self.MTOW_N * self.vertical_descent) / 2  # diktaat
 
-        self.P_vertical_descent = self.P_hoge + (self.MTOW_N * self.vertical_descent)/2 # diktaat
+        # print statements
+        print(f"Vertical climb power: {self.P_vertical_climb/1000:.2f} kW")
+        print(f"---------------------------------")
+        print(f"Vertical descent power: {self.P_vertical_descent/1000:.2f} kW")
+        print(f"---------------------------------")
+
+    def forward_flight_powers(self):
+
+        self.advance_ratio = self.V_point / (self.rotor_radius * self.omega) # advance ratio
+
+        # Parasitic power
+        self.P_par_ff = self.A_eq * 0.5 * self.rho * self.V_point**3 # TODO: UPDATE A_eq
+
+        # Induced power
+        self.T = self.MTOW_N
+        self.V_bar = self.V_point / self.v_i_hov
+        self.D_par = self.P_par_ff / self.V_point
+        self.alpha = math.asin((self.D_par/self.MTOW_N) + math.sin(math.radians(self.gamma_climb)))
+        array = np.array([0.0,0.0,0.0,0.0,0.0])
+        array[0] = 1
+        array[1] = 2*self.V_bar*math.sin(self.alpha)
+        array[2] = (self.V_bar**2)
+        array[3] = 0
+        array[4] = -1
+        self.roots = np.roots(array)[3]
+        self.v_i_bar = np.real(self.roots) 
+        self.v_i_ff = self.v_i_bar*self.v_i_hov
+
+        self.P_i_ff = self.T * self.v_i_ff
+
+        # Profile + Drag power
+        self.P_p_ff = self.P_p_hov * (1 + 4.65*(self.advance_ratio**2)) # TODO: LOOK FOR A BETTER VALUE THAN 4.65
+
+        # Total power
+        self.P_ff = self.P_par_ff + self.P_i_ff + self.P_p_ff
+
+        # Print statements
+        print(f"Parasitic power: {self.P_par_ff/1000:.2f} kW")
+        print(f"---------------------------------")
+        print(f"Induced power: {self.P_i_ff/1000:.2f} kW")
+        print(f"---------------------------------")
+        print(f"Profile power: {self.P_p_ff/1000:.2f} kW")
+        print(f"---------------------------------")
+        print(f"Total power: {self.P_ff/1000:.2f} kW")
+        print(f"---------------------------------")
+
+
+    def iterate_design(self, new_MTOW_N=None, new_V_point=None, new_solidity=None, new_gamma_CD=None, new_rho=None, new_ROC_VCD=None, new_min_power_velocity_CD = None, new_min_power_velocity = None, new_min_power_velocity_descent = None, new_gamma_descent = None):
+        if new_MTOW_N:
+            self.MTOW_N = new_MTOW_N
+        if new_V_point:
+            self.V_point = new_V_point
+        if new_solidity:
+            self.solidity = new_solidity
+        if new_gamma_CD:
+            self.gamma_CD = new_gamma_CD
+        if new_rho:
+            self.rho = new_rho
+        if new_ROC_VCD:
+            self.ROC_VCD = new_ROC_VCD
+
+        self.forward_flight_powers()
+
+    def plot_power_components(self):
+        V = np.linspace(0.01, 85, 1000)
+        AV = []
+        P_p = []
+        P_i = []
+        P_par = []
+        P_total_level = []
+        P_hoge = []
+
+        # P_CD = []
+        # P_total_CD = []
+        # P_total_CD_steep = []
+        # P_total_descent = []
+
+        for velocity in V:
+            self.iterate_design(new_V_point=velocity)
+            AV.append(self.advance_ratio)
+            P_p.append(self.P_p_ff / 1000)
+            P_i.append(self.P_i_ff / 1000)
+            P_par.append(self.P_par_ff / 1000)
+            P_total_level.append(self.P_ff / 1000)
+            P_hoge.append(self.P_hoge / 1000)
+
+            # P_CD.append(self.P_CD / 1000)
+            # P_total_CD.append(self.P_total_CD / 1000)
+            # P_total_CD_steep.append(self.P_total_CD_steep / 1000)
+            # P_total_descent.append(self.P_total_descent / 1000)
+
+
+        # Identify velocity corresponding to minimum flight-level power
+        self.min_power = min(P_total_level)
+        self.min_power_watts = self.min_power * 1000
+        self.min_power_velocity = V[P_total_level.index(self.min_power)]
+        print(f"The velocity corresponding to the minimum flight-level power {self.min_power:.2f} kW is {self.min_power_velocity:.2f} m/s")
+
+        # plot forward flight powers
+        plt.plot(V, P_p, label="Profile drag power", linestyle='-', color='b', linewidth=1)
+        plt.plot(V, P_i, label="Induced power", linestyle='-', color='c', linewidth=1)
+        plt.plot(V, P_par, label="Parasitic power", linestyle='-', color='r', linewidth=1)
+        plt.plot(V, P_total_level, label="Total power (level flight)", linestyle='-', color='k', linewidth=2)
+        plt.scatter(self.min_power_velocity, self.min_power, color='red', label=f'Min Forward Flight Power: ({self.min_power_velocity*3.6:.2f} km/h, {self.min_power:.2f} kW)')
+        plt.xlabel('Velocity (m/s)')
+        plt.ylabel('Power (kW)')
+        plt.title('Power Components vs Velocity')
+        plt.legend(loc='best', fontsize='small')
+        plt.grid(True)
+
+        # plot hoge power
+        #plt.plot(V, P_hoge, label="Power HOGE", linestyle=':', color='purple')
+
+        plt.show()
+
+
 
 def run():
     # Create an instance of PerformanceAnalysis
     analysis = PerformanceAnalysis()
+    
+    # Call functions
+    analysis.hover_powers()
+    analysis.vertical_climb_descent_powers()
+    analysis.forward_flight_powers()
+    analysis.plot_power_components()
 
-    # Call the powers_in_flight method to perform calculations and plot results
-    print("Calculating powers in flight and plotting induced velocity distribution...")
-    analysis.powers_in_flight()
-
-    # Display some key results
-    print(f"Hover induced velocity: {analysis.v_i_hov:.2f} m/s")
 
 
 # Execute the run function
