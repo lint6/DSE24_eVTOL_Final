@@ -106,32 +106,18 @@ class PerformanceAnalysis:
 
         # this should be lower then the same calculation using pure momentum disk theory
         self.P_i_hov = self.MTOW_N * self.v_i_hov # k factor is 1 as rotors are away from fuselage, assumed that Thrust = Weight; TODO: CHANGE WHEN ROTOR IS FINISHED
-        #print(f"Hover induced power: {self.P_i_hov/1000:.2f} kW")
-        # profile power
 
-        self.C_D_p_bar = 0.01 # TODO: CHANGE LATER based on airfoil tools
+        # profile power
+        self.C_D_p_bar = 0.02 # TODO: CHANGE LATER based on airfoil tools
 
         self.P_p_hov = ((self.solidity*self.C_D_p_bar)/8) * self.rho *((self.omega*self.rotor_radius)**3)*(self.pi*(self.rotor_radius**2)) * self.number_of_rotors
 
         self.P_hoge = self.P_i_hov + self.P_p_hov
 
-        # print statements
-        print(f"---------------------------------")
-        print(f"Hover induced velocity: {self.v_i_hov:.2f} m/s")
-        print(f"---------------------------------")
-        print(f"Hover out of ground effect power: {self.P_hoge/1000:.2f} kW")
-        print(f"---------------------------------")
-
     def vertical_climb_descent_powers(self):
         # vertical climb and descent powers
         self.P_vertical_climb = self.P_hoge + (self.MTOW_N * self.vertical_climb) / 2  # diktaat
         self.P_vertical_descent = self.P_hoge + (self.MTOW_N * self.vertical_descent) / 2  # diktaat
-
-        # print statements
-        print(f"Vertical climb power: {self.P_vertical_climb/1000:.2f} kW")
-        print(f"---------------------------------")
-        print(f"Vertical descent power: {self.P_vertical_descent/1000:.2f} kW")
-        print(f"---------------------------------")
 
     def forward_flight_powers(self):
 
@@ -162,17 +148,6 @@ class PerformanceAnalysis:
 
         # Total power
         self.P_ff = self.P_par_ff + self.P_i_ff + self.P_p_ff
-
-        # Print statements
-        print(f"Parasitic power: {self.P_par_ff/1000:.2f} kW")
-        print(f"---------------------------------")
-        print(f"Induced power: {self.P_i_ff/1000:.2f} kW")
-        print(f"---------------------------------")
-        print(f"Profile power: {self.P_p_ff/1000:.2f} kW")
-        print(f"---------------------------------")
-        print(f"Total power: {self.P_ff/1000:.2f} kW")
-        print(f"---------------------------------")
-
 
     def iterate_design(self, new_MTOW_N=None, new_V_point=None, new_solidity=None, new_gamma_CD=None, new_rho=None, new_ROC_VCD=None, new_min_power_velocity_CD = None, new_min_power_velocity = None, new_min_power_velocity_descent = None, new_gamma_descent = None):
         if new_MTOW_N:
@@ -223,7 +198,15 @@ class PerformanceAnalysis:
         self.min_power = min(P_total_level)
         self.min_power_watts = self.min_power * 1000
         self.min_power_velocity = V[P_total_level.index(self.min_power)]
-        print(f"The velocity corresponding to the minimum flight-level power {self.min_power:.2f} kW is {self.min_power_velocity:.2f} m/s")
+
+        # Find the induced power corresponding to the min_power_velocity
+        self.min_power_induced = P_i[V.tolist().index(self.min_power_velocity)] * 1000
+
+        # Find the profile power corresponding to the min_power_velocity
+        self.min_power_profile = P_p[V.tolist().index(self.min_power_velocity)] * 1000
+
+        # Find the parasitic power corresponding to the min_power_velocity
+        self.min_power_parasitic = P_par[V.tolist().index(self.min_power_velocity)] * 1000
 
         # plot forward flight powers
         plt.plot(V, P_p, label="Profile drag power", linestyle='-', color='b', linewidth=1)
@@ -233,7 +216,7 @@ class PerformanceAnalysis:
         plt.scatter(self.min_power_velocity, self.min_power, color='red', label=f'Min Forward Flight Power: ({self.min_power_velocity*3.6:.2f} km/h, {self.min_power:.2f} kW)')
         plt.xlabel('Velocity (m/s)')
         plt.ylabel('Power (kW)')
-        plt.title('Power Components vs Velocity')
+        plt.title('Level Flight Power Components vs Velocity')
         plt.legend(loc='best', fontsize='small')
         plt.grid(True)
 
@@ -241,6 +224,64 @@ class PerformanceAnalysis:
         #plt.plot(V, P_hoge, label="Power HOGE", linestyle=':', color='purple')
 
         plt.show()
+
+    def plot_power_pie_chart(self):
+        # Draw a pie chart showing the composition of the total level flight power
+        labels = [
+            f'Induced Power: {self.min_power_induced/1000:.2f} kW', 
+            f'Parasitic Power: {self.min_power_parasitic/1000:.2f} kW', 
+            f'Profile Power: {self.min_power_profile/1000:.2f} kW',
+            f'Total Power: {self.min_power:.2f} kW'
+        ]
+        sizes = [self.min_power_induced, self.min_power_parasitic, self.min_power_profile]
+        colors = ['c', 'r', 'b']
+        plt.figure(figsize=(8, 8))
+        plt.pie(sizes, labels=labels[:-1], colors=colors, autopct=lambda p: f'{p:.1f}%\n({p * sum(sizes) / 100 / 1000:.2f} kW)', startangle=140, textprops={'color': 'w'})
+        plt.title('Composition of Total Level Flight Power')
+        plt.legend(labels, loc="upper center", bbox_to_anchor=(0.5, 0.1), ncol=1)
+        plt.show()
+
+    def plot_power_breakdown(self):
+
+        # Power Breakdown at Different Velocities
+        velocities = [5, 10, 15, 20, 25, 30, 40, 50, 60, 70, 80]  # velocities in m/s
+        profile_power = []
+        induced_power = []
+        parasitic_power = []
+        total_power = []
+
+        for velocity in velocities:
+            self.iterate_design(new_V_point=velocity)
+            profile_power.append(self.P_p_ff / 1000)  # convert to kW
+            induced_power.append(self.P_i_ff / 1000)  # convert to kW
+            parasitic_power.append(self.P_par_ff / 1000)  # convert to kW
+            total_power.append(self.P_ff / 1000)  # convert to kW
+
+        velocities_kmh = [v * 3.6 for v in velocities]  # convert velocities to km/h
+
+        plt.figure()
+        bar_width = 0.35
+        index = np.arange(len(velocities_kmh))
+        p1 = plt.bar(index, profile_power, bar_width, label='Profile Power')
+        p2 = plt.bar(index, induced_power, bar_width, bottom=profile_power, label='Induced Power')
+        p3 = plt.bar(index, parasitic_power, bar_width, bottom=np.array(profile_power) + np.array(induced_power), label='Parasitic Power')
+        plt.plot(index, total_power, label='Total Power', color='grey', linestyle='-', linewidth=2, alpha=0.7)
+
+        plt.xlabel('Velocity (km/h)')
+        plt.ylabel('Power (kW)')
+        plt.title('Power Breakdown at Different Velocities')
+        plt.xticks(index, velocities_kmh)
+        plt.legend()
+        plt.grid(True)
+
+        # Add percentages inside the bars
+        for i in range(len(velocities_kmh)):
+            plt.text(index[i], profile_power[i] / 2, f'{profile_power[i] / total_power[i] * 100:.1f}%', ha='center', va='center', color='black', fontsize=8)
+            plt.text(index[i], profile_power[i] + induced_power[i] / 2, f'{induced_power[i] / total_power[i] * 100:.1f}%', ha='center', va='center', color='black', fontsize=8)
+            plt.text(index[i], profile_power[i] + induced_power[i] + parasitic_power[i] / 2, f'{parasitic_power[i] / total_power[i] * 100:.1f}%', ha='center', va='center', color='black', fontsize=8)
+
+        plt.show()
+
 
 
 
@@ -253,6 +294,25 @@ def run():
     analysis.vertical_climb_descent_powers()
     analysis.forward_flight_powers()
     analysis.plot_power_components()
+    #analysis.plot_power_pie_chart()
+    #analysis.plot_power_breakdown()
+
+    # Print results
+    print(f"--------------------------------------")
+    print(f"Hover out of ground effect power: {analysis.P_hoge/1000:.2f} kW")
+    print(f"--------------------------------------")
+    print(f"Vertical climb power: {analysis.P_vertical_climb/1000:.2f} kW")
+    print(f"--------------------------------------")
+    print(f"Vertical descent power: {analysis.P_vertical_descent/1000:.2f} kW")
+    print(f"--------------------------------------")
+    print(f"The velocity corresponding to the minimum flight-level power {analysis.min_power:.2f} kW is {analysis.min_power_velocity*3.6:.2f} km/h")
+    print(f"--------------------------------------")
+    print(f"The corresponding induced power is {analysis.min_power_induced/1000:.2f} kW")
+    print(f"--------------------------------------")
+    print(f"The corresponding profile power is {analysis.min_power_profile/1000:.2f} kW")
+    print(f"--------------------------------------")
+    print(f"The corresponding parasitic power is {analysis.min_power_parasitic/1000:.2f} kW")
+
 
 
 
