@@ -7,7 +7,8 @@ DO NOT define class
 DO NOT script
 
 Upstream
-None
+aircraft.py
+controller.py
 
 Downstream
 SimulationUI.py
@@ -18,8 +19,9 @@ import numpy as np
 import classbank 
 import time
 from aircraft import *
+from controller import *
 
-def SCfunc_FlightSimulation(aircraft, Run=True, dt=0.1):
+def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
     if Run:
         print('Warning: Simulation Running')
         '''DOWNWARD IS POSTIVE'''
@@ -27,6 +29,7 @@ def SCfunc_FlightSimulation(aircraft, Run=True, dt=0.1):
         '''DOWNWARD IS POSTIVE'''
         start_time = time.time()
         log_time = [0]
+        runtime = runtime
         #initializing
         # Velocity
         vel_x = 0
@@ -40,30 +43,24 @@ def SCfunc_FlightSimulation(aircraft, Run=True, dt=0.1):
         pos_x = 0
         pos_y = 0
         pos_z = 0
-        # Rotation
+        # Rotation angle wrt axis
         ang_pos_x = 0
         ang_pos_y = 0
         ang_pos_z = 0
+        # Aircraft Config
+        rotor_count = 4
         
-        # Contorller
-        i_error = 0
+        # Misc
+        time_mark = time.time()
         
         
         # Logging
-        log_state = [[[pos_x,pos_y,pos_z]],[[ang_pos_x,ang_pos_y,ang_pos_z]]]
+        log_state = [[[pos_x,pos_y,pos_z]],[[ang_pos_x,ang_pos_y,ang_pos_z]],[[vel_x, vel_y, vel_z]]]
         log_forces = [[0]]
-        log_extras = [[0],[0],[0]]
-        log_error = [0]
+        log_extras = [[np.array([0,0,0,0])],[0],[0]]
+        log_error= [[[0],[0],[0]],[[0],[0],[0]]]
         while Run:
             
-            '''Exit Conditions'''
-            if time.time() - start_time > 10:
-                Run = False
-                print('Run time reached, simulation exited')
-            if log_time[-1] > 60:
-                Run = False
-                print('Simulation time reached, simulation exited')
-                
             '''Simulation Loop'''
             #Below is the information we have when we cerate an object using Aircraft
 
@@ -86,8 +83,6 @@ def SCfunc_FlightSimulation(aircraft, Run=True, dt=0.1):
             lat_acc_z = aircraft.forces[2] / (aircraft.mass * 9.81) + 9.81
             
             ang_acc = np.linalg.inv(aircraft.inertia).dot(aircraft.moments)
-            
-            
             ang_acc_x = ang_acc[0]
             ang_acc_y = ang_acc[1]
             ang_acc_z = ang_acc[2]
@@ -107,51 +102,79 @@ def SCfunc_FlightSimulation(aircraft, Run=True, dt=0.1):
             ang_pos_x = ang_pos_x + rot_x * dt
             ang_pos_y = ang_pos_y + rot_y * dt
             ang_pos_z = ang_pos_z + rot_z * dt 
-
+            ang_pos_x = np.clip(ang_pos_x, a_max=90, a_min=-90)
+            ang_pos_y = np.clip(ang_pos_y, a_max=90, a_min=-90)
+            ang_pos_z = np.clip(ang_pos_z, a_max=180, a_min=-180)
             # side slip angle
             # angtle of atack -- geomatry how force functino, hiahdfbvjkadbfjkhadbfv
             
             # Controllers
-            # if log_time[-1]>=0:
-            #     setpoint = 100
-            # if log_time[-1]>=20:
-            #     setpoint = 50
-            # if log_time[-1]>=40:
-            #     setpoint = 200
-            setpoint = np.sin(log_time[-1]/5)*60 + 100 
+            # Setpoints
+            if log_time[-1]>=0:
+                setpoint_pos_z = 100
+                setpoint_ang_pos_y = 0
+                setpoint_ang_pos_x = -10
+                setpoint_ang_pos_z = 0
+            if log_time[-1]>=20:
+                setpoint_pos_z = 50
 
-            log_error.append(-setpoint - pos_z)
-            p_error = log_error[-1]
-            i_error = np.sum(log_error) * dt
-            d_error = (log_error[-1]-log_error[-2])/dt
-            k_p = 12.5
-            t_i = 10
-            t_d = 3.1
-            RPM = -k_p * (p_error + i_error/t_i + d_error*t_d)
+            if log_time[-1]>=40:
+                setpoint_pos_z = 100
+
             
             
+
+            # Errors
             
-            if RPM < 0:
-                RPM = 0
-            if RPM > 4000:
-                RPM = 4000
+            log_error_pos_z.append(-setpoint_pos_z - pos_z)
+            log_error_ang_pos_x.append(setpoint_ang_pos_x - ang_pos_x)
+            log_error_ang_pos_y.append(setpoint_ang_pos_y - ang_pos_y)
+            log_error_ang_pos_z.append(setpoint_ang_pos_z - ang_pos_z)
+            # Controllers
+            rpm_hover = np.ones(rotor_count) * SCfunc_PIDController(log_error_pos_z, k_p=12.5, t_i=10, t_d=3.1, dt=dt)
+            rpm_rotate_x = np.array([-1,1,1,-1]) * -1 *SCfunc_PIDController(log_error_ang_pos_x, k_p=10, t_i=50, t_d=1, dt=dt)            
+            rpm_rotate_y = np.array([1,1,-1,-1]) * -1 *SCfunc_PIDController(log_error_ang_pos_y, k_p=10, t_i=50, t_d=1, dt=dt)
+            rpm_rotate_z = np.array([-1,1,-1,1]) * -1 *SCfunc_PIDController(log_error_ang_pos_z, k_p=50, t_i=50, t_d=5, dt=dt)
+            rpm = rpm_hover + rpm_rotate_x + rpm_rotate_y + rpm_rotate_z
+
+            for i in range(len(rpm)):
+                if rpm[i] < 0:
+                    rpm[i] = 0
+                if rpm[i] > 4000:
+                    rpm[i] = 4000
+            if pos_z > 0:
+                pos_z = 0
             # Update aircraft
             position = [pos_x, pos_y, pos_z]
             rotation = [ang_pos_x, ang_pos_y, ang_pos_z]
+            velocity = [vel_x, vel_y, vel_z]
             aircraft.UpdateAircraftState(position, rotation)
-            updates = [ SCfunc_UpdateAssembly(u_forces=[[0],[0],[RPM]], u_moments=[[0],[0],[RPM]]), 
-                        SCfunc_UpdateAssembly(u_forces=[[0],[0],[RPM]], u_moments=[[0],[0],[RPM]]),
-                        SCfunc_UpdateAssembly(u_forces=[[0],[0],[RPM]], u_moments=[[0],[0],[RPM]]), 
-                        SCfunc_UpdateAssembly(u_forces=[[0],[0],[RPM]], u_moments=[[0],[0],[RPM]]),
+            updates = [ SCfunc_UpdateAssembly(u_forces=[[0],[0],[rpm[0]]], u_moments=[[0],[0],[rpm[0]]]), 
+                        SCfunc_UpdateAssembly(u_forces=[[0],[0],[rpm[1]]], u_moments=[[0],[0],[rpm[1]]]),
+                        SCfunc_UpdateAssembly(u_forces=[[0],[0],[rpm[2]]], u_moments=[[0],[0],[rpm[2]]]), 
+                        SCfunc_UpdateAssembly(u_forces=[[0],[0],[rpm[3]]], u_moments=[[0],[0],[rpm[3]]]),
                         SCfunc_UpdateAssembly()]
             aircraft.UpdatePoints(update_variables = updates)
             # Logging
-            log_state[0].append([pos_x,pos_y,pos_z])
-            log_state[1].append([ang_pos_x,ang_pos_y,ang_pos_z]) 
+            log_state[0].append(position)
+            log_state[1].append(rotation)
+            log_state[2].append(velocity)
             log_forces[0].append(aircraft.forces)
-            log_extras[0].append(RPM/4000)
-            log_extras[1].append(setpoint)
+            log_extras[0].append(rpm/4000)
+            log_extras[1].append(setpoint_pos_z)
+            log_extras[2].append(setpoint_ang_pos_y)
             log_time.append(log_time[-1]+dt)
+            
+            '''Exit Conditions'''
+            if time.time() - start_time > 60:
+                Run = False
+                print('Run time reached, simulation exited')
+            if log_time[-1] > runtime:
+                Run = False
+                print('Simulation time reached, simulation exited')
+            if time.time() - time_mark > 5 :
+                print(f'Progress: {log_time[-1]/runtime*100 :.2f}%')
+                time_mark = time.time()
         return log_state, log_forces, log_time, log_extras
         
 
