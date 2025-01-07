@@ -192,7 +192,6 @@ class SCobj_Aircraft():
         self.moments_body = self.Moments()
         self.mass = self.Mass()
         self.inertia_body = self.Inertia()
-        
         self.rotation_mat = SCfunc_EulerRotation([0,0,0], self.rotation)[1]
         self.rotation_mat_inv = SCfunc_EulerRotation([0,0,0], self.rotation)[2]
         ''' IMPORTANT'''
@@ -201,3 +200,7 @@ class SCobj_Aircraft():
         self.forces  = self.rotation_mat @ self.forces_body #total force experianced by the aircraft
         self.moments = self.rotation_mat @ self.moments_body #total moments experianced by the aircraft
         self.inertia = self.rotation_mat @ self.inertia_body @ self.rotation_mat.T #inertia tensor of the full aircraft
+    
+    def UpdateAircraftState(self, position, rotation):
+        self.position = position
+        self.rotation = rotation

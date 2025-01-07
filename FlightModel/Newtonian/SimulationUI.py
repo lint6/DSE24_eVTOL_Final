@@ -14,14 +14,18 @@ None
 '''
 
 import numpy as np
-# from classbank import SCobj_ForcePoint, SCobj_Aircraft
+from aircraft import *
+from physics import *
+import matplotlib.pyplot as plt
 
-# rotor_fr = SCobj_ForcePoint(force=[0,0,1], 
-#                             moment=[0,0,0], 
-#                             mass=20, 
-#                             inertia=0)
-pos = np.array([1,0,1])
-A = np.array([[5,0,0],[0,5,0],[0,0,5]])
-print(
-    np.add(A, 10 * (np.dot(pos, pos)*np.identity(3) - np.outer(pos, pos)))
-)
+aircraft = SCobj_Aircraft(points=SCfunc_VerifyAircraft(), position=[0,0,0], rotation=[0,0,0])
+log_state, log_forces, log_time, log_extras = SCfunc_FlightSimulation(aircraft)
+
+plt.plot(log_time, -1*np.array(log_state[0]).T[2])
+plt.plot(log_time, log_extras[1], 'r')
+plt.xlabel('time')
+plt.ylabel('Height')
+plt.show()
+plt.clf()
+plt.plot(log_time, log_extras[0])
+plt.show()

@@ -19,10 +19,16 @@ a full aircraft '
 
 from classbank import *
 
+'''The axis are always in the order of X Y Z'''
+'''X+ to the front of aircraft'''
+'''Y+ to the right of the aircraft'''
+'''Z+ to the down of the aircraft'''
+'''Rotation follow right-hand rule'''
+
 def ExampleFunction(Constant): #the input modify the function that is to be returned
     return lambda variable: variable*Constant #Return a function that can be stored in a variable
 
-def SCfunc_UpdateAssembly(u_forces   = [[0],[0],[0]],
+def SCfunc_UpdateAssembly(u_forces   = [[0],[0],[0]], #Assembles the ForcePoint update variables
                           u_moments  = [[0],[0],[0]],
                           u_mass     =  [0],
                           u_inertia  = [[0,0,0],
@@ -56,16 +62,86 @@ def SCfunc_PointGeneration(): #Returns a list of points with ForcePoint class, m
     '''Collect Points'''
     points = [example_point, example_point2]
     return points
-    
-aircraft = SCobj_Aircraft(points=SCfunc_PointGeneration(), position=[0,0,0], rotation=[0,0,0])
-print(aircraft.forces)
-print('---------Updating Points------------')
-updates = [SCfunc_UpdateAssembly(u_forces=[[0],[0],[2]]), 
-           SCfunc_UpdateAssembly(u_forces=[[0],[0],[5]])]
-aircraft.UpdatePoints(update_variables=updates)
-print(aircraft.forces)
-print('---------Updating Points------------')
-updates = [SCfunc_UpdateAssembly(u_forces=[[0],[0],[4]]), 
-           SCfunc_UpdateAssembly(u_forces=[[0],[0],[8]])]
-aircraft.UpdatePoints(update_variables=updates)
-print(aircraft.forces)
+
+'''Verification Functions''' #functions used for verification of the simulation model
+'''Start'''
+def SCfunc_VerifyThrust(CT): #Mimic single input (RPM) function for thrust
+    return lambda variable: variable*CT #Variable = RPM
+def SCfunc_VerifyTorque(CM): #Mimic single input (RPM) function for torque
+    return lambda variable: variable*CM  #Variable = RPM
+
+def SCfunc_VerifyAircraft(): #Returns a list of points with ForcePoint class, modify this function to add or remove points from the aicraft
+    '''Points'''
+    rotor_1 = SCobj_ForcePoint(forces   = [0, 0, SCfunc_VerifyThrust(-5)], #[N, WITHOUT gravitational froce]
+                                     moments  = [0, 0, SCfunc_VerifyTorque(-0.025)],   #[N*m]
+                                     mass     =  0,       #[kg] 
+                                     inertia  =[[0,0,0],   # [....]
+                                                [0,0,0],
+                                                [0,0,0]],
+                                     position = [1,1,0],   # [m from the body axis origin ]
+                                     rotation = [0,0,0],)  # euler angle degrees 
+    rotor_2 = SCobj_ForcePoint(forces   = [0, 0, SCfunc_VerifyThrust(-5)], #[N, WITHOUT gravitational froce]
+                                     moments  = [0, 0, SCfunc_VerifyTorque(0.025)],   #[N*m]
+                                     mass     =  0,       #[kg] 
+                                     inertia  =[[0,0,0],   # [....]
+                                                [0,0,0],
+                                                [0,0,0]],
+                                     position = [1,-1,0],   # [m from the body axis origin ]
+                                     rotation = [0,0,0],)  # euler angle degrees 
+    rotor_3 = SCobj_ForcePoint(forces   = [0, 0, SCfunc_VerifyThrust(-5)], #[N, WITHOUT gravitational froce]
+                                     moments  = [0, 0, SCfunc_VerifyTorque(-0.025)],   #[N*m]
+                                     mass     =  0,       #[kg] 
+                                     inertia  =[[0,0,0],   # [....]
+                                                [0,0,0],
+                                                [0,0,0]],
+                                     position = [-1,-1,0],   # [m from the body axis origin ]
+                                     rotation = [0,0,0],)  # euler angle degrees 
+    rotor_4 = SCobj_ForcePoint(forces   = [0, 0, SCfunc_VerifyThrust(-5)], #[N, WITHOUT gravitational froce]
+                                     moments  = [0, 0, SCfunc_VerifyTorque(0.025)],   #[N*m]
+                                     mass     =  0,       #[kg] 
+                                     inertia  =[[0,0,0],   # [....]
+                                                [0,0,0],
+                                                [0,0,0]],
+                                     position = [-1,1,0],   # [m from the body axis origin ]
+                                     rotation = [0,0,0],)  # euler angle degrees 
+    body = SCobj_ForcePoint(forces   = [0, 0, 0], #[N, WITHOUT gravitational froce]
+                                     moments  = [0, 0, 0],   #[N*m]
+                                     mass     =  100,       #[kg] 
+                                     inertia  =[[100,0,0],   # [....]
+                                                [0,100,0],
+                                                [0,0,100]],
+                                     position = [0,0,0],   # [m from the body axis origin ]
+                                     rotation = [0,0,0],)  # euler angle degrees 
+
+    '''Collect Points'''
+    points = [rotor_1, rotor_2, rotor_3, rotor_4, body]
+    return points
+'''End'''
+
+Testing = False
+if Testing:
+    aircraft = SCobj_Aircraft(points=SCfunc_VerifyAircraft(), position=[0,0,0], rotation=[0,0,0])
+    # print(aircraft.forces)
+    # print(aircraft.moments)
+    print('---------Updating Points------------')
+    rpm1 = 5
+    rpm2 = 2
+    rpm3 = 8
+    rpm4 = 10
+    updates = [SCfunc_UpdateAssembly(u_forces=[[0],[0],[rpm1]], u_moments=[[0],[0],[rpm1]]), 
+            SCfunc_UpdateAssembly(u_forces=[[0],[0],[rpm1]], u_moments=[[0],[0],[rpm1]]),
+            SCfunc_UpdateAssembly(u_forces=[[0],[0],[rpm1]], u_moments=[[0],[0],[rpm1]]), 
+            SCfunc_UpdateAssembly(u_forces=[[0],[0],[rpm1]], u_moments=[[0],[0],[rpm1]]),
+            SCfunc_UpdateAssembly()]
+    aircraft.UpdatePoints(update_variables=updates)
+    # print(aircraft.forces)
+    print(aircraft.moments)
+    print('---------Updating Points------------')
+    updates = [SCfunc_UpdateAssembly(u_forces=[[0],[0],[rpm4]], u_moments=[[0],[0],[rpm4]]), 
+            SCfunc_UpdateAssembly(u_forces=[[0],[0],[rpm4]], u_moments=[[0],[0],[rpm4]]),
+            SCfunc_UpdateAssembly(u_forces=[[0],[0],[rpm2]], u_moments=[[0],[0],[rpm2]]), 
+            SCfunc_UpdateAssembly(u_forces=[[0],[0],[rpm2]], u_moments=[[0],[0],[rpm2]]),
+            SCfunc_UpdateAssembly()]
+    aircraft.UpdatePoints(update_variables=updates)
+    # print(aircraft.forces)
+    print(aircraft.moments)

@@ -53,7 +53,7 @@ def SCfunc_ForceVector(force_in):
 
 def SCfunc_EulerRotation(input_vector, rotation):
     import numpy as np
-
+    # print(rotation)
     # Define Euler angles (in degrees)
     yaw   = rotation[2] # Rotation around Z-axis
     pitch = rotation[1] # Rotation around Y-axis

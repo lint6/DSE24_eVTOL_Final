@@ -1,4 +1,6 @@
 '''
+NOT ACTAULLY USED
+
 Created by Lintong
 
 Simulation Model file
@@ -13,6 +15,7 @@ class.py
 Downstream
 physics.py
 
+NOT ACTAULLY USED
 '''
 import numpy as np
 import classbank
