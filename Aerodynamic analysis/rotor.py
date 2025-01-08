@@ -69,7 +69,8 @@ class BEMT():
         self.r_e = self.r_bar_e * self.R
 
         #setup psi list
-        self.psi_list = np.linspace(0, 2 * np.pi, num_elements).tolist()
+        self.psi_elements = 120
+        self.psi_list = np.linspace(0, 2 * np.pi, self.psi_elements).tolist()
 
     def vertical(self, omega=None, theta_r=None, c_r=None, r=None, dr=None, V_c=None, a_r=None):
         # define non-dimensionalised rotor radius position
@@ -178,37 +179,37 @@ if __name__ == '__main__':
     #initialise discretisation and insert number of elements
     BEMT.discretise(num_elements=100)
 
-    dL_r_list = []
-    dDp_r_list = []
-    dT_r_list = []
-    dQ_r_list = []
-    dP_r_list = []
-    dP_ind_list = []
-
     if vertical==True:
+        dL_r_list1 = []
+        dDp_r_list1 = []
+        dT_r_list1 = []
+        dQ_r_list1 = []
+        dP_r_list1 = []
+        dP_ind_list1 = []
+
         for chord, theta, a, r in zip(BEMT.c_r_list, BEMT.theta_r_list, BEMT.a_r_list, BEMT.r_list):
             prop_1 = BEMT.vertical(omega=BEMT.omega, theta_r=theta, c_r=chord, r=r, dr=BEMT.dr, a_r=a, V_c=0)
             if BEMT.cutout<r<BEMT.r_e:
-                dL_r_list.append(prop_1[0])
-                dDp_r_list.append(prop_1[1])
-                dT_r_list.append(prop_1[2])
-                dQ_r_list.append(prop_1[3])
-                dP_r_list.append(prop_1[4])
-                dP_ind_list.append(prop_1[5])
+                dL_r_list1.append(prop_1[0])
+                dDp_r_list1.append(prop_1[1])
+                dT_r_list1.append(prop_1[2])
+                dQ_r_list1.append(prop_1[3])
+                dP_r_list1.append(prop_1[4])
+                dP_ind_list1.append(prop_1[5])
             else:
-                dL_r_list.append(0.0)
-                dDp_r_list.append(0.0)
-                dT_r_list.append(0.0)
-                dQ_r_list.append(0.0)
-                dP_r_list.append(0.0)
-                dP_ind_list.append(0.0)
+                dL_r_list1.append(0.0)
+                dDp_r_list1.append(0.0)
+                dT_r_list1.append(0.0)
+                dQ_r_list1.append(0.0)
+                dP_r_list1.append(0.0)
+                dP_ind_list1.append(0.0)
 
         #integration for one blade
-        L = sum(dL_r_list)
-        D = sum(dDp_r_list)
-        T = sum(dT_r_list)
-        Q = sum(dQ_r_list)
-        P_r = sum(dP_r_list)
+        L = sum(dL_r_list1)
+        D = sum(dDp_r_list1)
+        T = sum(dT_r_list1)
+        Q = sum(dQ_r_list1)
+        P_r = sum(dP_r_list1)
         LD = L/D
 
         print("---------------------")
@@ -237,27 +238,75 @@ if __name__ == '__main__':
 
         plot = True
         if plot==True:
-            plt.plot(BEMT.r_list, dL_r_list)
+            plt.plot(BEMT.r_list, dL_r_list1)
             plt.xlabel("Spanwise radius [m]")
             plt.ylabel("Lift [N]")
             plt.show()
 
     if forward==True:
+        dL_r_list2 = []
+        dDp_r_list2 = []
+        dT_r_list2 = []
+        dQ_r_list2 = []
+        dP_r_list2 = []
+
+        dL_r_list3 = []
+        dDp_r_list3 = []
+        dT_r_list3 = []
+        dQ_r_list3 = []
+        dP_r_list3 = []
+
+        L = 0
+        Dp = 0
+        T = 0
+        Q = 0
+        P = 0
+
         for psi in BEMT.psi_list:
             for chord, theta, a, r in zip(BEMT.c_r_list, BEMT.theta_r_list, BEMT.a_r_list, BEMT.r_list):
-                prop_2 = BEMT.forward(omega=BEMT.omega, theta_r=theta, c_r=chord, r=r, dr=BEMT.dr, a_r=a, V_f=0, gamma=0, psi=0, alpha_v=0)
+                prop_2 = BEMT.forward(omega=BEMT.omega, theta_r=theta, c_r=chord, r=r, dr=BEMT.dr, a_r=a, V_f=0, gamma=0, psi=psi, alpha_v=0)
                 if BEMT.cutout<r<BEMT.r_e:
-                    dL_r_list.append(prop_2[0])
-                    dDp_r_list.append(prop_2[1])
-                    dT_r_list.append(prop_2[2])
-                    dQ_r_list.append(prop_2[3])
-                    dP_r_list.append(prop_2[4])
+                    dL_r_list3.append(prop_2[0])
+                    dDp_r_list3.append(prop_2[1])
+                    dT_r_list3.append(prop_2[2])
+                    dQ_r_list3.append(prop_2[3])
+                    dP_r_list3.append(prop_2[4])
                 else:
-                    dL_r_list.append(0.0)
-                    dDp_r_list.append(0.0)
-                    dT_r_list.append(0.0)
-                    dQ_r_list.append(0.0)
-                    dP_r_list.append(0.0)
+                    dL_r_list3.append(0.0)
+                    dDp_r_list3.append(0.0)
+                    dT_r_list3.append(0.0)
+                    dQ_r_list3.append(0.0)
+                    dP_r_list3.append(0.0)
+
+            dL_r_list2.append(dL_r_list3)
+            L += sum(dL_r_list3)
+
+            dDp_r_list2.append(dDp_r_list3)
+            Dp += sum(dDp_r_list3)
+
+            dT_r_list2.append(dT_r_list3)
+            T += sum(dT_r_list3)
+
+            dQ_r_list2.append(dQ_r_list3)
+            Q += sum(dQ_r_list3)
+
+            dP_r_list2.append(dP_r_list3)
+            P += sum(dP_r_list3)
+
+            dL_r_list3 = []
+            dDp_r_list3 = []
+            dT_r_list3 = []
+            dQ_r_list3 = []
+            dP_r_list3 = []
+
+        L = L/BEMT.psi_elements
+        Dp = Dp / BEMT.psi_elements
+        T = T / BEMT.psi_elements
+        Q = Q / BEMT.psi_elements
+        P = P / BEMT.psi_elements
+
+        print(L, Dp, T, Q, P)
+
 
 
 
