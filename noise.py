@@ -5,7 +5,7 @@ from scipy.optimize import fsolve
 
 class RotorSizing:
 
-    def __init__(self, MTOW=718.89, n_blades=4, n_rotor = 4, DL = 34.2, bank_angle = 30, cto_fl = 0.12, cto_turn = 0.15, cto_turb = 0.17, co_ax = 1, d_fact = 0.05, max_v = 50, k_int = 1, A_eq = 0.48, FM = 0.7):
+    def __init__(self, MTOW=718.89, n_blades=4, n_rotor = 6, DL = 34.2, bank_angle = 30, cto_fl = 0.12, cto_turn = 0.15, cto_turb = 0.17, co_ax = 1, d_fact = 0.05, max_v = 50, k_int = 1, A_eq = 0.48, FM = 0.7):
 
         # conversions  
         self.celsius_to_kelvin = 273.15     # addition
@@ -151,20 +151,20 @@ class SoundAnalysis:
         #Input
         self.rotorsizing = rotorsizing if rotorsizing else RotorSizing()
 
-        #Observer position relative to rotor
+        #Observer position relative to rotor, UNUSED 
         self.x = 0 #np.linspace(0,100,1000) #Measured in direction of motion of helicopter [ft]
         self.y = 0 #np.linspace(-100,100,1000) #Measured at 90 deg to x in disc plane [ft]
         self.z = 500 #Flyover height [ft]
         self.r = (self.x**2+self.y**2+self.z**2)**0.5
 
         #Inputs for rotational noise
-        self.R = self.rotorsizing.rotor_radius*self.m_to_f #Get rotor radius in [f]
+        self.R = 0.96 #self.rotorsizing.rotor_radius*self.m_to_f #Get rotor radius in [f]
         self.A = np.pi*(self.R**2) #Rotor area [ft^2]
-        self.n = self.rotorsizing.omega #Rotor rotational speed [rad/s] 
-        self.V = self.rotorsizing.V_max*self.m_to_f #Set to max speed for now [ft/s]
+        self.n = 280 #self.rotorsizing.omega #Rotor rotational speed [rad/s] 
+        self.V = 25*self.m_to_f #self.rotorsizing.V_max*self.m_to_f #Set to max speed for now [ft/s]
         self.c = self.rotorsizing.speed_of_sound*self.m_to_f #Speed of sound [ft/s]
-        self.B = self.rotorsizing.n_blades
-        self.T = self.rotorsizing.T_forward_flight*self.N_to_lbs/self.rotorsizing.N_rotors #Thrust [lbs]
+        self.B = 2 #self.rotorsizing.n_blades
+        self.T = 7900*self.N_to_lbs/self.rotorsizing.N_rotors #self.rotorsizing.T_forward_flight*self.N_to_lbs/self.rotorsizing.N_rotors #Thrust [lbs]
 
         #Inputs for vortex noise
         self.D = 2*self.R #Rotor diameter [ft]
@@ -188,7 +188,7 @@ class SoundAnalysis:
 
         #Calculate theta dash
         #self.theta_dash = np.arccos(self.x/self.r)
-        self.theta_dash = np.linspace(np.pi / 4, np.pi / 2, 90)
+        self.theta_dash = np.linspace(np.pi / 4, np.pi / 2, 10)
 
         # Ensure theta_dash is a NumPy array
         self.theta_dash = np.array(self.theta_dash)
@@ -199,12 +199,13 @@ class SoundAnalysis:
         # Print the results
         print("M_E_list = ", self.M_E_list)
 
-        #Calculate theta
+        #Calculate theta UNUSED
         self.theta = np.pi/2 #Set to angle that gives max noise for now (unused)
 
         #Interpolate all values for SPL for the critical theta
 
         #This commented part is Jorrits old code
+        
         # #Interpolate from graph of 1st harmonic (45deg)
         # M_series = np.linspace(0.2,1,9)
         # noise_series = np.array([77,82,85,88,91,93,95,96,97])
@@ -212,14 +213,9 @@ class SoundAnalysis:
 
         # self.rotational_SPL_uncorrected = interpolator[0]*(self.M_E)**3  + interpolator[1]*(self.M_E)**2 + interpolator[2]*(self.M_E) + interpolator [3]
 
-        # #Interpolate from graph of 2nd harmonic (33 deg)
-        # M_series = np.linspace(0.2,1,9)
-        # noise_series = np.array([68.5,74,79.5,84.5,89,92.5,95.5,97.5,100])
-        # interpolator = np.polyfit(M_series, noise_series,3)
 
-        # self.rotational_SPL_uncorrected = interpolator[0]*(self.M_E)**3  + interpolator[1]*(self.M_E)**2 + interpolator[2]*(self.M_E) + interpolator [3]
 
-        #As a function for all 12 harmonics:
+        #SPL as a function of M_E for all 12 harmonics:
 
         def calculate_rotational_SPL_uncorrected(M_E, noise_series):
             """
@@ -297,7 +293,7 @@ class SoundAnalysis:
             noise_series = np.array([15, 20, 31, 36, 40, 47, 58, 86, 109])
             return calculate_rotational_SPL_uncorrected(M_E, noise_series)
 
-        M_E = 0.4398
+        M_E = 0.2
         SPL_array_uncorrected = np.array([calculate_rotational_SPL_uncorrected_1(M_E),
                               calculate_rotational_SPL_uncorrected_2(M_E),
                               calculate_rotational_SPL_uncorrected_3(M_E),
@@ -379,4 +375,3 @@ def run():
 # Execute the run function
 if __name__ == "__main__":
     run()
-    
