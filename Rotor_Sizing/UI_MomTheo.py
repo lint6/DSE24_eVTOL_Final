@@ -7,7 +7,7 @@ def func_min_locator(list1, list2): #find the minimum and its index in list2 and
     min_list2_index = list(list2).index(min_list2)
     return list1[min_list2_index], min_list2
 
-VertFli = Momentum_Theory.Vertical_Flight(mass=float(718.89/4),radius=2.01, P_a=42000)
+VertFli = Momentum_Theory.Vertical_Flight(mass=float(718.89/4),radius=0.5, P_a=42000)
 
 # Calculate hover induced velocity
 print(f"Hover Induced Velocity: {VertFli.calc_v_h():.2f}")

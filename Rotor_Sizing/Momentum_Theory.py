@@ -24,7 +24,7 @@ def find_roots(coefficients):
 
 
 class Vertical_Flight: #vertical flight
-    def __init__(self, mass, radius=2.01, TWR= 1 , V_c=None, density=1.225, g0 = 9.80665, P_a = None): 
+    def __init__(self, mass, radius=0.5, TWR= 1 , V_c=None, density=1.225, g0 = 9.80665, P_a = None): 
         # if V_c== None and P_a == None:
         #     raise Exception('Vertical rate and power are both none, need at least one')
         # Required Inputs
