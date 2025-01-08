@@ -7,7 +7,7 @@ def func_min_locator(list1, list2): #find the minimum and its index in list2 and
     min_list2_index = list(list2).index(min_list2)
     return list1[min_list2_index], min_list2
 
-VertFli = Momentum_Theory.Vertical_Flight(mass=float(718.89/4),radius=0.5, P_a=42000)
+VertFli = Momentum_Theory.Vertical_Flight(mass=float(718.89/6),radius=0.96, P_a=42000)
 
 # Calculate hover induced velocity
 print(f"Hover Induced Velocity: {VertFli.calc_v_h():.2f}")
@@ -33,7 +33,7 @@ print(f"Power_loading: {(VertFli.calc_mass()[0]/(VertFli.calc_power_ideal_hover(
 vel = np.arange(0,100,0.01)
 power = []
 for i in vel :
-    ForwFli = Momentum_Theory.Forward_Flight(mass=float(718.89/4), Cd0=0.05, V=i, related_vertical=VertFli, radius = 2.01, P_a=42000)    
+    ForwFli = Momentum_Theory.Forward_Flight(mass=float(718.89/6), Cd0=0.96, V=i, related_vertical=VertFli, radius = 2.01, P_a=42000)    
     # VertFli.calc_v_h()
     # ForwFli.calc_V_horizontal()
     # ForwFli.calc_D()
@@ -76,7 +76,7 @@ vertical_rate = np.arange(-max_rate,max_rate, max_rate/250)
 vertical_rate = np.sort(np.append(vertical_rate, 0))
 vertical_power = []
 for i in vertical_rate :
-    VertFli = Momentum_Theory.Vertical_Flight(mass=float(718.89/4),radius=2.01, V_c=i)
+    VertFli = Momentum_Theory.Vertical_Flight(mass=float(718.89/6),radius=0.96, V_c=i)
     vertical_power.append(VertFli.calc_P_kappa())
 vertical_power = np.array(vertical_power)/int(1000)
 
