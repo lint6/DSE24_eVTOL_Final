@@ -16,12 +16,11 @@ Main.py
 
 '''
 import numpy as np
-import classbank 
 import time
 from aircraft import *
 from controller import *
 
-def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.5):
+def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=.1):
     if Run:
         print('Warning: Simulation Running')
         '''DOWNWARD IS POSTIVE'''
@@ -51,7 +50,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.5):
         rotor_count = 4
         
         # Control Inputs
-        setpoint_pos = [20,0,-100]
+        setpoint_pos = [5000,0,-300]
         setpoint_ang = [0,0,0]
         
         # Misc
@@ -60,10 +59,11 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.5):
         
         # Logging
         log_state = [[[pos_x,pos_y,pos_z]],[[ang_pos_x,ang_pos_y,ang_pos_z]],[[vel_x, vel_y, vel_z]]]
-        log_forces = [[0]]
+        log_forces = [[[0,0,0]], [[0,0,0]]]
         log_extras = [[[0,0,0,0]],[[0,0,0]],[[0,0,0]]]
         log_error= [[[0],[0],[0]],[[0],[0],[0]]]
         log_acc = [[[0],[0],[0]],[[0],[0],[0]]]
+        log_setpoints = [[setpoint_pos],[setpoint_ang]]
         while Run:
             
             '''Simulation Loop'''
@@ -112,7 +112,8 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.5):
                 ang_pos_z = ang_pos_z + rot_z * dt - 360
             if ang_pos_z + rot_z * dt < -180:
                 ang_pos_z = ang_pos_z + rot_z * dt + 360
-            ang_pos_z = ang_pos_z + rot_z * dt 
+            else:
+                ang_pos_z = ang_pos_z + rot_z * dt 
             ang_pos_x = np.clip(ang_pos_x, a_max=90, a_min=-90)
             ang_pos_y = np.clip(ang_pos_y, a_max=90, a_min=-90)
             ang_pos_z = np.clip(ang_pos_z, a_max=180, a_min=-180)
@@ -121,49 +122,65 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.5):
             
             # Controllers
             # Angle Error
-
+            
             # print(f'setpoint {setpoint_pos[0]}')
             # print(f'position {pos_x}')
-            ang_tgt = np.arctan2(setpoint_pos[1]-pos_y, setpoint_pos[0]-pos_x) * 180/np.pi #angle from the aicraft to the target
-            if (ang_tgt - ang_pos_z) > 180:  #difference between the aircraft yaw and the yaw of the target
-                ang_diff = ang_tgt - ang_pos_z + 360
-            if (ang_tgt - ang_pos_z) < -180:  
+            delta_x = setpoint_pos[0]-pos_x
+            delta_y = setpoint_pos[1]-pos_y
+            
+            mag_diff = np.sqrt(delta_x**2+delta_y**2)
+            ang_tgt = np.arctan2(delta_y, delta_x) * 180/np.pi #angle from the aicraft to the target
+            
+            if (ang_tgt - ang_pos_z) > 180:#difference between the aircraft yaw and the yaw of the target
                 ang_diff = ang_tgt - ang_pos_z - 360
-            else:
+            if (ang_tgt - ang_pos_z) < -180: 
+                ang_diff = ang_tgt - ang_pos_z + 360
+            else: 
                 ang_diff = ang_tgt - ang_pos_z
-            mag_diff = np.linalg.norm([setpoint_pos[1]-pos_x,setpoint_pos[0]-pos_y]) #magnitude of difference between planar elements
+            
+            # print(ang_tgt)
+            # print(ang_pos_z)
+            # print(ang_diff)
+
+             #magnitude of difference between planar elements
+            # print(mag_diff)
+            # print(pos_x)
             lon_diff = np.cos(np.radians(ang_diff)) * mag_diff
             lat_diff = np.sin(np.radians(ang_diff)) * mag_diff
+            print(f'ang diff {ang_diff}')
+            print(f'mag diff {mag_diff}')
 
 
-            log_error[0][0].append(lon_diff)
-            log_error[0][1].append(lat_diff)
-            log_error[0][2].append(setpoint_pos[2] - pos_z)
+            log_error[0][0].append(lat_diff) #X position error in AC frame
+            log_error[0][1].append(lon_diff) #Y position error in AC frame
+            log_error[0][2].append(setpoint_pos[2] - pos_z) #Z position error in global frame
             
-            setpoint_ang[2] = ang_tgt #yaw angle
-            setpoint_ang[1] = np.clip(SCfunc_PIDController(log_error[0][0], k_p=0.02, t_i=500, t_d=0, dt=dt), a_min=-30, a_max=30) #pitch angle
-            setpoint_ang[0] = np.clip(-1 * SCfunc_PIDController(log_error[0][1], k_p=1, t_i=10, t_d=3.1, dt=dt), a_min=-30, a_max=30) #roll angle
+            setpoint_ang[0] = -1*np.clip(SCfunc_PIDController(log_error[0][0], k_p=0.04, t_i=7500, t_d=5, dt=dt), a_min=-30, a_max=30) #roll angle
+            setpoint_ang[1] = np.clip(SCfunc_PIDController(log_error[0][1], k_p=0.04, t_i=7500, t_d=5, dt=dt), a_min=-30, a_max=30) #pitch angle
             
-            log_error[1][0].append(setpoint_ang[0])
-            log_error[1][1].append(setpoint_ang[1])
-            log_error[1][2].append(ang_diff)
+            if mag_diff <= 100:
+                setpoint_ang[2] = setpoint_ang[2] #yaw angle
+            else:
+                setpoint_ang[2] = SCfunc_PController(ang_diff, k_p=0.8)#yaw angle
+                print(setpoint_ang[2])
+                
+            log_error[1][0].append(setpoint_ang[0] - ang_pos_x) 
+            log_error[1][1].append(setpoint_ang[1] - ang_pos_y) 
+            log_error[1][2].append(setpoint_ang[2] - ang_pos_z) 
             # Controllers
             rpm_hover = np.ones(rotor_count) * SCfunc_PIDController(log_error[0][2], k_p=12.5, t_i=10, t_d=3.1, dt=dt)
-            rpm_rotate_x = np.array([-1,1,1,-1]) * -1 * SCfunc_PIDController(log_error[1][0], k_p=10, t_i=50, t_d=1, dt=dt)            
-            rpm_rotate_y = np.array([1,1,-1,-1]) * -1 * SCfunc_PIDController(log_error[1][1], k_p=10, t_i=50, t_d=1, dt=dt)
-            print(rpm_rotate_y)
-            rpm_rotate_z = np.array([-1,1,-1,1]) * -1 * SCfunc_PIDController(log_error[1][2], k_p=50, t_i=50, t_d=5, dt=dt)
-            rpm = rpm_hover + rpm_rotate_x + rpm_rotate_y + rpm_rotate_z
+            rpm_rotate_x = np.array([-1,1,1,-1]) * -1 * SCfunc_PIDController(log_error[1][0], k_p=5, t_i=130, t_d=5, dt=dt)          
+            rpm_rotate_y = np.array([1,1,-1,-1]) * -1 * SCfunc_PIDController(log_error[1][1], k_p=5, t_i=130, t_d=5, dt=dt)
+            rpm_rotate_z = np.array([-1,1,-1,1]) *  SCfunc_PIDController(log_error[1][2], k_p=3, t_i=130, t_d=15, dt=dt)
+            rpm = (rpm_hover + rpm_rotate_x + rpm_rotate_y + rpm_rotate_z) 
+            #TODO: clamp PID output to -1 to 1, prevent oversaturation between different outputs
+            #TODO: change PID output to throttle instead of pure RPM
 
             for i in range(len(rpm)):
                 if rpm[i] < 0:
                     rpm[i] = 0
                 if rpm[i] > 4000:
                     rpm[i] = 4000
-            if pos_z > 0:
-                pos_z = 0
-                
-                
                 
             
             # Update aircraft
@@ -182,6 +199,9 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.5):
             log_state[1].append(rotation)
             log_state[2].append(velocity)
             log_forces[0].append(aircraft.forces)
+            log_forces[1].append(aircraft.moments)
+            log_setpoints[0].append(setpoint_pos)
+            log_setpoints[1].append([setpoint_ang[0],setpoint_ang[1],setpoint_ang[2]])
             
             log_extras[0].append(rpm/4000)
             log_extras[1].append(setpoint_pos)
@@ -192,7 +212,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.5):
             log_acc[0][0].append(lat_acc_x)
             log_acc[0][1].append(lat_acc_y)
             log_acc[0][2].append(lat_acc_z)
-            
+            print(f'-----{log_time[-1]:.2f}-----')
             '''Exit Conditions'''
             if time.time() - start_time > 60:
                 Run = False
@@ -203,7 +223,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.5):
             if time.time() - time_mark > 5 :
                 print(f'Progress: {log_time[-1]/runtime*100 :.2f}%')
                 time_mark = time.time()
-        return log_state, log_forces, log_time, log_extras, log_acc
+        return log_state, log_forces, log_time, log_extras, log_acc, log_error, log_setpoints
         
 
 def ExampleFunction(Constant): #the input modify the function that is to be returned
