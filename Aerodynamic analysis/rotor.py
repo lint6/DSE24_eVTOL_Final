@@ -11,12 +11,12 @@ class BEMT():
         self.rho = 1.225 # kg/m^3, the air density
 
         # airfoil specification
-        self.a_r = 0.1125  # [-/deg], the profile lift curve slope in the linear region NACA2414
+        self.a_r = 0.1225 * (180 / np.pi)  # [-/deg], the profile lift curve slope in the linear region NACA2414
 
         # specify initial rotor sizing parameters
-        self.R = 3.5 # m, the rotor radius in meters
+        self.R = 1 # m, the rotor radius in meters
         self.b = 4 # - , number of blades
-        self.omega = 40 # rad/s, rotational velocity
+        self.omega = 200 # rad/s, rotational velocity
 
 
 
@@ -28,16 +28,18 @@ class BEMT():
 
         #setup chord
         c_root = 0.2 # meters
-        taper = 0.7 # -
+        taper = 1 # -
         c_tip = c_root * taper
+        c_avg = 0.5 * (c_root + c_root * taper)
+        self.AR = self.R / c_avg
         self.c_r_list = []
         for r in self.r_list:
             c_r = c_root + ((c_tip - c_root)/self.R) * r
             self.c_r_list.append(c_r)
 
         #setup theta
-        theta_root = np.radians(15)
-        theta_tip = np.radians(2)
+        theta_root = np.deg2rad(15)
+        theta_tip = np.deg2rad(2)
         self.theta_r_list = []
         for r in self.r_list:
             theta_r = theta_root + ((theta_tip - theta_root)/self.R) * r
@@ -95,7 +97,7 @@ if __name__ == '__main__':
     BEMT = BEMT()
 
     #initialise discretisation and insert number of elements
-    BEMT.discretise(num_elements=20)
+    BEMT.discretise(num_elements=100)
 
     dL_r_list = []
     dDp_r_list = []
@@ -105,7 +107,7 @@ if __name__ == '__main__':
     dP_ind_list = []
 
     for chord, theta, a, r in zip(BEMT.c_r_list, BEMT.theta_r_list, BEMT.a_r_list, BEMT.r_list):
-        prop = BEMT.vertical(omega=BEMT.omega, theta_r=theta, c_r=chord, r=r, dr=BEMT.dr, a_r=a, V_c=1)
+        prop = BEMT.vertical(omega=BEMT.omega, theta_r=theta, c_r=chord, r=r, dr=BEMT.dr, a_r=a, V_c=0)
         dL_r_list.append(prop[0][0])
         dDp_r_list.append(prop[0][1])
         dT_r_list.append(prop[0][2])
@@ -114,16 +116,42 @@ if __name__ == '__main__':
         dP_ind_list.append(prop[0][5])
 
     print(dL_r_list)
-    print(f"L {sum(dL_r_list)*4}")
     print(dDp_r_list)
-    print(f"D {sum(dDp_r_list)*4}")
     print(dT_r_list)
-    print(f"T {sum(dT_r_list)*4}")
     print(dQ_r_list)
-    print(f"Q {sum(dQ_r_list)*4}")
     print(dP_r_list)
-    print(f"P_r {sum(dP_r_list)*4}")
-    print(sum(dL_r_list)/sum(dDp_r_list))
+
+    #integration for one blade
+    L = sum(dL_r_list)
+    D = sum(dDp_r_list)
+    T = sum(dT_r_list)
+    Q = sum(dQ_r_list)
+    P_r = sum(dP_r_list)
+    LD = L/D
+
+    print("---------------------")
+    print(f"one blade: (with induced velocity for b={BEMT.b})")
+    print(f"L {L}")
+    print(f"D {D}")
+    print(f"T {T}")
+    print(f"Q {Q}")
+    print(f"P_r {P_r}")
+    print(f"L/D {LD}")
+    print(f"AR {BEMT.AR}")
+
+    print("---------------------")
+    print(f"{BEMT.b} blades:")
+    print(f"L {L*BEMT.b}")
+    print(f"D {D*BEMT.b}")
+    print(f"T {T*BEMT.b}")
+    print(f"Q {Q*BEMT.b}")
+    print(f"P_r {P_r*BEMT.b}")
+    print(f"L/D {LD}")
+
+    T_req = 7900
+    n_rotor = T_req/(T*BEMT.b)
+    print("---------------------")
+    print(f"You would need {n_rotor} rotors to generate {T_req} [N]")
 
     plt.plot(BEMT.r_list, dL_r_list)
     plt.xlabel("Spanwise radius [m]")
