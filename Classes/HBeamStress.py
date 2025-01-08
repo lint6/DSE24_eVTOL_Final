@@ -53,6 +53,14 @@ class HBeamStress:
         sigma = (self.Mx * y) / self.calculate_Ixx() - (self.My * x) / self.calculate_Iyy()
         return sigma 
     
+    def calculate_maximum_stress(self):
+        _, _, stresses = self.calculate_stress_distribution()
+        return np.max(stresses)
+    
+    def calculate_minimum_stress(self):
+        _, _, stresses = self.calculate_stress_distribution()
+        return np.min(stresses)
+
     def calculate_stress_distribution(self, resolution=200):
         y_top = np.linspace(-self.h_w/2 - self.h_t, -self.h_w/2, resolution) * 1000
         y_web = np.linspace(-self.h_w/2, self.h_w/2, resolution) * 1000
@@ -116,6 +124,7 @@ class HBeamStress:
 if __name__ == '__main__':
     beam = HBeamStress()
     beam.plot_stress_distribution()
+    print('-------- H Beam Stress Analysis --------')
     print(f"Moment of Inertia (Ixx): {beam.calculate_Ixx()} [m^4]")
     print(f"Moment of Inertia (Iyy): {beam.calculate_Iyy()} [m^4]")
     print(f'Stress at Point 1: {round(beam.calculate_stress_point(0.085, -0.100)/10**6, 4)} [MPa]')
@@ -123,3 +132,5 @@ if __name__ == '__main__':
     print(f'Stress at Point 3: {round(beam.calculate_stress_point(-0.085, 0.100)/10**6, 4)} [MPa]')
     print(f'Stress at Point 4: {round(beam.calculate_stress_point(0.085, 0.100)/10**6, 4)} [MPa]')
     print(f'Weight of the Beam: {round(beam.calculate_weight(), 4)} [kg]')
+    print(f'Maximum Positive Stress: {round(beam.calculate_maximum_stress()/10**6, 4)} [MPa]')
+    print(f'Maximum Negative Stress: {round(beam.calculate_minimum_stress()/10**6, 4)} [MPa]')
