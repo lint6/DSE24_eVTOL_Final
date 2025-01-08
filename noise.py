@@ -310,7 +310,7 @@ class SoundAnalysis:
                               calculate_rotational_SPL_uncorrected_10(M_E),
                               calculate_rotational_SPL_uncorrected_11(M_E),
                               calculate_rotational_SPL_uncorrected_12(M_E)])
-        print("M_E =", SPL_array_uncorrected)
+        print("SPL uncorrected =", SPL_array_uncorrected)
             
         # Example usage:
         # M_E = 0.5
@@ -330,7 +330,7 @@ class SoundAnalysis:
         #Convert back to dB
         self.rotational_SPL_total = 10*np.log10(self.all_rotor_intensity/(10e-12))
 
-        print("Rot SPL tot", self.rotational_SPL_total)
+        print("Rotational SPL tot", self.rotational_SPL_total)
 
         #Calculate fundamental frequency
         self.f_rotational = (self.n*self.B)/(2*np.pi*(1-self.M_f*np.cos(self.theta)))
@@ -379,3 +379,4 @@ def run():
 # Execute the run function
 if __name__ == "__main__":
     run()
+    
