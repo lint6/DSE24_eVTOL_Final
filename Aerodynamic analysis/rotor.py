@@ -68,6 +68,8 @@ class BEMT():
         #convert relative effective radius to absolute value
         self.r_e = self.r_bar_e * self.R
 
+        #setup psi list
+        self.psi_list = np.linspace(0, 2 * np.pi, num_elements).tolist()
 
     def vertical(self, omega=None, theta_r=None, c_r=None, r=None, dr=None, V_c=None, a_r=None):
         # define non-dimensionalised rotor radius position
@@ -105,8 +107,8 @@ class BEMT():
 
         dP_ind = 4 * math.pi * (self.R ** 2) * self.rho * (v_r ** 3) * r_bar * dr_bar
 
-        prop = [dL_r,dDp_r,dT_r,dQ_r,dP_r,dP_ind]
-        return prop, v_r, c_l_linear
+        prop_1 = [dL_r,dDp_r,dT_r,dQ_r,dP_r,dP_ind]
+        return prop_1
 
     def forward(self, r=None, omega=None, V_f=None, gamma=None, psi=None, alpha_v=None, theta_r=None, dr=None, a_r=None, c_r=None):
         # define non-dimensionalised rotor radius position
@@ -114,15 +116,15 @@ class BEMT():
         V_t = omega * self.R
         dr_bar = dr / self.R
 
+        # flight velocities
+        V_ho = -V_f * np.cos(gamma)
+        V_c = V_f * np.sin(gamma)
+
         # compute induced velocity at point r
         induced_1 = (a_r * self.b * c_r) / (16 * math.pi * self.R)
         induced_2 = -1 * (induced_1 + (V_c / (2 * V_t)))
         induced_3 = math.sqrt((induced_1 + (V_c / (2 * V_t))) ** 2 + ((induced_1 * 2) * ((r_bar * theta_r) - (V_c / V_t))))
         v_r = V_t * (induced_2 + induced_3)
-
-        # flight velocities
-        V_ho = -V_f * np.cos(gamma)
-        V_c = V_f * np.sin(gamma)
 
         # axial and in-plane
         V_ax = -V_c + V_ho * alpha_v
@@ -140,6 +142,7 @@ class BEMT():
         # incoming air speed for the airfoil #NO ASSUMPTION ON SMALL ANGLE STUFF
         V_inflow = U_orth / np.cos(phi)
 
+        # cl computation
         c_l_linear = a_r * alpha
 
         # drag for a blade element of size dr
@@ -158,12 +161,22 @@ class BEMT():
         # torque needed for a blade element dr at distance r from the rotating axis
         dQ_r = (dL_r * phi + dDp_r) * r
 
+        # profile power for a blade element dr
+        dP_r = dQ_r * omega
+
+        prop_2 = [dL_r,dDp_r,dT_r,dQ_r,dP_r]
+        return prop_2
+
 
 if __name__ == '__main__':
     BEMT = BEMT()
 
+    #which analysis
+    vertical = False
+    forward = True
+
     #initialise discretisation and insert number of elements
-    BEMT.discretise(num_elements=1000)
+    BEMT.discretise(num_elements=100)
 
     dL_r_list = []
     dDp_r_list = []
@@ -172,69 +185,79 @@ if __name__ == '__main__':
     dP_r_list = []
     dP_ind_list = []
 
-    for chord, theta, a, r in zip(BEMT.c_r_list, BEMT.theta_r_list, BEMT.a_r_list, BEMT.r_list):
-        prop = BEMT.vertical(omega=BEMT.omega, theta_r=theta, c_r=chord, r=r, dr=BEMT.dr, a_r=a, V_c=0)
-        if BEMT.cutout<r<BEMT.r_e:
-            dL_r_list.append(prop[0][0])
-            dDp_r_list.append(prop[0][1])
-            dT_r_list.append(prop[0][2])
-            dQ_r_list.append(prop[0][3])
-            dP_r_list.append(prop[0][4])
-            dP_ind_list.append(prop[0][5])
-        else:
-            dL_r_list.append(0.0)
-            dDp_r_list.append(0.0)
-            dT_r_list.append(0.0)
-            dQ_r_list.append(0.0)
-            dP_r_list.append(0.0)
-            dP_ind_list.append(0.0)
+    if vertical==True:
+        for chord, theta, a, r in zip(BEMT.c_r_list, BEMT.theta_r_list, BEMT.a_r_list, BEMT.r_list):
+            prop_1 = BEMT.vertical(omega=BEMT.omega, theta_r=theta, c_r=chord, r=r, dr=BEMT.dr, a_r=a, V_c=0)
+            if BEMT.cutout<r<BEMT.r_e:
+                dL_r_list.append(prop_1[0])
+                dDp_r_list.append(prop_1[1])
+                dT_r_list.append(prop_1[2])
+                dQ_r_list.append(prop_1[3])
+                dP_r_list.append(prop_1[4])
+                dP_ind_list.append(prop_1[5])
+            else:
+                dL_r_list.append(0.0)
+                dDp_r_list.append(0.0)
+                dT_r_list.append(0.0)
+                dQ_r_list.append(0.0)
+                dP_r_list.append(0.0)
+                dP_ind_list.append(0.0)
 
-    # print(dL_r_list)
-    # print(dDp_r_list)
-    # print(dT_r_list)
-    # print(dQ_r_list)
-    # print(dP_r_list)
+        #integration for one blade
+        L = sum(dL_r_list)
+        D = sum(dDp_r_list)
+        T = sum(dT_r_list)
+        Q = sum(dQ_r_list)
+        P_r = sum(dP_r_list)
+        LD = L/D
 
-    #integration for one blade
-    L = sum(dL_r_list)
-    D = sum(dDp_r_list)
-    T = sum(dT_r_list)
-    Q = sum(dQ_r_list)
-    P_r = sum(dP_r_list)
-    LD = L/D
+        print("---------------------")
+        print(f"omega {BEMT.omega} [rad/s] or {9.549*BEMT.omega} [rpm]")
+        print(f"L/D {LD} [-]")
+        print(f"AR {BEMT.AR} [-]")
+        print(f"R {BEMT.R} [m]")
+        print("Other units in [N], [N*m], [W]")
 
-    print("---------------------")
-    print(f"omega {BEMT.omega} [rad/s] or {9.549*BEMT.omega} [rpm]")
-    print(f"L/D {LD} [-]")
-    print(f"AR {BEMT.AR} [-]")
-    print(f"R {BEMT.R} [m]")
-    print("Other units in [N], [N*m], [W]")
+        print("---------------------")
+        print(f"one blade: (with induced velocity for b={BEMT.b})")
+        print(f"L {L} D {D} T {T} Q {Q} P_r {P_r}")
 
-    print("---------------------")
-    print(f"one blade: (with induced velocity for b={BEMT.b})")
-    print(f"L {L} D {D} T {T} Q {Q} P_r {P_r}")
+        print("---------------------")
+        print(f"for {BEMT.b} blades:")
+        print(f"L {L*BEMT.b} D {D*BEMT.b} T {T*BEMT.b} Q {Q*BEMT.b} P_r {P_r*BEMT.b}")
 
-    print("---------------------")
-    print(f"for {BEMT.b} blades:")
-    print(f"L {L*BEMT.b} D {D*BEMT.b} T {T*BEMT.b} Q {Q*BEMT.b} P_r {P_r*BEMT.b}")
+        print("---------------------")
+        print(f"for {BEMT.n_rotors} rotors:")
+        print(f"L {L * BEMT.b * BEMT.n_rotors} D {D * BEMT.b * BEMT.n_rotors} T {T * BEMT.b * BEMT.n_rotors} Q {Q * BEMT.b * BEMT.n_rotors} P_r {P_r * BEMT.b * BEMT.n_rotors}")
 
-    print("---------------------")
-    print(f"for {BEMT.n_rotors} rotors:")
-    print(f"L {L * BEMT.b * BEMT.n_rotors} D {D * BEMT.b * BEMT.n_rotors} T {T * BEMT.b * BEMT.n_rotors} Q {Q * BEMT.b * BEMT.n_rotors} P_r {P_r * BEMT.b * BEMT.n_rotors}")
+        T_req = 7900
+        n_rotor = T_req/(T*BEMT.b)
+        print("---------------------")
+        print(f"You would need {n_rotor} rotors to generate {T_req} [N] of thrust")
 
-    T_req = 7900
-    n_rotor = T_req/(T*BEMT.b)
-    print("---------------------")
-    print(f"You would need {n_rotor} rotors to generate {T_req} [N] of thrust")
+        plot = True
+        if plot==True:
+            plt.plot(BEMT.r_list, dL_r_list)
+            plt.xlabel("Spanwise radius [m]")
+            plt.ylabel("Lift [N]")
+            plt.show()
 
-    plot = True
-    if plot==True:
-        plt.plot(BEMT.r_list, dL_r_list)
-        plt.xlabel("Spanwise radius [m]")
-        plt.ylabel("Lift [N]")
-        plt.show()
-
-
+    if forward==True:
+        for psi in BEMT.psi_list:
+            for chord, theta, a, r in zip(BEMT.c_r_list, BEMT.theta_r_list, BEMT.a_r_list, BEMT.r_list):
+                prop_2 = BEMT.forward(omega=BEMT.omega, theta_r=theta, c_r=chord, r=r, dr=BEMT.dr, a_r=a, V_f=0, gamma=0, psi=0, alpha_v=0)
+                if BEMT.cutout<r<BEMT.r_e:
+                    dL_r_list.append(prop_2[0])
+                    dDp_r_list.append(prop_2[1])
+                    dT_r_list.append(prop_2[2])
+                    dQ_r_list.append(prop_2[3])
+                    dP_r_list.append(prop_2[4])
+                else:
+                    dL_r_list.append(0.0)
+                    dDp_r_list.append(0.0)
+                    dT_r_list.append(0.0)
+                    dQ_r_list.append(0.0)
+                    dP_r_list.append(0.0)
 
 
 
