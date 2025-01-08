@@ -16,39 +16,55 @@ class BEMT():
         # specify initial rotor sizing parameters
         self.R = 1 # m, the rotor radius in meters
         self.b = 4 # - , number of blades
-        self.omega = 200 # rad/s, rotational velocity
+        self.cutout = 0.15 * self.R
+        self.r_bar_e = 0.952 #effective blade radius due to tip losses
+
+        #rotational velocity
+        self.omega = 250 # rad/s, rotational velocity
 
 
-
-    def discretise(self, num_elements=4):
+    def discretise(self, num_elements=None):
 
         #divide blade into elements
         self.r_list = [i * (self.R / num_elements) + 0.5 * (self.R / num_elements) for i in range(num_elements)]
         self.dr = (self.R / num_elements)
+        print(self.r_list)
 
         #setup chord
-        c_root = 0.2 # meters
-        taper = 1 # -
+        c_root = 0.05 # meters
+        taper = 0.8 # -
         c_tip = c_root * taper
         c_avg = 0.5 * (c_root + c_root * taper)
         self.AR = self.R / c_avg
+
+        #slope of the chord distribution
+        slope_c = (c_tip - c_root)/(self.R - self.cutout)
+
         self.c_r_list = []
         for r in self.r_list:
-            c_r = c_root + ((c_tip - c_root)/self.R) * r
+            c_r = (c_root - (slope_c * self.cutout)) + (slope_c * r)
             self.c_r_list.append(c_r)
+        print(self.c_r_list)
 
         #setup theta
         theta_root = np.deg2rad(15)
         theta_tip = np.deg2rad(2)
+
+        #slope of the twist distribution
+        slope_t = (theta_tip - theta_root)/(self.R - self.cutout)
+
         self.theta_r_list = []
         for r in self.r_list:
-            theta_r = theta_root + ((theta_tip - theta_root)/self.R) * r
+            theta_r = (theta_root - (slope_t * self.cutout)) + (slope_t * r)
             self.theta_r_list.append(theta_r)
 
         #setup airfoil progression
         self.a_r_list = []
         for n in range(num_elements):
             self.a_r_list.append(self.a_r)
+
+        #convert relative effective radius to absolute value
+        self.r_e = self.r_bar_e * self.R
 
 
     def vertical(self, omega=None, theta_r=None, c_r=None, r=None, dr=None, V_c=None, a_r=None):
@@ -97,7 +113,7 @@ if __name__ == '__main__':
     BEMT = BEMT()
 
     #initialise discretisation and insert number of elements
-    BEMT.discretise(num_elements=100)
+    BEMT.discretise(num_elements=1000)
 
     dL_r_list = []
     dDp_r_list = []
@@ -108,12 +124,20 @@ if __name__ == '__main__':
 
     for chord, theta, a, r in zip(BEMT.c_r_list, BEMT.theta_r_list, BEMT.a_r_list, BEMT.r_list):
         prop = BEMT.vertical(omega=BEMT.omega, theta_r=theta, c_r=chord, r=r, dr=BEMT.dr, a_r=a, V_c=0)
-        dL_r_list.append(prop[0][0])
-        dDp_r_list.append(prop[0][1])
-        dT_r_list.append(prop[0][2])
-        dQ_r_list.append(prop[0][3])
-        dP_r_list.append(prop[0][4])
-        dP_ind_list.append(prop[0][5])
+        if BEMT.cutout<r<BEMT.r_e:
+            dL_r_list.append(prop[0][0])
+            dDp_r_list.append(prop[0][1])
+            dT_r_list.append(prop[0][2])
+            dQ_r_list.append(prop[0][3])
+            dP_r_list.append(prop[0][4])
+            dP_ind_list.append(prop[0][5])
+        else:
+            dL_r_list.append(0.0)
+            dDp_r_list.append(0.0)
+            dT_r_list.append(0.0)
+            dQ_r_list.append(0.0)
+            dP_r_list.append(0.0)
+            dP_ind_list.append(0.0)
 
     print(dL_r_list)
     print(dDp_r_list)
@@ -153,10 +177,12 @@ if __name__ == '__main__':
     print("---------------------")
     print(f"You would need {n_rotor} rotors to generate {T_req} [N]")
 
-    plt.plot(BEMT.r_list, dL_r_list)
-    plt.xlabel("Spanwise radius [m]")
-    plt.ylabel("Lift [N]")
-    plt.show()
+    plot = True
+    if plot==True:
+        plt.plot(BEMT.r_list, dL_r_list)
+        plt.xlabel("Spanwise radius [m]")
+        plt.ylabel("Lift [N]")
+        plt.show()
 
 
 
