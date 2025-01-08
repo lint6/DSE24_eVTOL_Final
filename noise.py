@@ -158,12 +158,12 @@ class SoundAnalysis:
         self.r = (self.x**2+self.y**2+self.z**2)**0.5
 
         #Inputs for rotational noise
-        self.R = 0.96 #self.rotorsizing.rotor_radius*self.m_to_f #Get rotor radius in [f]
+        self.R = 1 #self.rotorsizing.rotor_radius*self.m_to_f #Get rotor radius in [f]
         self.A = np.pi*(self.R**2) #Rotor area [ft^2]
-        self.n = 280 #self.rotorsizing.omega #Rotor rotational speed [rad/s] 
+        self.n = 180 #self.rotorsizing.omega #Rotor rotational speed [rad/s] 
         self.V = 25*self.m_to_f #self.rotorsizing.V_max*self.m_to_f #Set to max speed for now [ft/s]
         self.c = self.rotorsizing.speed_of_sound*self.m_to_f #Speed of sound [ft/s]
-        self.B = 2 #self.rotorsizing.n_blades
+        self.B = 4 #self.rotorsizing.n_blades
         self.T = 7900*self.N_to_lbs/self.rotorsizing.N_rotors #self.rotorsizing.T_forward_flight*self.N_to_lbs/self.rotorsizing.N_rotors #Thrust [lbs]
 
         #Inputs for vortex noise
@@ -293,7 +293,8 @@ class SoundAnalysis:
             noise_series = np.array([15, 20, 31, 36, 40, 47, 58, 86, 109])
             return calculate_rotational_SPL_uncorrected(M_E, noise_series)
 
-        M_E = 0.2
+        M_E = np.max(self.M_E_list)
+        print("M_E =", M_E)
         SPL_array_uncorrected = np.array([calculate_rotational_SPL_uncorrected_1(M_E),
                               calculate_rotational_SPL_uncorrected_2(M_E),
                               calculate_rotational_SPL_uncorrected_3(M_E),
