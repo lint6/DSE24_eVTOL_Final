@@ -19,14 +19,15 @@ class PerformanceAnalysis:
         self.MTOW = MTOW #kg
         self.MTOW_N = self.MTOW * self.g #N
 
-        # rotor inputs, TODO: INPUT CORRECT VALUES LATER
-        self.rotor_radius = 2 #m
-        self.number_of_blades = 4
-        self.number_of_rotors = 4
-        self.omega = 70 #rad/s
+        # rotor inputs
+        self.rotor_radius = 1.2 #m
+        self.number_of_blades = 6
+        self.number_of_rotors = 6
+        self.omega = 145 #rad/s
         self.C_l_alpha = 5.73 #1/rad
-        self.solidity = 0.12
-        self.pitch_x = 8 # pitch angle variation over span aqs a function of x
+        self.chord = 0.1 #m
+        self.solidity = (self.chord*self.number_of_blades)/(self.rotor_radius*np.pi)
+        #self.pitch_x = 8 # pitch angle variation over span aqs a function of x
 
         # structural inputs, TODO: INPUT CORRECT VALUES LATER
         self.A_eq = 0.75
@@ -60,9 +61,12 @@ class PerformanceAnalysis:
     def hover_powers(self):
 
         # hover induced power
-
+        
+        def pitch_equation(x):
+            return 20 - (15 * (x - 0.15) / (1 - 0.15))
+        
         def lambda_equation(lambda_i, x):
-            return self.solidity * self.C_l_alpha * ((self.pitch_x *(np.pi/180)) - lambda_i / x) * x - 8 * lambda_i**2
+            return self.solidity * self.C_l_alpha * ((pitch_equation(x) *(np.pi/180)) - lambda_i / x) * x - 8 * lambda_i**2
 
         # Function to solve for lambda_i at a given x
         def solve_lambda(x, initial_guess=0.1):
@@ -70,14 +74,16 @@ class PerformanceAnalysis:
             return lambda_i_solution[0]
 
         # Solve for lambda_i over a range of x
-        x_values = np.linspace(0.01, 1, 100)  # range over blade from 0 to 1 (if 0 is input it breaks the equation)
+        x_values = np.linspace(0.15, 1, 100)  # chord starts at 0.15 and ends at 1
+        #self.pitch_x = 20 - (15 * (x - 0.15) / (1 - 0.15))  # Linear equation from 20 degrees to 5 degrees as a function of x
         lambda_values = np.array([solve_lambda(x) for x in x_values])  # Solve for lambda_i at each x
         hover_vi_values = lambda_values * (self.omega * self.rotor_radius)
 
         delta_x = x_values[1] - x_values[0]  # Assuming evenly spaced x values
         self.v_i_hov = np.sum(hover_vi_values) * delta_x  # Approximate integral
 
-        self.P_i_hov = self.MTOW_N * self.v_i_hov # k factor is 1 as rotors are away from fuselage, assumed that Thrust = Weight; TODO: CHANGE WHEN ROTOR IS FINISHED
+        self.thrust = 8027.793
+        self.P_i_hov = self.thrust * self.v_i_hov # k factor is 1 as rotors are away from fuselage, assumed that Thrust = Weight
 
         # profile power
         self.C_D_p_bar = 0.01 # TODO: CHANGE LATER based on airfoil tools
@@ -98,7 +104,7 @@ class PerformanceAnalysis:
             pressure_at_alt = P0 * (1 - lapse_rate * altitude / T0) ** (g / (R * lapse_rate))
             return pressure_at_alt / (R * temp_at_alt)
         
-        C_D_p_bar_mom = 0.02 # TODO: CHANGE LATER based on airfoil tools
+        C_D_p_bar_mom = 0.01 # TODO: CHANGE LATER based on airfoil tools
 
         weight_values = np.linspace(600, 870, 100)  # Varying weight from 400 to 800 kg
         temperature_range = [-30, -20, -10, 0, 10, 20, 30]  # Temperature range
