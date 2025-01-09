@@ -324,12 +324,12 @@ class SoundAnalysis:
 
         print(' SPL corrected:', SPL_corrected_list)
 
-        plt.plot(self.r,SPL_corrected_list)
-        plt.show()
+        #plt.plot(self.r,SPL_corrected_list)
+        #plt.show()
     
     
         #Convert to sound intensity
-        self.one_rotor_intensity = (10e-12) * 10**(self.rotational_SPL/10)
+        self.one_rotor_intensity = (10e-12) * 10**(np.max(SPL_corrected_list) / 10)
         
         #Add sound intensities
         self.all_rotor_intensity = self.one_rotor_intensity * self.n_rotors
@@ -337,7 +337,7 @@ class SoundAnalysis:
         #Convert back to dB
         self.rotational_SPL_total = 10*np.log10(self.all_rotor_intensity/(10e-12))
 
-        print("Rotational SPL tot", self.rotational_SPL_total)
+        #print("Rotational SPL tot", self.rotational_SPL_total)
 
         #Calculate fundamental frequency
         self.f_rotational = (self.n*self.B)/(2*np.pi*(1-self.M_f*np.cos(self.theta)))
@@ -358,7 +358,9 @@ class SoundAnalysis:
         #Convert back to dB
         self.vortex_SPL_total = 10*np.log10(self.all_rotor_intensity_vortex/(10e-12))
 
-        print("Vortex Noise is", self.vortex_SPL_total ,  "dB")
+        #print("Vortex Noise is", self.vortex_SPL_total ,  "dB")
+
+        print("Rotational SPL tot", self.rotational_SPL_total, "dB", "and Vortex Noise is", np.max(self.vortex_SPL_total ), "dB")
 
         #Calculate frequency
         self.thickness = 0.12*self.chord #NACA0012 airfoil thickness to chord
