@@ -158,7 +158,7 @@ class BEMT():
 if __name__ == '__main__':
     a_r = 0.1 * 180 / np.pi
     b = 6
-    n_rot = 2
+    n_rot = 6
     omega = 100
     thrust = 7758.73 #7900/np.cos(np.deg2rad(5))  # desired thrust in Newtons
 
