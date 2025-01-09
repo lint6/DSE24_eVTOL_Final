@@ -4,7 +4,7 @@ import numpy as np
 class AirfoilData:
     def __init__(self):
         # Define the filename
-        self.filename = r'xf-n2414-il-500000.csv'
+        self.filename = r'xf-n0012-il-500000.csv'
 
         # Initialize lists to store the data
         self.alpha = []
@@ -70,7 +70,7 @@ if __name__ == "__main__":
     airfoil_data = AirfoilData()
 
     # Input alpha value for which we want to find the corresponding CL and CD
-    alpha_input = 5.2  # Example: replace with your desired alpha value
+    alpha_input = 1.83  # Example: replace with your desired alpha value
 
     # Interpolate CL and CD for the given alpha input
     interpolated_CL, interpolated_CD = airfoil_data.interpolate_cl_cd(alpha_input)
