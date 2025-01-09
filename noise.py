@@ -361,7 +361,8 @@ class SoundAnalysis:
         #print("Vortex Noise is", self.vortex_SPL_total ,  "dB")
 
         print("Rotational SPL tot", self.rotational_SPL_total, "dB", "and Vortex Noise is", np.max(self.vortex_SPL_total ), "dB")
-
+        Total_noise = 10*np.log10(10**(self.rotational_SPL_total/10)+10**(np.max(self.vortex_SPL_total )/10))
+        print("Total noise might be", Total_noise, "idk if it works like that")
         #Calculate frequency
         self.thickness = 0.12*self.chord #NACA0012 airfoil thickness to chord
         self.f_vortex = (self.V_07*0.28)/self.thickness  #Only valid for small AoA
