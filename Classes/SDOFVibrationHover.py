@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt 
 from scipy.integrate import solve_ivp
-
+### EIH CORRECT Ixx
 class SDOFVibrationHover:
 
     def __init__(self, L=0.8, E=70, I=106168.32, T=7900/np.cos(np.deg2rad(5)), C_damp=0.01, m=1, RPM=1000, gust_velocity=19, gust_time=0.0, impulse_duration=0.1):
