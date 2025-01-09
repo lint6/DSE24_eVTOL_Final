@@ -159,12 +159,12 @@ class SoundAnalysis:
         self.r = (self.x**2+self.y**2+self.z**2)**0.5
 
         #Inputs for rotational noise
-        self.R = 1 #self.rotorsizing.rotor_radius*self.m_to_f #Get rotor radius in [f]
+        self.R = 1.2 #self.rotorsizing.rotor_radius*self.m_to_f #Get rotor radius in [f]
         self.A = np.pi*(self.R**2) #Rotor area [ft^2]
-        self.n = 180 #self.rotorsizing.omega #Rotor rotational speed [rad/s] 
+        self.n = 145 #self.rotorsizing.omega #Rotor rotational speed [rad/s] 
         self.V = 25*self.m_to_f #self.rotorsizing.V_max*self.m_to_f [ft/s] -> VH is defined as the airspeed in level flight obtained using the minimum specification engine power corresponding to maximum continuous power available
         self.c = self.rotorsizing.speed_of_sound*self.m_to_f #Speed of sound [ft/s]
-        self.B = 5 #self.rotorsizing.n_blades
+        self.B = 6 #self.rotorsizing.n_blades
         self.T = 7900*self.N_to_lbs/self.rotorsizing.N_rotors #self.rotorsizing.T_forward_flight*self.N_to_lbs/self.rotorsizing.N_rotors #Thrust [lbs]
 
         #Inputs for vortex noise
