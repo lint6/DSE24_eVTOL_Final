@@ -152,9 +152,10 @@ class SoundAnalysis:
         self.rotorsizing = rotorsizing if rotorsizing else RotorSizing()
 
         #Observer position relative to rotor, UNUSED 
-        self.x = 0 #np.linspace(0,100,1000) #Measured in direction of motion of helicopter [ft]
-        self.y = 0 #np.linspace(-100,100,1000) #Measured at 90 deg to x in disc plane [ft]
-        self.z = 500 #Flyover height [ft]
+        self.x = np.linspace(0,10000,10) #Measured in direction of motion of helicopter [ft]
+        self.x = np.array(self.x)
+        self.y = np.full(10, 0) #np.linspace(-100,100,1000) #Measured at 90 deg to x in disc plane [ft]
+        self.z = np.full(10, 492) #Flyover height [ft]
         self.r = (self.x**2+self.y**2+self.z**2)**0.5
 
         #Inputs for rotational noise
@@ -163,7 +164,7 @@ class SoundAnalysis:
         self.n = 280 #self.rotorsizing.omega #Rotor rotational speed [rad/s] 
         self.V = 25*self.m_to_f #self.rotorsizing.V_max*self.m_to_f #Set to max speed for now [ft/s]
         self.c = self.rotorsizing.speed_of_sound*self.m_to_f #Speed of sound [ft/s]
-        self.B = 2 #self.rotorsizing.n_blades
+        self.B = 5 #self.rotorsizing.n_blades
         self.T = 7900*self.N_to_lbs/self.rotorsizing.N_rotors #self.rotorsizing.T_forward_flight*self.N_to_lbs/self.rotorsizing.N_rotors #Thrust [lbs]
 
         #Inputs for vortex noise
@@ -186,7 +187,7 @@ class SoundAnalysis:
         #Calculate flight Mach number
         self.M_f = self.V/self.c
 
-        #Calculate theta dash
+        #Calculate theta dash UNUSED
         #self.theta_dash = np.arccos(self.x/self.r)
         self.theta_dash = np.linspace(np.pi / 4, np.pi / 2, 10)
 
@@ -194,7 +195,7 @@ class SoundAnalysis:
         self.theta_dash = np.array(self.theta_dash)
 
         # Calculate effective rotational Mach number
-        self.M_E_list = self.M / (1 - self.M_f * np.cos(self.theta_dash))
+        self.M_E_list = self.M / (1 - self.M_f * self.x / self.r)
 
         # Print the results
         print("M_E_list = ", self.M_E_list)
@@ -293,7 +294,8 @@ class SoundAnalysis:
             noise_series = np.array([15, 20, 31, 36, 40, 47, 58, 86, 109])
             return calculate_rotational_SPL_uncorrected(M_E, noise_series)
 
-        M_E = 0.2
+        M_E = np.average(self.M_E_list)
+        print("M_E =", M_E)
         SPL_array_uncorrected = np.array([calculate_rotational_SPL_uncorrected_1(M_E),
                               calculate_rotational_SPL_uncorrected_2(M_E),
                               calculate_rotational_SPL_uncorrected_3(M_E),
@@ -315,8 +317,17 @@ class SoundAnalysis:
 
 
         #Apply SPL correction
-        self.rotational_SPL = SPL_array_uncorrected + 11 + 10*np.log10((self.T/(self.r**2))*(self.T/self.A))
+        SPL_corrected_list = []
+        for i in range(10):
+            self.rotational_SPL = SPL_array_uncorrected + 11 + 10*np.log10((self.T/(self.r[i]**2))*(self.T/self.A))
+            SPL_corrected_list.append(max(self.rotational_SPL))
 
+        print(' SPL corrected:', SPL_corrected_list)
+
+        plt.plot(self.r,SPL_corrected_list)
+        plt.show()
+    
+    
         #Convert to sound intensity
         self.one_rotor_intensity = (10e-12) * 10**(self.rotational_SPL/10)
         
@@ -347,6 +358,8 @@ class SoundAnalysis:
         #Convert back to dB
         self.vortex_SPL_total = 10*np.log10(self.all_rotor_intensity_vortex/(10e-12))
 
+        print("Vortex Noise is", self.vortex_SPL_total ,  "dB")
+
         #Calculate frequency
         self.thickness = 0.12*self.chord #NACA0012 airfoil thickness to chord
         self.f_vortex = (self.V_07*0.28)/self.thickness  #Only valid for small AoA
@@ -370,6 +383,7 @@ def run():
     analysis = SoundAnalysis()
 
     analysis.rotational_noise()
+    analysis.vortex_noise()
 
 
 # Execute the run function
