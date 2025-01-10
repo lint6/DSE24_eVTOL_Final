@@ -19,10 +19,10 @@ class BEMT():
         self.thrust = thrust # desired thrust
 
 
-    def discretise(self, num_elements=4):
+    def discretise(self, num_elements=1000):
         # divide blade into elements
         self.cutout = 0.15 * self.R
-        self.r_bar_e = 0.95 #effective blade radius due to tip losses, approximate input for now
+        #self.r_bar_e = 0.95 #effective blade radius due to tip losses, approximate input for now
         self.r_e = 0.95 * self.R
         self.r_list = np.linspace(0.5 * (self.R / num_elements), self.R - 0.5 * (self.R / num_elements), num_elements)
         self.dr = self.R / num_elements
@@ -77,7 +77,7 @@ class BEMT():
 
         # drag for a blade element of size dr
         airfoildata = AirfoilData()
-        interpolated_c_l, interpolated_c_d = airfoildata.interpolate_cl_cd(alpha)
+        interpolated_c_l, interpolated_c_d = airfoildata.interpolate_cl_cd(alpha * (180 / np.pi))
 
         # Lift for a blade element of size dr
         dDp_r = interpolated_c_d * 0.5 * self.rho * ((U_r) ** 2) * c_r * dr
@@ -86,21 +86,22 @@ class BEMT():
 
         dT_r = dL_r * np.cos(phi) - dDp_r * np.sin(phi)
         
+        # torque needed for a blade element of size dr
+        dFx = dL_r * np.sin(phi) + dDp_r * np.cos(phi)
         dQ_r = (dL_r * np.sin(phi) + dDp_r * np.cos(phi)) * r
-
         dP_r = dQ_r * omega
 
         dP_ind = 4 * math.pi * (self.R ** 2) * self.rho * (v_r ** 3) * r_bar * dr_bar
 
-        prop = [dL_r * self.b, dDp_r * self.b, dT_r * self.b, dQ_r * self.b, dP_r * self.b, dP_ind * self.b]
+        prop = [dL_r, dDp_r, dT_r, dQ_r, dP_r, dP_ind]
         return prop, v_r, c_l_linear
 
-    def calculate_radius_and_rotors(self, num_elements=20):
+    def calculate_radius_and_rotors(self, num_elements=1000):
         # initial guess for radius
-        self.R = 0.5
+        self.R = 1.2
 
         self.cutout = 0.15 * self.R
-        self.r_bar_e = 0.95 #effective blade radius due to tip losses, approximate input for now
+       # self.r_bar_e = 0.95 #effective blade radius due to tip losses, approximate input for now
         self.r_e = 0.95 * self.R
         
         self.discretise(num_elements)
@@ -108,26 +109,36 @@ class BEMT():
         dT_r_list = []
         dL_r_list = []
         dDp_r_list = []
+        dQ_r_list = []
+        dP_r_list = []
+        dP_ind_list = []
         for chord, theta, a, r in zip(self.c_r_list, self.theta_r_list, self.a_r_list, self.r_list):
             prop = self.vertical(omega=self.omega, theta_r=theta, c_r=chord, r=r, dr=self.dr, a_r=a, V_c=0)
-            if self.cutout<r<self.r_e:
+            if self.cutout < r < self.r_e:
                 dT_r_list.append(prop[0][2])
                 dL_r_list.append(prop[0][0])
                 dDp_r_list.append(prop[0][1])
+                dQ_r_list.append(prop[0][3])
+                dP_r_list.append(prop[0][4])
+                dP_ind_list.append(prop[0][5])
             else:
                 dT_r_list.append(0.0)
                 dL_r_list.append(0.0)
                 dDp_r_list.append(0.0)
+                dQ_r_list.append(0.0)
+                dP_r_list.append(0.0)
+                dP_ind_list.append(0.0)
 
-        total_thrust = sum(dT_r_list) * self.n_rot
-        total_lift = sum(dL_r_list) * self.n_rot
-        total_drag = sum(dDp_r_list) * self.n_rot
+
+        total_thrust = sum(dT_r_list) * self.n_rot * self.b
+        total_lift = sum(dL_r_list) * self.n_rot * self.b
+        total_drag = sum(dDp_r_list) * self.n_rot * self.b
 
         max_iterations = 1000  # Set a maximum number of iterations to prevent infinite loop
         iteration = 0
 
         while total_thrust < self.thrust and iteration < max_iterations:
-            if self.omega < 120:
+            if self.omega < 110:
                 self.omega += 5
             elif self.n_rot < 6:
                 self.n_rot += 2
@@ -139,16 +150,40 @@ class BEMT():
             dT_r_list = []
             dL_r_list = []
             dDp_r_list = []
+            dQ_r_list = []
+            dP_r_list = []
+            dP_ind_list = []
             for chord, theta, a, r in zip(self.c_r_list, self.theta_r_list, self.a_r_list, self.r_list):
                 prop = self.vertical(omega=self.omega, theta_r=theta, c_r=chord, r=r, dr=self.dr, a_r=a, V_c=0)
-                dT_r_list.append(prop[0][2])
-                dL_r_list.append(prop[0][0])
-                dDp_r_list.append(prop[0][1])
-            total_thrust = sum(dT_r_list) * self.n_rot
-            total_lift = sum(dL_r_list) * self.n_rot
-            total_drag = sum(dDp_r_list) * self.n_rot
+                if self.cutout < r < self.r_e:
+                    dT_r_list.append(prop[0][2])
+                    dL_r_list.append(prop[0][0])
+                    dDp_r_list.append(prop[0][1])
+                    dQ_r_list.append(prop[0][3])
+                    dP_r_list.append(prop[0][4])
+                    dP_ind_list.append(prop[0][5])
+                else:
+                    dT_r_list.append(0.0)
+                    dL_r_list.append(0.0)
+                    dDp_r_list.append(0.0)
+                    dQ_r_list.append(0.0)
+                    dP_r_list.append(0.0)
+                    dP_ind_list.append(0.0)
+            total_thrust = sum(dT_r_list) * self.n_rot * self.b
+            total_lift = sum(dL_r_list) * self.n_rot * self.b
+            total_drag = sum(dDp_r_list) * self.n_rot * self.b
+            total_torque = sum(dQ_r_list) * self.n_rot * self.b
+            total_power = sum(dP_r_list) * self.n_rot * self.b
+            total_induced_power = sum(dP_ind_list) * self.n_rot * self.b
             iteration += 1
-            print(f"Iteration: {iteration}, Total Thrust: {total_thrust}, Radius: {self.R}, Number of Rotors: {self.n_rot}, Omega: {self.omega}")
+            #print(f"Iteration: {iteration}, Total Thrust: {total_thrust}, Radius: {self.R}, Number of Rotors: {self.n_rot}, Omega: {self.omega}")
+            print(f"Iteration: {iteration}, Total Thrust: {total_thrust}, Radius: {self.R}, Number of Rotors: {self.n_rot}, Omega: {self.omega}, Total Power: {total_power}")
+
+        # Calculate total thrust and power for one blade
+        total_thrust_one_blade = total_thrust / (self.n_rot * self.b)
+        total_power_one_blade = total_power / (self.n_rot * self.b)
+        print(f"Total Thrust for One Blade: {total_thrust_one_blade}")
+        print(f"Total Power for One Blade: {total_power_one_blade}")
 
         if iteration == max_iterations:
             print("Reached maximum iterations without achieving desired thrust.")
@@ -169,9 +204,12 @@ if __name__ == '__main__':
     print(f"Number of Rotors: {num_rotors}")
     print(f"Final Omega: {bemt.omega}")
     
+    # Calculate the thrust coefficient
+    total_thrust = sum([bemt.vertical(omega=bemt.omega, theta_r=theta, c_r=chord, r=r, dr=bemt.dr, a_r=a, V_c=0)[0][2] for chord, theta, a, r in zip(bemt.c_r_list, bemt.theta_r_list, bemt.a_r_list, bemt.r_list)]) * bemt.n_rot * bemt.b
+    thrust_coefficient = total_thrust / (bemt.rho * (bemt.omega ** 2) * (bemt.R ** 4) * bemt.n_rot * bemt.b)
+    print(f"Thrust Coefficient: {thrust_coefficient}")
     # print total power required
     
-    total_power = sum([bemt.vertical(omega=bemt.omega, theta_r=theta, c_r=chord, r=r, dr=bemt.dr, a_r=a, V_c=0)[0][4] for chord, theta, a, r in zip(bemt.c_r_list, bemt.theta_r_list, bemt.a_r_list, bemt.r_list)]) * bemt.n_rot
-    print(f"Total Power Required: {total_power} Watts")
+    
 
-
+   
