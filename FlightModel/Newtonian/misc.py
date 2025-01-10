@@ -14,6 +14,7 @@ All
 
 '''
 
+import numpy as np
 
 def SCfunc_ForceVector(force_in):
     import numpy as np
@@ -93,6 +94,18 @@ def SCfunc_EulerRotation(input_vector, rotation):
 
     return transformed_vector, rotation_matrix, inverse_rotation_matrix
 
+def SCfunc_CartesianToSpherical(vector_cartesian):
+    r = np.sqrt(vector_cartesian[0]**2 + 
+                vector_cartesian[1]**2 + 
+                vector_cartesian[2]**2)
+    theta = np.arctan2(vector_cartesian[1],vector_cartesian[0])
+    phi = np.arctan2(np.sqrt(vector_cartesian[0]**2 + vector_cartesian[1]**2), vector_cartesian[2])
+    vector_sp_rad = [r,theta,phi]
+    vector_sp_deg = [r, np.rad2deg(theta), np.rad2deg(phi)]
+    return vector_sp_rad, vector_sp_deg
+
+
 DEBUG = False
 if DEBUG:
-    print(SCfunc_EulerRotation([1,0,0],[10,5,10])[0])
+    # print(SCfunc_EulerRotation([1,0,0],[10,5,10])[0])
+    print(SCfunc_CartesianToSpherical([15,-5,1]))

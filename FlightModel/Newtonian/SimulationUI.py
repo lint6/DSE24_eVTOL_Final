@@ -12,7 +12,7 @@ aircraft.py
 Downstream
 None
 '''
-6
+
 import numpy as np
 from aircraft import *
 from physics import *
