@@ -2,9 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt 
 from scipy.integrate import solve_ivp
 
-class SDOFVibrationVerticalClimb:
+class SDOFVibrationHover:
 
-    def __init__(self, L=0.8, E=70, I=1000, T=500, C_damp=0.01, m=1, RPM=1000, gust_velocity=19, gust_time=0.0, impulse_duration=0.1):
+    def __init__(self, L=0.8, E=70, I=1000, T=600, C_damp=0.01, m=1, RPM=1000, gust_velocity=19, gust_time=0.0, impulse_duration=0.1):
         ''' Initialize the SDOFVibrationHover Class '''
         ### Input length in [m], E in [GPa], I in [mm^4], T in [N], C_damp in [-], RPM in [rev/min]
         self.L = L # [m]
@@ -18,12 +18,14 @@ class SDOFVibrationVerticalClimb:
         self.gust_time = gust_time # [s]
         self.impulse_duration = impulse_duration # [s]
 
+
     def calculate_equivalent_mass(self):
         return 1 / 3 * self.m ### check if this makes sense, find sources 
     
     def thrust_function(self):
         ''' Define the Thrust Function Based on the T'''
         return lambda t: self.T # constant thrust 
+    
 
     def gust_force(self, t):
         m_eq = self.calculate_equivalent_mass()
@@ -61,24 +63,7 @@ class SDOFVibrationVerticalClimb:
         plt.plot(sol.t, sol.y[0], label='Displacement x(t)', color='blue')
         plt.xlabel('Time [s]')
         plt.ylabel('Displacement [m]')
-        plt.title('SDOF Vibration Response for Vertical Climb')
-        plt.grid(True)
-        plt.legend()
-        plt.show()
-
-    def plot_forces(self, t_span=[0, 10], y0=[0.0, 0.0]):
-        ''' Plot the Forces Acting on the System '''
-        t_eval = np.linspace(t_span[0], t_span[1], 5000)
-        forces = [self.thrust_function()(t) for t in t_eval]
-
-        plt.figure(figsize=(10, 6))
-        ### Plot the Thrust Function F(t) ###
-        plt.plot(t_eval, forces, label='Input Force F(t)', color='blue')
-        ### Plot the Gust Load Impulses ###
-        plt.plot(self.gust_time, 0, 'ro', label='Gust Impulse')
-        plt.xlabel('Time [s]')
-        plt.ylabel('Force [N]')
-        plt.title('SDOF Force Input for Vertical Climb')
+        plt.title('SDOF Vibration Response for Hover')
         plt.grid(True)
         plt.legend()
         plt.show()
@@ -90,7 +75,7 @@ class SDOFVibrationVerticalClimb:
 
         # Plot the constant thrust force
         plt.figure(figsize=(10, 6))
-        plt.plot(t_eval, forces, label='Thrust Force F(t)', color='red')
+        plt.plot(t_eval, forces, label='Thrust Force', color='red')
 
         # Add the gust impulse as an upward arrow
         gust_x = self.gust_time
@@ -108,10 +93,7 @@ class SDOFVibrationVerticalClimb:
         plt.show()
 
 
- 
-
 if __name__ == '__main__':
-    sys = SDOFVibrationVerticalClimb()
+    sys = SDOFVibrationHover()
     sys.plot_response()
-    #sys.plot_forces()
     sys.plot_force()
