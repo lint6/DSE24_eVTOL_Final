@@ -70,6 +70,7 @@ def SCfunc_VerifyThrust(CT): #Mimic single input (RPM) function for thrust
 def SCfunc_VerifyTorque(CM): #Mimic single input (RPM) function for torque
     return lambda variable: variable**2*CM  #Variable = RPM
 
+
 def SCfunc_VerifyAircraft(): #Returns a list of points with ForcePoint class, modify this function to add or remove points from the aicraft
     '''Points'''
     rotor_1 = SCobj_ForcePoint(forces   = [0, 0, SCfunc_VerifyThrust(-.0008)], #[N, WITHOUT gravitational froce]
