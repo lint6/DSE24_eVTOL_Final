@@ -20,7 +20,7 @@ import time
 from aircraft import *
 from controller import *
 
-def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=.1):
+def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.05):
     if Run:
         print('Warning: Simulation Running')
         '''DOWNWARD IS POSTIVE'''
@@ -49,9 +49,10 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=.1):
         # Aircraft Config
         rotor_count = 4
         
-        # Control Inputs
-        setpoint_pos = [5000,0,-300]
+        # Control
+        setpoint_pos = [0,0,0]
         setpoint_ang = [0,0,0]
+        rpm = np.ones(rotor_count) * 0
         
         # Misc
         time_mark = time.time()
@@ -60,10 +61,11 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=.1):
         # Logging
         log_state = [[[pos_x,pos_y,pos_z]],[[ang_pos_x,ang_pos_y,ang_pos_z]],[[vel_x, vel_y, vel_z]]]
         log_forces = [[[0,0,0]], [[0,0,0]]]
-        log_extras = [[[0,0,0,0]],[[0,0,0]],[[0,0,0]]]
+        log_extras = [[[0,0,0,0]], [[0,0,0]], [[0,0,0]], [[0,0,0,0]]]
         log_error= [[[0],[0],[0]],[[0],[0],[0]]]
         log_acc = [[[0],[0],[0]],[[0],[0],[0]]]
         log_setpoints = [[setpoint_pos],[setpoint_ang]]
+        log_control = [[rpm],[]]
         while Run:
             
             '''Simulation Loop'''
@@ -81,9 +83,22 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=.1):
                     self.rotation = np.array(rotation) #rotation of the aircraft in global space 1x3 matrix
                     self.UpdatePoints()
             """
+            # Updating Setpoints
+            if log_time[-1]>0:
+                setpoint_pos = [0,0,-200]
+            # if log_time[-1]>15:
+            #     setpoint_pos = [0,0,-60]
+            if log_time[-1]>30:
+                setpoint_pos = [0,500,-200]
+            # if log_time[-1]>60:
+            #     setpoint_pos = [5000,0,-300]
+            # if log_time[-1]>120:
+            #     setpoint_pos = [5500,0,-30]
+            # setpoint_pos = [500*np.sin(log_time[-1]/100),500*np.cos(log_time[-1]/100),np.clip(-0.5*log_time[-1]-100, a_min=-5000, a_max=0)]
+            
             
             #get current acceleration
-            lat_acc_x = aircraft.forces[0] / (aircraft.mass) 
+            lat_acc_x = aircraft.forces[0] / (aircraft.mass)
             lat_acc_y = aircraft.forces[1] / (aircraft.mass) 
             lat_acc_z = aircraft.forces[2] / (aircraft.mass) + 9.81
             
@@ -96,6 +111,10 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=.1):
             vel_x = vel_x + lat_acc_x * dt
             vel_y = vel_y + lat_acc_y * dt
             vel_z = vel_z + lat_acc_z * dt 
+            if pos_z >= 0:
+                if vel_z >=0:
+                    vel_z = 0
+            
             rot_x = rot_x + ang_acc_x * dt 
             rot_y = rot_y + ang_acc_y * dt 
             rot_z = rot_z + ang_acc_z * dt 
@@ -121,67 +140,59 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=.1):
             # angtle of atack -- geomatry how force functino, hiahdfbvjkadbfjkhadbfv
             
             # Controllers
-            # Angle Error
-            
-            # print(f'setpoint {setpoint_pos[0]}')
-            # print(f'position {pos_x}')
-            delta_x = setpoint_pos[0]-pos_x
-            delta_y = setpoint_pos[1]-pos_y
-            
-            mag_diff = np.sqrt(delta_x**2+delta_y**2)
-            ang_tgt = np.arctan2(delta_y, delta_x) * 180/np.pi #angle from the aicraft to the target
-            
-            if (ang_tgt - ang_pos_z) > 180:#difference between the aircraft yaw and the yaw of the target
-                ang_diff = ang_tgt - ang_pos_z - 360
-            if (ang_tgt - ang_pos_z) < -180: 
-                ang_diff = ang_tgt - ang_pos_z + 360
-            else: 
-                ang_diff = ang_tgt - ang_pos_z
-            
-            # print(ang_tgt)
-            # print(ang_pos_z)
-            # print(ang_diff)
-
-             #magnitude of difference between planar elements
-            # print(mag_diff)
-            # print(pos_x)
-            lon_diff = np.cos(np.radians(ang_diff)) * mag_diff
-            lat_diff = np.sin(np.radians(ang_diff)) * mag_diff
-            print(f'ang diff {ang_diff}')
-            print(f'mag diff {mag_diff}')
-
-
-            log_error[0][0].append(lat_diff) #X position error in AC frame
-            log_error[0][1].append(lon_diff) #Y position error in AC frame
-            log_error[0][2].append(setpoint_pos[2] - pos_z) #Z position error in global frame
-            
-            setpoint_ang[0] = -1*np.clip(SCfunc_PIDController(log_error[0][0], k_p=0.04, t_i=7500, t_d=5, dt=dt), a_min=-30, a_max=30) #roll angle
-            setpoint_ang[1] = np.clip(SCfunc_PIDController(log_error[0][1], k_p=0.04, t_i=7500, t_d=5, dt=dt), a_min=-30, a_max=30) #pitch angle
-            
-            if mag_diff <= 100:
-                setpoint_ang[2] = setpoint_ang[2] #yaw angle
-            else:
-                setpoint_ang[2] = SCfunc_PController(ang_diff, k_p=0.8)#yaw angle
-                print(setpoint_ang[2])
+            controlled = True
+            if controlled:
+                #TODO: Update yaw/roll distribution base on angle and distance
+                delta_x = setpoint_pos[0]-pos_x
+                delta_y = setpoint_pos[1]-pos_y
+                ang_tgt = np.arctan2(delta_y, delta_x) * 180/np.pi #angle from the aicraft to the target
                 
-            log_error[1][0].append(setpoint_ang[0] - ang_pos_x) 
-            log_error[1][1].append(setpoint_ang[1] - ang_pos_y) 
-            log_error[1][2].append(setpoint_ang[2] - ang_pos_z) 
-            # Controllers
-            rpm_hover = np.ones(rotor_count) * SCfunc_PIDController(log_error[0][2], k_p=12.5, t_i=10, t_d=3.1, dt=dt)
-            rpm_rotate_x = np.array([-1,1,1,-1]) * -1 * SCfunc_PIDController(log_error[1][0], k_p=5, t_i=130, t_d=5, dt=dt)          
-            rpm_rotate_y = np.array([1,1,-1,-1]) * -1 * SCfunc_PIDController(log_error[1][1], k_p=5, t_i=130, t_d=5, dt=dt)
-            rpm_rotate_z = np.array([-1,1,-1,1]) *  SCfunc_PIDController(log_error[1][2], k_p=3, t_i=130, t_d=15, dt=dt)
-            rpm = (rpm_hover + rpm_rotate_x + rpm_rotate_y + rpm_rotate_z) 
-            #TODO: clamp PID output to -1 to 1, prevent oversaturation between different outputs
-            #TODO: change PID output to throttle instead of pure RPM
+                mag_diff = np.sqrt(delta_x**2+delta_y**2)
 
-            for i in range(len(rpm)):
-                if rpm[i] < 0:
-                    rpm[i] = 0
-                if rpm[i] > 4000:
-                    rpm[i] = 4000
                 
+                if (ang_tgt - ang_pos_z) > 180:#difference between the aircraft yaw and the yaw to the target
+                    ang_diff = ang_tgt - ang_pos_z - 360
+                if (ang_tgt - ang_pos_z) < -180: 
+                    ang_diff = ang_tgt - ang_pos_z + 360
+                else: 
+                    ang_diff = ang_tgt - ang_pos_z
+
+                # magnitude of difference between planar elements
+                lon_diff = np.cos(np.radians(ang_diff)) * mag_diff
+                lat_diff = np.sin(np.radians(ang_diff)) * mag_diff
+                
+
+                log_error[0][0].append(lat_diff) #X position error in AC frame
+                log_error[0][1].append(lon_diff) #Y position error in AC frame
+                log_error[0][2].append(setpoint_pos[2] - pos_z) #Z position error in global frame
+                # Controllers Outputting angles
+                setpoint_ang[0] = np.clip(SCfunc_PIDController(log_error[0][0], k_p=0.02, t_i=7500, t_d=5, dt=dt), a_min=-30, a_max=30) #roll angle
+                setpoint_ang[1] = np.clip(SCfunc_PIDController(log_error[0][1], k_p=0.02, t_i=7500, t_d=5, dt=dt), a_min=-30, a_max=30) #pitch angle
+                
+                if mag_diff <= 100:
+                    setpoint_ang[2] = setpoint_ang[2] #yaw angle
+                else:
+                    setpoint_ang[2] = ang_diff #yaw angle
+
+                log_error[1][0].append(setpoint_ang[0] - ang_pos_x) 
+                log_error[1][1].append(setpoint_ang[1] - ang_pos_y) 
+                log_error[1][2].append(setpoint_ang[2]) 
+                # Controllers outputing RPM drive
+                throttle_hover = np.ones(rotor_count) * np.clip(SCfunc_PIDController(log_error[0][2], k_p=0.4, t_i=450, t_d=5, dt=dt), a_max=1, a_min=-1)
+                throttle_rotate_x = np.array([-1,1,1,-1]) * 1 * np.clip(SCfunc_PIDController(log_error[1][0], k_p=0.05, t_i=500, t_d=10, dt=dt), a_max=1, a_min=-1)    
+                throttle_rotate_y = np.array([1,1,-1,-1]) * 1 * np.clip(SCfunc_PIDController(log_error[1][1], k_p=0.03, t_i=90, t_d=10, dt=dt), a_max=1, a_min=-1)
+                throttle_rotate_z = np.array([-1,1,-1,1]) * 1 * np.clip(SCfunc_PIDController(log_error[1][2], k_p=0.05, t_i=60000, t_d=1, dt=dt), a_max=1, a_min=-1)
+                control_limiter = ((0.05-1)/-2 * lat_acc_z+1)
+                throttle = throttle_hover + ( throttle_rotate_x + throttle_rotate_y + throttle_rotate_z) *.01
+                rpm = SCfunc_RotorRPM(throttle, rpm, dt)
+                
+
+                for i in range(len(rpm)):
+                    if rpm[i] < 0:
+                        rpm[i] = 0
+                    if rpm[i] > 4000:
+                        rpm[i] = 4000
+            
             
             # Update aircraft
             position = [pos_x, pos_y, pos_z]
@@ -206,29 +217,29 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=.1):
             log_extras[0].append(rpm/4000)
             log_extras[1].append(setpoint_pos)
             log_extras[2].append([setpoint_ang[0],setpoint_ang[1],setpoint_ang[2]])
+            log_extras[3].append([np.max(throttle_hover), np.max(throttle_rotate_x), np.max(throttle_rotate_y), np.max(throttle_rotate_z)])
 
             log_time.append(log_time[-1]+dt)
             
             log_acc[0][0].append(lat_acc_x)
             log_acc[0][1].append(lat_acc_y)
             log_acc[0][2].append(lat_acc_z)
-            print(f'-----{log_time[-1]:.2f}-----')
+            # print(f'-----{log_time[-1]:.2f}-----')
             '''Exit Conditions'''
-            if time.time() - start_time > 60:
+            if time.time() - start_time >= 60:
                 Run = False
                 print('Run time reached, simulation exited')
-            if log_time[-1] > runtime:
+            if log_time[-1] >= runtime:
                 Run = False
-                print('Simulation time reached, simulation exited')
-            if time.time() - time_mark > 5 :
-                print(f'Progress: {log_time[-1]/runtime*100 :.2f}%')
+                print('Simulation Completed')
+            if time.time() - time_mark >= 3 :
+                print(f'Progress: {log_time[-1]/runtime*100 :.2f}% | {time.time()-start_time:.1f}/60 sec')
                 time_mark = time.time()
         return log_state, log_forces, log_time, log_extras, log_acc, log_error, log_setpoints
         
 
 def ExampleFunction(Constant): #the input modify the function that is to be returned
     return lambda variable: variable*Constant #Return a function that can be stored in a variable
-
 
 #x = [u,w, theta, R, omega] should have u and w in the x list
 def SCfunc_parameter_velo():
@@ -237,14 +248,20 @@ def SCfunc_parameter_velo():
 def SCfunc_parameter_alpha_attack():
     return lambda x : x[2] - np.arctan(x[1]/x[0])
 
-var = SCfunc_parameter_velo()
-var1 = SCfunc_parameter_alpha_attack()
+# var = SCfunc_parameter_velo()
+# var1 = SCfunc_parameter_alpha_attack()
 
-# x.append(var)
-# x.append(var1)
-# x = [u,w,theta, R, omega, var(x), var1(x)]
-def SCfun_parameter_Mu():
+# # x.append(var)
+# # x.append(var1)
+# # x = [u,w,theta, R, omega, var(x), var1(x)]
+def SCfunc_parameter_Mu():
     return lambda x : x[5]/(x[4]*x[3]) * np.cos(x[6])
 
-def SCfun_parameter_llambda_c():
+def SCfunc_parameter_llambda_c():
     return  lambda x : x[5]/(x[4]*x[3]) * np.sin(x[6])
+
+def SCfunc_RotorRPM(throttle, current_rpm, dt, resistance = 0, max_power = 100000, inertia_rotor = 25):
+    resistance += current_rpm**2*0.025 + 3000 #temp value for rotor resistance
+    power_delivery = throttle * max_power
+    detla_rpm = (power_delivery - resistance)/inertia_rotor
+    return current_rpm + detla_rpm * dt
