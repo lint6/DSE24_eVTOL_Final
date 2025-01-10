@@ -15,7 +15,7 @@ from CellWeights import CellWeights
 #Required design power check for a user specified net power. Note to self: this is critical for comparing performance at different stack pressures.
 #Because highest stack pressures give lower weights for a set design power, but they also give lower net power (due to higher P_BOP)
 
-P_net = 111.5e3 #Net power (P_D-P_BOP), user specified 
+P_net = 148.5e3 #Net power (P_D-P_BOP), user specified 
 P_range = 0.5*P_net #Range to iterate over
 P_iterate = np.linspace(P_net,P_net+P_range,1000)
 tolerance = 100
