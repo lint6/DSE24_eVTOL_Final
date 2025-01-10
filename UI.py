@@ -15,10 +15,13 @@ from CellWeights import CellWeights
 #Required design power check for a user specified net power. Note to self: this is critical for comparing performance at different stack pressures.
 #Because highest stack pressures give lower weights for a set design power, but they also give lower net power (due to higher P_BOP)
 
-P_net = 148.5e3 #Net power (P_D-P_BOP), user specified 
+safety_factor = 1.27
+P_net = safety_factor* 78.952e3 #Net power (P_D-P_BOP), user specified 
 P_range = 0.5*P_net #Range to iterate over
 P_iterate = np.linspace(P_net,P_net+P_range,1000)
 tolerance = 100
+
+mission_time = 77.27*60 #Mission time [s]
 
 input_pressures = np.linspace(1.00,2.50,100) #Input stack pressures
 P_D_list = []
@@ -38,7 +41,7 @@ for j in input_pressures:
         BOP.WaterPower()
         BOP.ElecPower()
         BOP.BOPPower()
-        Weights = CellWeights(IVCurves=inputIV,CellParameters=inputCell,BalanceOfPlant=BOP)
+        Weights = CellWeights(IVCurves=inputIV,CellParameters=inputCell,BalanceOfPlant=BOP,missiontime=mission_time)
         Weights.StackWeight()
         Weights.HydrogenWeight()
         Weights.TankWeight()
@@ -83,7 +86,7 @@ BOP.LTCPower()
 BOP.WaterPower()
 BOP.ElecPower()
 BOP.BOPPower()
-Weights = CellWeights(IVCurves=inputIV,CellParameters=inputCell,BalanceOfPlant=BOP)
+Weights = CellWeights(IVCurves=inputIV,CellParameters=inputCell,BalanceOfPlant=BOP,missiontime=mission_time)
 Weights.StackWeight()
 Weights.HydrogenWeight()
 Weights.TankWeight()
