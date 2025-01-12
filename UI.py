@@ -15,8 +15,13 @@ from CellWeights import CellWeights
 #Required design power check for a user specified net power. Note to self: this is critical for comparing performance at different stack pressures.
 #Because highest stack pressures give lower weights for a set design power, but they also give lower net power (due to higher P_BOP)
 
-safety_factor = 1.27
-P_net = safety_factor* 78.952e3 #Net power (P_D-P_BOP), user specified 
+safety_factor = 1 
+P_pemfc = 78.952e3 #Input from performance
+P_avionics = 2110.50 #Get this from the Avionics class [W]
+converter_efficiency = 0.981 #Based on Miro three-level DC/DC converter
+motor_efficiency = 0.89 #From motor graph, check if accurate
+
+P_net = safety_factor * (((P_pemfc+P_avionics)/converter_efficiency)/motor_efficiency)  #Net required power 
 P_range = 0.5*P_net #Range to iterate over
 P_iterate = np.linspace(P_net,P_net+P_range,1000)
 tolerance = 100
