@@ -51,11 +51,11 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.05):
         rotor_count = 4
         
         # Control
-        setpoint_pos = [1000,0,-150]
+        setpoint_pos = [0,0,-60]
         setpoint_ang = [0,0,0]
         rpm = np.ones(rotor_count) * 0
-        far_distance = 500
-        close_distance = 100
+        far_distance = 75
+        close_distance = 25
         allocation = np.array([[0.1,-0.1,-0.1,0.1],[-0.1,-0.1,0.1,0.1],[-0.1,0.1,-0.1,0.1],[1,1,1,1]]) # Roll, Pitch, Yaw, Hover
         
         
@@ -94,10 +94,10 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.05):
             # Setpoints
             # if log_time[-1]>0:
             #     setpoint_pos = [0,0,-200]
-            # if log_time[-1]>15:
-            #     setpoint_pos = [0,0,-60]
-            # if log_time[-1]>30:
-            #     setpoint_pos = [0,500,-200]
+            if log_time[-1]>15:
+                setpoint_pos = [500,0,-60]
+            if log_time[-1]>45:
+                setpoint_pos = [550,0,0]
             # if log_time[-1]>60:
             #     setpoint_pos = [5000,0,-300]
             # if log_time[-1]>120:
@@ -253,14 +253,14 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.05):
             # log_acc[0][1].append(lat_acc_y)
             # log_acc[0][2].append(lat_acc_z)
             '''Exit Conditions'''
-            if time.time() - start_time >= 60:
+            if time.time() - start_time >= 600:
                 Run = False
                 print('Run time reached, simulation exited')
             if log_time[-1] >= runtime:
                 Run = False
                 print('Simulation Completed')
             if time.time() - time_mark >= 3 :
-                print(f'Progress: {log_time[-1]/runtime*100 :.2f}% | {time.time()-start_time:.1f}/60 sec')
+                print(f'Progress: {log_time[-1]/runtime*100 :.2f}% | {time.time()-start_time:.1f}/600 sec')
                 time_mark = time.time()
             if Run == False:
                 print(f' {time.time()-start_time:.2f} seconds')
@@ -289,8 +289,8 @@ def SCfunc_parameter_Mu():
 def SCfunc_parameter_llambda_c():
     return  lambda x : x[5]/(x[4]*x[3]) * np.sin(x[6])
 
-def SCfunc_RotorRPM(throttle, current_rpm, dt, resistance = 0, max_power = 500000, inertia_rotor = 25):
-    resistance += current_rpm**2*0.025 + 3000 #temp value for rotor resistance
+def SCfunc_RotorRPM(throttle, current_rpm, dt, resistance = 0, max_power = 5000, inertia_rotor = 25):
+    resistance += current_rpm**2*0.0001 #temp value for rotor resistance
     power_delivery = throttle * max_power
     detla_rpm = (power_delivery - resistance)/inertia_rotor
     return current_rpm + detla_rpm * dt

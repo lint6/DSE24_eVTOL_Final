@@ -119,11 +119,11 @@ def SCcon_HoverFlight(state_in, error_in, allocation, dt):
         
     # Velocity
     Vx_set = np.clip(SCfunc_PIDController(-1*np.array(pos_error_loc).T[0], k_p=1.2, t_i=99999, t_d=2, dt=dt),
-                     a_min=-10, a_max=10)
+                     a_min=-5, a_max=5)
     Vy_set = np.clip(SCfunc_PIDController(-1*np.array(pos_error_loc).T[1], k_p=1.2, t_i=99999, t_d=2, dt=dt),
-                     a_min=-10, a_max=10)
+                     a_min=-5, a_max=5)
     Vz_set = np.clip(-1*SCfunc_PIDController(np.array(pos_error).T[2], k_p=1.6, t_i=250, t_d=0.35, dt=dt),
-                     a_min=-20, a_max=20)
+                     a_min=-5, a_max=5)
     if TUNING_vel:
         vel_set = [0,0,-50]
     else:
