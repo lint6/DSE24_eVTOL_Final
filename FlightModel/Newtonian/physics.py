@@ -37,9 +37,9 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.05):
         # Angles
         ang_x = 0
         ang_y = 0
-        ang_z = 25
+        ang_z = 0
         # Velocity
-        vel_x = 0
+        vel_x = 2
         vel_y = 0
         vel_z = 0
         # Rotational Velocity
@@ -51,12 +51,12 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.05):
         rotor_count = 4
         
         # Control
-        setpoint_pos = [50,50,-120]
+        setpoint_pos = [1000,0,-150]
         setpoint_ang = [0,0,0]
         rpm = np.ones(rotor_count) * 0
-        far_distance = 200
+        far_distance = 500
         close_distance = 100
-        allocation = np.array([[-0.1,0.1,0.1,-0.1],[0.1,0.1,-0.1,-0.1],[-0.1,0.1,-0.1,0.1],[1,1,1,1]]) # Roll, Pitch, Yaw, Hover
+        allocation = np.array([[0.1,-0.1,-0.1,0.1],[-0.1,-0.1,0.1,0.1],[-0.1,0.1,-0.1,0.1],[1,1,1,1]]) # Roll, Pitch, Yaw, Hover
         
         
         
@@ -70,8 +70,8 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.05):
         log_forces = [[[0,0,0]], [[0,0,0]]] # [Forces, moments]
         log_extras = [[[0,0,0,0]], [[0,0,0]], [[0,0,0]], [[0,0,0,0]]] 
         log_error_cartesian= [[[0,0,0]], [[0,0,0]], [[0,0,0]], [[0,0,0]]] # [position, angle, velocity, rotation]
-        log_error_spherical= [[[0,0,0]], [[0,0,0]]] # [Flight, Yaw]
-        log_acc = [[[0,0,0]],[[0,0,0]]] # [position, angle]
+        log_error_spherical= [[[0,0,0]], [[0,0,0]], [[0,0,0]]] # [Flight, Angle]
+        log_acc = [[[0,0,0]],[[0,0,0]]] # [position, yaw]
         log_setpoints = [[setpoint_pos],[setpoint_ang],[[0,0,0]]] # [position, angle, velocity, rotation]
         log_control = [[rpm],[]]
         
@@ -177,22 +177,22 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.05):
 
                 # Vector to Target from AC, spherical coord
                 vect_tgt = SCfunc_CartesianToSpherical([delta_x, delta_y, delta_z])[1]
-                vect_tgt[2] = vect_tgt[2] - 90
                 
                 # Velocity Vector, spherical coord
                 vect_vel = SCfunc_CartesianToSpherical([vel_x, vel_y, vel_z])[1]
+
 
                 log_state_spherical[0].append(vect_tgt)
                 log_state_spherical[1].append(vect_vel)
                 
                 
-                throttle_ForwardFlight, log_state_spherical[2], flight_error, yaw_error= SCcon_ForwardFlight(log_state_spherical, log_state, log_error_spherical, allocation, dt=dt)
+                throttle_ForwardFlight, log_state_spherical[2], log_error_spherical, setpoint_ang_for= SCcon_ForwardFlight(log_state_spherical, log_state, log_error_spherical, allocation, dt=dt)
                 
-                throttle_HoverFlight, setpoint_vel, setpoint_ang, log_error_cartesian[2], log_error_cartesian[1] = SCcon_HoverFlight(log_state, log_error_cartesian, allocation, dt=dt)
+                throttle_HoverFlight, setpoint_vel, setpoint_ang_hov, log_error_cartesian[2], log_error_cartesian[1] = SCcon_HoverFlight(log_state, log_error_cartesian, allocation, dt=dt)
+
+                throttle = SCfunc_LinearRamp(far_distance, close_distance, vect_tgt[0], throttle_ForwardFlight, throttle_HoverFlight)
                 
-                
-                
-                throttle = throttle_HoverFlight
+                setpoint_ang = SCfunc_LinearRamp(far_distance, close_distance, vect_tgt[0], np.array(setpoint_ang_for), np.array(setpoint_ang_hov))
                 # SCfunc_LinearRamp(far_distance, close_distance, vect_tgt[0], throttle_ForwardFlight, throttle_HoverFlight)
                 
                 # print(SCfunc_LinearRamp(500, 100, vect_tgt[0], 0, 1))
@@ -252,7 +252,6 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.05):
             # log_acc[0][0].append(lat_acc_x)
             # log_acc[0][1].append(lat_acc_y)
             # log_acc[0][2].append(lat_acc_z)
-            # print(f'-----{log_time[-1]:.2f}-----')
             '''Exit Conditions'''
             if time.time() - start_time >= 60:
                 Run = False
@@ -263,6 +262,8 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.05):
             if time.time() - time_mark >= 3 :
                 print(f'Progress: {log_time[-1]/runtime*100 :.2f}% | {time.time()-start_time:.1f}/60 sec')
                 time_mark = time.time()
+            if Run == False:
+                print(f' {time.time()-start_time:.2f} seconds')
         return log_state, log_forces, log_time, log_extras, log_acc, log_setpoints
         
 

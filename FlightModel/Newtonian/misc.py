@@ -100,16 +100,16 @@ def SCfunc_CartesianToSpherical(vector_cartesian):
                 vector_cartesian[2]**2)
     theta = np.arctan2(vector_cartesian[1],vector_cartesian[0])
     phi = np.arctan2(np.sqrt(vector_cartesian[0]**2 + vector_cartesian[1]**2), vector_cartesian[2])
-    vector_sp_rad = np.array([r,theta,phi])
-    vector_sp_deg = np.array([r, np.rad2deg(theta), np.rad2deg(phi)])
+    vector_sp_rad = np.array([r,theta,-1*(phi-np.pi/2)])
+    vector_sp_deg = np.array([r, np.rad2deg(theta), -1*(np.rad2deg(phi)-90)])
     return vector_sp_rad, vector_sp_deg
 
 def SCfunc_LinearRamp(x1, x2, x, value1, value2):
     m = 1 / (x2 - x1)
     b = -1 * x1 / (x2 - x1)
-    mix = m*x+b
+    mix = np.clip(m*x+b, a_max=1, a_min=0)
     value = (1-mix)*value1 + (mix)*value2
-    return np.clip(value, a_min=np.min([value1,value2]), a_max=np.max([value1,value2]))
+    return value
     
 
 DEBUG = False

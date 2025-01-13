@@ -19,7 +19,7 @@ from physics import *
 import matplotlib.pyplot as plt
 
 aircraft = SCobj_Aircraft(points=SCfunc_VerifyAircraft(), position=[0,0,0], rotation=[0,0,0])
-log_state, log_forces, log_time, log_extras, log_acc, log_setpoints = SCfunc_FlightSimulation(aircraft, runtime=40)
+log_state, log_forces, log_time, log_extras, log_acc, log_setpoints = SCfunc_FlightSimulation(aircraft, runtime=60)
 
 DEBUG = False
 if DEBUG:
@@ -79,8 +79,9 @@ ang_plt[2].set_ylabel('Z (Yaw)')
 # ang_plt[3].set_xlabel('time')
 
 # plt.tight_layout()
-plt.show()
-plt.clf()
+# plt.show()
+# plt.clf()
+
 fltpath = plt.figure(figsize=(12,10))
 path = fltpath.add_subplot( projection='3d')
 path.plot(np.array(log_state[0]).T[0],
@@ -101,6 +102,6 @@ path.set_ylabel('Y')
 path.set_zlabel('Z')
 path.set_aspect('equal')
 path.legend()
-fltpath.show()
+plt.show()
 
 input()
