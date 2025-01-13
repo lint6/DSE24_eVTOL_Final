@@ -4,7 +4,7 @@ import numpy as np
 class AirfoilData:
     def __init__(self):
         # Define the filename
-        self.filename = r'xf-n0012-il-500000.csv'
+        self.filename = r'xf-n2414-il-500000.csv'
 
         # Initialize lists to store the data
         self.alpha = []
@@ -54,7 +54,7 @@ class AirfoilData:
 
         # Check if alpha_input is within the range of available alpha values
         if alpha_input < alpha_array[0] or alpha_input > alpha_array[-1]:
-            print("Warning: alpha_input is out of the range of available alpha values.")
+            #print("Warning: alpha_input is out of the range of available alpha values.")
             return None, None  # Return None if out of range
 
         # Perform linear interpolation to find CL and CD for the exact alpha_input
