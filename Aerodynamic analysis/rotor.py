@@ -210,8 +210,141 @@ class BEMT():
         prop_2 = [dL_r,dD_r,dT_r,dQ_r,dP_r,dFx,alpha,stall,M_r]
         return prop_2
 
-    def interpolation(self):
-    print("Hello")
+    def controlstability(self):
+        # specify forward flight regime
+        V_f = 10
+        gamma = 0.0
+        alpha_v = np.linspace((-90*np.pi)/180, (90*np.pi)/180, num=10)
+        C_T_list = []
+        C_Fx_list = []
+        C_Q_list = []
+        C_P_list = []
+
+        for alpha_v_1 in alpha_v:
+            print(alpha_v_1)
+            dL_r_list2 = []
+            dD_r_list2 = []
+            dT_r_list2 = []
+            dQ_r_list2 = []
+            dP_r_list2 = []
+            dFx_r_list2 = []
+            alpha_r_list2 = []
+
+            dL_r_list3 = []
+            dD_r_list3 = []
+            dT_r_list3 = []
+            dQ_r_list3 = []
+            dP_r_list3 = []
+            dFx_r_list3 = []
+            alpha_r_list3 = []
+
+            L = 0
+            D = 0
+            T = 0
+            Q = 0
+            P = 0
+            Fx = 0
+
+            for psi in BEMT.psi_list:
+                # print(f"psi = {psi*(180/np.pi)}")
+                for chord, theta, a, r in zip(BEMT.c_r_list, BEMT.theta_r_list, BEMT.a_r_list, BEMT.r_list):
+                    # print(f"r = {r}")
+                    if BEMT.cutout < r < BEMT.r_e:
+                        prop_2 = BEMT.forward(omega=BEMT.omega, theta_r=theta, c_r=chord, r=r, dr=BEMT.dr, a_r=a, V_f=V_f,
+                                              gamma=gamma, psi=psi, alpha_v=alpha_v_1)
+                        dL_r_list3.append(prop_2[0])
+                        dD_r_list3.append(prop_2[1])
+                        dT_r_list3.append(prop_2[2])
+                        dQ_r_list3.append(prop_2[3])
+                        dP_r_list3.append(prop_2[4])
+                        dFx_r_list3.append(prop_2[5])
+                        alpha_r_list3.append(prop_2[6])
+                    else:
+                        dL_r_list3.append(0.0)
+                        dD_r_list3.append(0.0)
+                        dT_r_list3.append(0.0)
+                        dQ_r_list3.append(0.0)
+                        dP_r_list3.append(0.0)
+                        dFx_r_list3.append(0.0)
+                        alpha_r_list3.append(0.0)
+
+                dL_r_list2.append(dL_r_list3)
+                L += sum(dL_r_list3)
+
+                dD_r_list2.append(dD_r_list3)
+                D += sum(dD_r_list3)
+
+                dT_r_list2.append(dT_r_list3)
+                T += sum(dT_r_list3)
+
+                dQ_r_list2.append(dQ_r_list3)
+                Q += sum(dQ_r_list3)
+
+                dP_r_list2.append(dP_r_list3)
+                P += sum(dP_r_list3)
+
+                dFx_r_list2.append(dFx_r_list3)
+                Fx += sum(dFx_r_list3)
+
+                alpha_r_list2.append(alpha_r_list3)
+
+                dL_r_list3 = []
+                dD_r_list3 = []
+                dT_r_list3 = []
+                dQ_r_list3 = []
+                dP_r_list3 = []
+                dFx_r_list3 = []
+                alpha_r_list3 = []
+
+            # print(stall_r_list2)
+            L = L / BEMT.psi_elements
+            D = D / BEMT.psi_elements
+            T = T / BEMT.psi_elements
+            Q = Q / BEMT.psi_elements
+            P = P / BEMT.psi_elements
+            Fx = Fx / BEMT.psi_elements
+
+            C_T = T / (math.pi * (BEMT.R ** 2) * BEMT.rho * ((BEMT.omega * BEMT.R) ** 2))
+            C_Fx = Fx / (math.pi * (BEMT.R ** 2) * BEMT.rho * ((BEMT.omega * BEMT.R) ** 2))
+            C_Q = Q / (math.pi * (BEMT.R ** 3) * BEMT.rho * ((BEMT.omega * BEMT.R) ** 2))
+            C_P = P / (math.pi * (BEMT.R ** 2) * BEMT.rho * ((BEMT.omega * BEMT.R) ** 3))
+
+            C_T_list.append(C_T)
+            C_Fx_list.append(C_Fx)
+            C_Q_list.append(C_Q)
+            C_P_list.append(C_P)
+
+        print(C_T_list)
+        print(C_Fx_list)
+        print(C_Q_list)
+        print(C_P_list)
+
+        # Interpolation: Fit 3rd-degree polynomials to each dataset
+        coeff1 = np.polyfit(alpha_v, C_T_list, 3)
+        coeff2 = np.polyfit(alpha_v, C_Fx_list, 3)
+        coeff3 = np.polyfit(alpha_v, C_Q_list, 3)
+        coeff4 = np.polyfit(alpha_v, C_P_list, 3)
+
+        # Generate polynomial functions
+        poly1 = np.poly1d(coeff1)
+        poly2 = np.poly1d(coeff2)
+        poly3 = np.poly1d(coeff3)
+        poly4 = np.poly1d(coeff4)
+
+        print(poly1)
+        print(poly2)
+        print(poly3)
+        print(poly4)
+
+        fig, axs = plt.subplots(4, 1, figsize=(8, 10), sharex=True)
+
+        # Plot each data set
+        axs[0].plot(alpha_v, C_T_list, marker='o', label="Data 1", color='blue')
+        axs[1].plot(alpha_v, C_Fx_list, marker='o', label="Data 2", color='green')
+        axs[2].plot(alpha_v, C_Q_list, marker='o', label="Data 3", color='orange')
+        axs[3].plot(alpha_v, C_P_list, marker='o', label="Data 4", color='red')
+
+        plt.show()
 
 
 if __name__ == '__main__':
@@ -219,10 +352,10 @@ if __name__ == '__main__':
 
     #which analysis
     vertical = False
-    forward = True
+    forward = False
 
     #initialise discretisation and insert number of elements (minimum 100 for accuracy)
-    num_elements = 250
+    num_elements = 100
     BEMT.discretise(num_elements=num_elements)
 
     if vertical==True:
@@ -279,6 +412,7 @@ if __name__ == '__main__':
         LD = L / D
         TFx = T / Fx
         C_T = T / (math.pi * (BEMT.R ** 2) * BEMT.rho * ((BEMT.omega * BEMT.R) ** 2))
+        C_Fx = Fx / (math.pi * (BEMT.R ** 2) * BEMT.rho * ((BEMT.omega * BEMT.R) ** 2))
         C_Q = Q / (math.pi * (BEMT.R ** 3) * BEMT.rho * ((BEMT.omega * BEMT.R) ** 2))
         C_P = P_r / (math.pi * (BEMT.R ** 2) * BEMT.rho * ((BEMT.omega * BEMT.R) ** 3))
         stall_factor = stall_r_list1.count(1)/num_elements
@@ -292,6 +426,7 @@ if __name__ == '__main__':
         print(f"AR {BEMT.AR} [-]")
         print(f"R {BEMT.R} [m]")
         print(f"C_T {C_T}")
+        print(f"C_Fx {C_Fx}")
         print(f"C_Q {C_Q}")
         print(f"C_P {C_P}")
         print(f"Stall occurence {stall_factor}")
@@ -440,6 +575,7 @@ if __name__ == '__main__':
         LD = L / D
         TFx = T / Fx
         C_T = T / (math.pi * (BEMT.R ** 2) * BEMT.rho * ((BEMT.omega * BEMT.R) ** 2))
+        C_Fx = Fx / (math.pi * (BEMT.R ** 2) * BEMT.rho * ((BEMT.omega * BEMT.R) ** 2))
         C_Q = Q / (math.pi * (BEMT.R ** 3) * BEMT.rho * ((BEMT.omega * BEMT.R) ** 2))
         C_P = P / (math.pi * (BEMT.R ** 2) * BEMT.rho * ((BEMT.omega * BEMT.R) ** 3))
         stall_factor = sum(stall_r_list2)/(num_elements*BEMT.psi_elements)
@@ -456,6 +592,7 @@ if __name__ == '__main__':
         print(f"AR {BEMT.AR} [-]")
         print(f"R {BEMT.R} [m]")
         print(f"C_T {C_T}")
+        print(f"C_Fx {C_Fx}")
         print(f"C_Q {C_Q}")
         print(f"C_P {C_P}")
         print(f"Stall occurence {stall_factor}")
@@ -497,5 +634,5 @@ if __name__ == '__main__':
             plt.plot(BEMT.r_list, alpha_r_list2[90],color='b')
             plt.show()
 
-
+    BEMT.controlstability()
 
