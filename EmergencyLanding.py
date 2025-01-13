@@ -4,7 +4,7 @@ from performance import PerformanceAnalysis, EnergyAnalysis
 #Short thing to calculate the emergency landing energy requirements
 
 class EmergencyLanding:
-    def __init__(self,PerformanceAnalysis,distance=5000):
+    def __init__(self,PerformanceAnalysis,distance=600):
         #Get performance class
         self.PerformanceAnalysis = PerformanceAnalysis if PerformanceAnalysis else PerformanceAnalysis()
 
@@ -15,7 +15,7 @@ class EmergencyLanding:
         self.distance = distance #Distance to fly before landing during emergency
 
     def DistanceTime(self):
-        self.t_steep = (self.h_end-self.h_start)/self.V_steep #Steep descent time [s]
+        self.t_steep = (self.h_start-self.h_end)/self.V_steep #Steep descent time [s]
         self.d_steep = self.PerformanceAnalysis.power_velocity_steep_descent*self.t_steep #Steep descent distance [m]
 
         self.d_cruise = self.distance - self.d_steep #Cruise distance to fly [m]
@@ -23,6 +23,9 @@ class EmergencyLanding:
 
         self.t_Vdescent = 60 #Time to descent vertically [s]
         self.t_HOGE = 10 #Time to HOGE [s]
+        print(f"Emergency cruise distance {self.d_cruise}")
+        print(f"Emergency cruise time  {self.t_steep}")
+        print(f"Emergency cruise time  {self.d_steep}")
 
     def Energy(self):
         self.E_steep = self.t_steep*self.PerformanceAnalysis.power_steep_descent_watts 
@@ -47,6 +50,7 @@ performance.plot_CD_power()
 emergency = EmergencyLanding(performance)
 emergency.DistanceTime()
 emergency.Energy()
+
 
         
 
