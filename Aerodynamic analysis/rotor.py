@@ -346,6 +346,15 @@ class BEMT():
 
         plt.show()
 
+    def interpolation(self):
+        # interpolate with numpy the values of lift and drag as a function of the radius position
+        self.dL_r_interp = np.interp(self.r_list, self.r_list, [self.vertical(omega=self.omega, theta_r=theta, c_r=chord, r=r, dr=self.dr, V_c=0.0, a_r=a)[0] if self.cutout < r < self.r_e else 0.0 for chord, theta, a, r in zip(self.c_r_list, self.theta_r_list, self.a_r_list, self.r_list)])
+        self.dD_r_interp = np.interp(self.r_list, self.r_list, [self.vertical(omega=self.omega, theta_r=theta, c_r=chord, r=r, dr=self.dr, V_c=0.0, a_r=a)[1] if self.cutout < r < self.r_e else 0.0 for chord, theta, a, r in zip(self.c_r_list, self.theta_r_list, self.a_r_list, self.r_list)])
+        # return the values
+        return self.dL_r_interp, self.dD_r_interp
+
+
+
 
 if __name__ == '__main__':
     BEMT = BEMT()
@@ -633,6 +642,52 @@ if __name__ == '__main__':
             plt.plot(BEMT.r_list, alpha_r_list2[60])
             plt.plot(BEMT.r_list, alpha_r_list2[90],color='b')
             plt.show()
+    
+    #interpolate lift and drag
+    dL_r_interp, dD_r_interp = BEMT.interpolation()
+    # Find the index corresponding to the cutout
+    cutout_index = next(i for i, r in enumerate(BEMT.r_list) if r > BEMT.cutout)
 
+    # Find the maximum values of lift and drag
+    max_lift = max(dL_r_interp)
+    max_drag = max(dD_r_interp)
+
+    # Find the indices of the maximum values
+    max_lift_index = np.argmax(dL_r_interp)
+    max_drag_index = np.argmax(dD_r_interp)
+
+    # Calculate the slope and intercept for lift
+    m_lift = (max_lift - dL_r_interp[cutout_index]) / (BEMT.r_list[max_lift_index] - BEMT.r_list[cutout_index])
+    b_lift = dL_r_interp[cutout_index] - m_lift * BEMT.r_list[cutout_index]
+
+    # Calculate the slope and intercept for drag
+    m_drag = (max_drag - dD_r_interp[cutout_index]) / (BEMT.r_list[max_drag_index] - BEMT.r_list[cutout_index])
+    b_drag = dD_r_interp[cutout_index] - m_drag * BEMT.r_list[cutout_index]
+
+    # Generate polynomial equations
+    poly_eq_lift = np.poly1d([m_lift, b_lift])
+    poly_eq_drag = np.poly1d([m_drag, b_drag])
+
+    print("Equation for interpolated Lift (dL):")
+    print(poly_eq_lift)
+
+    print("Equation for interpolated Drag (dD):")
+    print(poly_eq_drag)
+    
+
+    fig, axes = plt.subplots(2, 1, figsize=(8, 6), sharex=True)
+
+    axes[0].plot(BEMT.r_list, dL_r_interp, label='Interpolated Lift')
+    axes[0].plot(BEMT.r_list, poly_eq_lift(BEMT.r_list), label='Polynomial Fit Lift', linestyle='--')
+    axes[0].set_ylabel("Lift [N]")
+    axes[0].legend()
+
+    axes[1].plot(BEMT.r_list, dD_r_interp, label='Interpolated Drag', color='r')
+    axes[1].plot(BEMT.r_list, poly_eq_drag(BEMT.r_list), label='Polynomial Fit Drag', linestyle='--', color='orange')
+    axes[1].set_ylabel("Drag [N]")
+    axes[1].set_xlabel("Radial position [m]")
+    axes[1].legend()
+
+    plt.show()
     BEMT.controlstability()
 

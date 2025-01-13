@@ -17,6 +17,7 @@ class BEMT():
         self.n_rot = n_rot # - , number of rotors
         self.omega = omega # rad/s, rotational velocity
         self.thrust = thrust # desired thrust
+        self.intercept_cl = 0.2379 # NACA 2412
 
 
     def discretise(self, num_elements=1000):
@@ -71,7 +72,7 @@ class BEMT():
         phi = np.arctan((V_c + v_r) / (omega * r))
         alpha = theta_r - phi
         self.alpha = alpha
-        c_l_linear = a_r * alpha
+        c_l_linear = a_r * alpha + self.intercept_cl
 
         U_r = np.hypot(omega * r, (V_c + v_r))
 
@@ -98,7 +99,7 @@ class BEMT():
 
     def calculate_radius_and_rotors(self, num_elements=1000):
         # initial guess for radius
-        self.R = 1.2
+        self.R = 0.98
 
         self.cutout = 0.15 * self.R
        # self.r_bar_e = 0.95 #effective blade radius due to tip losses, approximate input for now
@@ -138,12 +139,13 @@ class BEMT():
         iteration = 0
 
         while total_thrust < self.thrust and iteration < max_iterations:
-            if self.omega < 110:
+            if self.omega < 140:
                 self.omega += 5
             elif self.n_rot < 6:
                 self.n_rot += 2
                 self.omega = 100  # Reset omega to 200 when the number of rotors increases
             else:
+                #self.n_rot = 8  # Reset the number of rotors to 4 when omega reaches 200
                 self.R += 0.01  # If all conditions are met, increase the radius
                     
             self.discretise(num_elements)
@@ -191,12 +193,12 @@ class BEMT():
         return self.R, self.n_rot
 
 if __name__ == '__main__':
-    a_r = 0.1 * 180 / np.pi
+    a_r = 0.1225 * 180 / np.pi#0.1 * 180 / np.pi
     b = 6
     n_rot = 6
     omega = 100
     thrust = 7758.73 #7900/np.cos(np.deg2rad(5))  # desired thrust in Newtons
-
+    R = 0.75
     bemt = BEMT(a_r, b, n_rot, omega, thrust)
     radius, num_rotors = bemt.calculate_radius_and_rotors()
 
