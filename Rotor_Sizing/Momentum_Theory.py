@@ -24,7 +24,7 @@ def find_roots(coefficients):
 
 
 class Vertical_Flight: #vertical flight
-    def __init__(self, mass, radius=0.5, TWR= 1 , V_c=None, density=1.225, g0 = 9.80665, P_a = None): 
+    def __init__(self, mass, radius=1.2, TWR= 1 , V_c=None, density=1.225, g0 = 9.80665, P_a = None): 
         # if V_c== None and P_a == None:
         #     raise Exception('Vertical rate and power are both none, need at least one')
         # Required Inputs
@@ -170,7 +170,7 @@ class Vertical_Flight: #vertical flight
 
     
 class Forward_Flight: #forward flight
-    def __init__(self, mass, V, Cd0, radius=2.01, TWR= 1 , gamma = 0, V_c=None, density=1.225, k_v_f = 1, related_vertical = None, P_a = None):	 
+    def __init__(self, mass, V, Cd0, radius=1.2, TWR= 1 , gamma = 0, V_c=None, density=1.225, k_v_f = 1, related_vertical = None, P_a = None):	 
         # Required Inputs
         self.mass = mass  # Maximum takeoff weight
         self.radius = radius  # Fan radius (m)
@@ -284,7 +284,7 @@ class Forward_Flight: #forward flight
     
 
 class Angled_Climb: #angled climb
-    def __init__(self, mass, gamma, radius=2.01, TWR= 1 , V_c=None, V =4, density=1.225, D_ho = 500, k_v_f = 1, P_a =45000,  related_vertical = None, related_forward = None): 
+    def __init__(self, mass, gamma, radius=1.2, TWR= 1 , V_c=None, V =4, density=1.225, D_ho = 500, k_v_f = 1, P_a =160000,  related_vertical = None, related_forward = None): 
         # Required Inputs
         self.mass = mass  # Maximum takeoff weight
         self.radius = radius  # Fan radius (m)
@@ -320,9 +320,9 @@ class Angled_Climb: #angled climb
         self.V_c_fast = V_c_fast
         return V_c_fast
 
-VerticalFlight = Vertical_Flight(mass=float(718.89/4), P_a=42000)
-ForwardFlight = Forward_Flight(mass=float(718.89/4), Cd0=0.05, V=3, related_vertical=VerticalFlight, P_a=42000)
-AngledClimb = Angled_Climb(mass=float(718.89/4), gamma=0, related_vertical=VerticalFlight, related_forward = ForwardFlight)
+VerticalFlight = Vertical_Flight(mass=float(718.89/6), P_a=160000)
+ForwardFlight = Forward_Flight(mass=float(718.89/6), Cd0=0.05, V=3, related_vertical=VerticalFlight, P_a=160000)
+AngledClimb = Angled_Climb(mass=float(718.89/6), gamma=0, related_vertical=VerticalFlight, related_forward = ForwardFlight)
 
 
 # VerticalFlight.calc_v_h()
