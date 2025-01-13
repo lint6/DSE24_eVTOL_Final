@@ -69,7 +69,7 @@ def SCcon_ForwardFlight(state_in_1, state_in_2, error_in, allocation, dt):
     hover_throttle = np.clip(SCfunc_PIDController(np.array(flight_error).T[2], k_p=1, t_i=450, t_d=0.5, dt=dt),
                              a_min=-1, a_max=1)
     
-    # Allocationm 
+    # Allocation
     roll_throttle  = allocation[0] * roll_throttle
     pitch_throttle = allocation[1] * pitch_throttle
     yaw_throttle   = allocation[2] * yaw_throttle
@@ -102,10 +102,12 @@ def SCcon_HoverFlight(state_in, error_in, allocation, dt):
         pos_error_loc.append(SCfunc_EulerRotation(pos_error[i], rotate_z[i])[0])
         
     # Velocity
-    Vx_set = np.clip(SCfunc_PIDController(-1*np.array(pos_error_loc).T[0], k_p=1, t_i=100, t_d=1, dt=dt),
+    Vx_set = np.clip(SCfunc_PIDController(-1*np.array(pos_error_loc).T[0], k_p=1.2, t_i=99999, t_d=2, dt=dt),
+                     a_min=-10, a_max=10)
+    Vy_set = np.clip(SCfunc_PIDController(-1*np.array(pos_error_loc).T[1], k_p=1.2, t_i=99999, t_d=2, dt=dt),
+                     a_min=-10, a_max=10)
+    Vz_set = np.clip(-1*SCfunc_PIDController(np.array(pos_error).T[2], k_p=1.6, t_i=250, t_d=0.35, dt=dt),
                      a_min=-20, a_max=20)
-    Vy_set = SCfunc_PIDController(np.array(pos_error_loc).T[1], k_p=1, t_i=1, t_d=1, dt=dt)
-    Vz_set = -1*SCfunc_PIDController(np.array(pos_error).T[2], k_p=2, t_i=250, t_d=0.35, dt=dt)
     if TUNING_vel:
         vel_set = [0,0,-50]
     else:
@@ -116,7 +118,7 @@ def SCcon_HoverFlight(state_in, error_in, allocation, dt):
     vel_error.append(vel_error_now) # Historical error in velocity
     
     # Angle
-    roll_set  = np.clip(SCfunc_PIDController(np.array(vel_error).T[1], k_p=1, t_i=1, t_d=1, dt=dt),
+    roll_set  = np.clip(SCfunc_PIDController(-1*np.array(vel_error).T[1], k_p=1, t_i=99999, t_d=0, dt=dt),
                     a_min=-30, a_max=30)
     pitch_set = np.clip(SCfunc_PIDController(np.array(vel_error).T[0], k_p=1, t_i=99999, t_d=0, dt=dt),
                     a_min=-30, a_max=30)
@@ -131,26 +133,26 @@ def SCcon_HoverFlight(state_in, error_in, allocation, dt):
     ang_error.append(ang_error_now) # Historical Error in angle
     
     # Throttle
-    roll_throttle  = np.clip(SCfunc_PIDController(np.array(ang_error).T[0], k_p=0.05, t_i=500, t_d=1, dt=dt),
+    roll_throttle  = np.clip(SCfunc_PIDController(-1*np.array(ang_error).T[0], k_p=0.05, t_i=250, t_d=5, dt=dt),
                              a_min=-1, a_max=1)
-    pitch_throttle = np.clip(SCfunc_PIDController(np.array(ang_error).T[1], k_p=0.05, t_i=9999999, t_d=5, dt=dt, FULL=True),
+    pitch_throttle = np.clip(SCfunc_PIDController(np.array(ang_error).T[1], k_p=0.05, t_i=250, t_d=5, dt=dt),
                              a_min=-1, a_max=1)
-    yaw_throttle   = np.clip(SCfunc_PIDController( -1 *np.array(rot).T[2], k_p=0.012, t_i=60, t_d=0.1, dt=dt),
+    yaw_throttle   = np.clip(SCfunc_PIDController( -1 *np.array(rot).T[2], k_p=0.012, t_i=120, t_d=0.3, dt=dt),
                              a_min=-1, a_max=1)
-    hover_throttle = np.clip(SCfunc_PIDController(np.array(vel_error).T[2], k_p=1, t_i=450, t_d=0.5, dt=dt),
+    hover_throttle = np.clip(SCfunc_PIDController(np.array(vel_error).T[2], k_p=0.7, t_i=450, t_d=1.25, dt=dt),
                              a_min=-1, a_max=1)
 
     # Allocation
     roll_throttle  = allocation[0] * roll_throttle
-    pitch_throttle = allocation[1] * pitch_throttle [0]
+    pitch_throttle = allocation[1] * pitch_throttle
     yaw_throttle   = allocation[2] * yaw_throttle
     hover_throttle = allocation[3] * hover_throttle
     
     #Grouping
     throttle = 0
-    # throttle += roll_throttle
+    throttle += roll_throttle
     throttle += pitch_throttle
-    # throttle += yaw_throttle
-    # throttle += hover_throttle
+    throttle += yaw_throttle
+    throttle += hover_throttle
     
     return throttle, vel_set, ang_set, vel_error, ang_error

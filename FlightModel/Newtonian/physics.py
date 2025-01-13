@@ -37,7 +37,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.05):
         # Angles
         ang_x = 0
         ang_y = 0
-        ang_z = 0
+        ang_z = 25
         # Velocity
         vel_x = 0
         vel_y = 0
@@ -51,12 +51,12 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.05):
         rotor_count = 4
         
         # Control
-        setpoint_pos = [50,0,0]
+        setpoint_pos = [50,50,-120]
         setpoint_ang = [0,0,0]
         rpm = np.ones(rotor_count) * 0
         far_distance = 200
         close_distance = 100
-        allocation = np.array([[-1,1,1,-1],[1,1,-1,-1],[-0.1,0.1,-0.1,0.1],[1,1,1,1]]) # Roll, Pitch, Yaw, Hover
+        allocation = np.array([[-0.1,0.1,0.1,-0.1],[0.1,0.1,-0.1,-0.1],[-0.1,0.1,-0.1,0.1],[1,1,1,1]]) # Roll, Pitch, Yaw, Hover
         
         
         
