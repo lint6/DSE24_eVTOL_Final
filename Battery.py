@@ -109,7 +109,7 @@ if __name__ == "__main__":
     C_cell = Cap_T       # Capacity of a single cell in ampere-hours
     W = W_Tcell
     Crate = Crate       # C-rating considered to be around 10...,   11.4285 is the actual crating to discharge the cell completely.
-    rara = 840            #starting range voltage
+    rara = 320            #starting range voltage
 
     # Iterate over different V_pack and I_max values
     V_pack_values = []  # Example pack voltages in volts
