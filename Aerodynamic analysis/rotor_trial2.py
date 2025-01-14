@@ -5,7 +5,7 @@ from airfoil import AirfoilData
 class BEMT():
     # coding on blade-element momentum theory
 
-    def __init__(self, a_r, b, n_rot, omega, thrust):
+    def __init__(self, a_r, b, n_rot, omega, thrust, R):
         # constants
         self.rho = 1.225 # kg/m^3, the air density
 
@@ -17,7 +17,7 @@ class BEMT():
         self.n_rot = n_rot # - , number of rotors
         self.omega = omega # rad/s, rotational velocity
         self.thrust = thrust # desired thrust
-        self.intercept_cl = 0.2379 # NACA 2412
+        self.intercept_cl = 0.2 # NACA 2412
 
 
     def discretise(self, num_elements=1000):
@@ -30,7 +30,7 @@ class BEMT():
 
         # setup chord
         c_root = 0.1 # meters
-        taper = 1 # -
+        taper = 0.7 # -
         c_tip = c_root * taper
         c_avg = 0.5 * (c_root + c_tip)
         self.AR = (self.R - self.cutout) / c_avg
@@ -99,10 +99,10 @@ class BEMT():
 
     def calculate_radius_and_rotors(self, num_elements=1000):
         # initial guess for radius
-        self.R = 0.98
-
+        self.R = R #0.9
+        #Cutout radius for hub
         self.cutout = 0.15 * self.R
-       # self.r_bar_e = 0.95 #effective blade radius due to tip losses, approximate input for now
+        #Effective blade radius due to tip losses (approximated)
         self.r_e = 0.95 * self.R
         
         self.discretise(num_elements)
@@ -141,13 +141,13 @@ class BEMT():
         while total_thrust < self.thrust and iteration < max_iterations:
             if self.omega < 140:
                 self.omega += 5
-            elif self.n_rot < 6:
+            elif self.R < 1 and self.n_rot < 6:
                 self.n_rot += 2
-                self.omega = 100  # Reset omega to 200 when the number of rotors increases
+                self.omega = 100  # Reset omega to 100 when the number of rotors increases
             else:
-                #self.n_rot = 8  # Reset the number of rotors to 4 when omega reaches 200
                 self.R += 0.01  # If all conditions are met, increase the radius
-                    
+                self.omega = 100  # Reset omega to 100 when the radius increases
+            
             self.discretise(num_elements)
             dT_r_list = []
             dL_r_list = []
@@ -193,13 +193,13 @@ class BEMT():
         return self.R, self.n_rot
 
 if __name__ == '__main__':
-    a_r = 0.1225 * 180 / np.pi#0.1 * 180 / np.pi
+    a_r = 0.1036 * 180 / np.pi#0.1 * 180 / np.pi
     b = 6
     n_rot = 6
     omega = 100
+    R = 0.99
     thrust = 7758.73 #7900/np.cos(np.deg2rad(5))  # desired thrust in Newtons
-    R = 0.75
-    bemt = BEMT(a_r, b, n_rot, omega, thrust)
+    bemt = BEMT(a_r, b, n_rot, omega, thrust,R)
     radius, num_rotors = bemt.calculate_radius_and_rotors()
 
     print(f"Required Radius: {radius} meters")
@@ -211,6 +211,12 @@ if __name__ == '__main__':
     thrust_coefficient = total_thrust / (bemt.rho * (bemt.omega ** 2) * (bemt.R ** 4) * bemt.n_rot * bemt.b)
     print(f"Thrust Coefficient: {thrust_coefficient}")
     # print total power required
+    #print AR
+    print(f"Aspect Ratio: {bemt.AR}")
+    #print root chord
+    print(f"Root Chord: {bemt.c_r_list[0]}")
+    #print tip chord
+    print(f"Tip Chord: {bemt.c_r_list[-1]}")
     
     
 

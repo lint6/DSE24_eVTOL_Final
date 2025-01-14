@@ -12,23 +12,23 @@ class BEMT():
         self.rho = 1.225 # kg/m^3, the air density
 
         # airfoil specification
-        self.a_r = 0.10 * (180 / np.pi)  # [-/deg], the profile lift curve slope in the linear region NACA2414 0.1225
-        self.intercept_cl = 0.0 #NACA2414 0.2379
+        self.a_r = 0.1036 * (180 / np.pi)  # [-/deg], the profile lift curve slope in the linear region NACA2414 0.1225
+        self.intercept_cl = 0.2 #NACA2414 0.2379
 
         # specify initial rotor sizing parameters
-        self.R = 1.2 # m, the rotor radius in meters
+        self.R = 0.89 # m, the rotor radius in meters
         self.b = 6 # - , number of blades
         self.cutout = 0.15 * self.R
         self.r_bar_e = 0.95 #effective blade radius due to tip losses, approximate input for now
 
         #rotational velocity
-        self.omega = 145 # rad/s, rotational velocity
+        self.omega = 140 # rad/s, rotational velocity
 
         #transition
         self.SOS = 343 # m/s, transition air speed
 
         #numbre of rotors
-        self.n_rotors = 6
+        self.n_rotors = 8
 
     def discretise(self, num_elements=None):
 
@@ -39,7 +39,7 @@ class BEMT():
 
         #setup chord
         c_root = 0.1 # meters
-        taper = 1 # -
+        taper = 0.7 # -
         c_tip = c_root * taper
         c_avg = 0.5 * (c_root + c_root * taper)
         self.AR = (self.R - self.cutout) / c_avg
@@ -391,13 +391,13 @@ if __name__ == '__main__':
     BEMT = BEMT()
 
     #which analysis
-    vertical = False
+    vertical = True
     forward = False
     interpolation = False
-    controlstability = True
+    controlstability = False
 
     #initialise discretisation and insert number of elements (minimum 100 for accuracy)
-    num_elements = 70
+    num_elements = 1000
     BEMT.discretise(num_elements=num_elements)
 
     if vertical==True:
