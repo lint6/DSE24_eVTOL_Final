@@ -197,7 +197,7 @@ def compute_rectangle_size(circle_diameter, num_circles, row_limit=None):
 # Example usage
 if __name__ == "__main__":
     circle_diameter = 46  # Diameter of each circle
-    num_circles = 280      # Total number of circles
+    num_circles = optimal_solution['result']['N_total']      # Total number of circles
     row_limit = 17         # Maximum number of circles per row (optional)
 
     width, height = compute_rectangle_size(circle_diameter, num_circles, row_limit)
