@@ -8,11 +8,15 @@ class Converter:
         self.inverter_efficiency = 0.98 #Yamaguchi
         self.motor_efficiency = 0.89
 
-        self.P_net_motor = 71 #Net motor power [kW]
+        #Power inputs from performance
+        self.P_net_motor = 71817.87e-3 #Net motor power [kW]
+        self.P_net_bat = 7134.52e-3 
+        self.P_net_BOP = 8
+        self.P_net_av = 2.11
 
-        self.P_bat = 7/self.converter_efficiency #Power through battery converter [kW]
-        self.P_BOP = 8/self.converter_efficiency #Power through BoP converter
-        self.P_av = 2.11/(self.converter_efficiency**2) #Power through avionics converters [kW]
+        self.P_bat = self.P_net_bat/self.converter_efficiency #Power through battery converter [kW]
+        self.P_BOP = self.P_net_BOP/self.converter_efficiency #Power through BoP converter
+        self.P_av = self.P_net_av/(self.converter_efficiency**2) #Power through avionics converters [kW]
         self.P_motor = self.P_net_motor/(self.motor_efficiency*self.converter_efficiency*self.inverter_efficiency) #Power through motor converter [kW]
         # self.W_single_converter = 0.507 #Weight of a single converter [kg], from Louvrier
         self.P_specific_converter = 7.5 #[kW/kg], from NASA SoA
@@ -54,6 +58,11 @@ class Converter:
         print(f"Inverter weight is {self.W_Motinv:.2f} [kg]")
         print(f"Inverter size is {self.l_i:.2f} x {self.w_i:.2f} x {(self.P_Motinv/33)*self.h_i:.2f} cm")
 
+    def ConversionLosses(self):
+        self.BOP_loss = 140.53e-3 #[kW], input from PEMFC model
+        self.conversion_loss = (self.P_motor-self.P_net_motor) + (self.P_av-self.P_net_av) + (self.P_bat-self.P_net_bat) + self.BOP_loss
+        print(f"Total conversion losses are {self.conversion_loss:.2f} [kW]")
+
 
 
 
@@ -61,3 +70,4 @@ Convert = Converter()
 Convert.ConverterWeight()
 Convert.ConverterSize()
 Convert.Inverter()
+Convert.ConversionLosses()

@@ -261,6 +261,7 @@ class CellWeights:
         print(f"Water power [W]: {self.BalanceOfPlant.P_Water[index]:.2f}")
         print(f"Electrical power [W]: {self.BalanceOfPlant.P_Elec:.2f}")
         print(f"Converter losses [W]: {self.BalanceOfPlant.P_converter_loss[index]:.2f}")
+        print(f"Net BOP power [W]: {self.BalanceOfPlant.P_BOP[index]:.2f}")
         print(f"Gross BOP power [W]: {self.BalanceOfPlant.P_BOP_gross[index]:.2f}")
 
         print(f"======WEIGHTS=====")
