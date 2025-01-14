@@ -77,37 +77,37 @@ def calculate_battery_pack(
 
     return results
 
-# Example inputs Tesla 4680 Gen 2
-inputs = {
-    "nominal_capacity_ah": 25.73,
-    "nominal_voltage_v": 3.7,
-    "nominal_energy_wh": 95.2,
-    "mass_per_cell_kg": 0.35,
-    "diameter_mm": 46,
-    "height_mm": 80,
-    "max_discharge_power_cell_w": 521,
-    "power_required_w": 42961,
-    "duration_s": 315,
-    "max_cell_current_a": 2.73*25.73 ,
-}
+# # Example inputs Tesla 4680 Gen 2
+# inputs = {
+#     "nominal_capacity_ah": 25.73,
+#     "nominal_voltage_v": 3.7,
+#     "nominal_energy_wh": 95.2,
+#     "mass_per_cell_kg": 0.35,
+#     "diameter_mm": 46,
+#     "height_mm": 80,
+#     "max_discharge_power_cell_w": 521,
+#     "power_required_w": 42961,
+#     "duration_s": 315,
+#     "max_cell_current_a": 2.73*25.73 ,
+# }
 
 
 # 5.4734537493158182813355227148331
 
 
-# #Example inputs Skeleton Superbattery 
-# inputs = {
-#     "nominal_capacity_ah": 23.0,
-#     "nominal_voltage_v": 2.25,
-#     "nominal_energy_wh": 53,
-#     "mass_per_cell_kg": 0.810,
-#     "diameter_mm": 60,
-#     "height_mm": 138,
-#     "max_discharge_power_cell_w": 1060,
-#     "power_required_w": 42961,
-#     "duration_s": 315,
-#     "max_cell_current_a": 460 ,
-# }
+#Example inputs Skeleton Superbattery 
+inputs = {
+    "nominal_capacity_ah": 23.0,
+    "nominal_voltage_v": 2.25,
+    "nominal_energy_wh": 53,
+    "mass_per_cell_kg": 0.810,
+    "diameter_mm": 60,
+    "height_mm": 138,
+    "max_discharge_power_cell_w": 1060,
+    "power_required_w": 42961,
+    "duration_s": 315,
+    "max_cell_current_a": 460 ,
+}
 
 # Calculate battery pack design
 battery_pack_design = calculate_battery_pack(**inputs)
@@ -115,3 +115,8 @@ battery_pack_design = calculate_battery_pack(**inputs)
 # Display results
 for key, value in battery_pack_design.items():
     print(f"{key}: {value}")
+
+#--------------------------------------------------------------------------------------------------------------------
+
+# This is for the Low Voltage Battery 
+
