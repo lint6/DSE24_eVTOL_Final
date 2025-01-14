@@ -124,7 +124,11 @@ if __name__ == "__main__":
     optimal_solution = find_optimal_configuration(P, t, V_cell, C_cell, V_pack_values, I_max_values, W)
 
     if optimal_solution:
+<<<<<<< Updated upstream
         print("\nOptimal configuration for the lowest weight:")
+=======
+        print("\nOptimal configuration for the lowest weight using TESLA 4680 Gen 2:")
+>>>>>>> Stashed changes
         print(f"V_pack: {optimal_solution['V_pack']} V")
         print(f"I_pack: {optimal_solution['I_req']} A")
         print(f"I_max: {optimal_solution['I_max']} A")
@@ -155,7 +159,11 @@ if __name__ == "__main__":
     optimal_solution = find_optimal_configuration(P, t, V_cell, C_cell, V_pack_values, I_max_values, W)
 
     if optimal_solution:
+<<<<<<< Updated upstream
         print("\nOptimal configuration for the lowest weight:")
+=======
+        print("\nOptimal configuration for the lowest weight Skeleton SuperBattery:")
+>>>>>>> Stashed changes
         print(f"V_pack: {optimal_solution['V_pack']} V")
         print(f"I_pack: {optimal_solution['I_req']} A")
         print(f"I_max: {optimal_solution['I_max']} A")
