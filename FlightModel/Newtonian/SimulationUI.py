@@ -19,7 +19,7 @@ from physics import *
 import matplotlib.pyplot as plt
 
 aircraft = SCobj_Aircraft(points=SCfunc_VerifyAircraft(), position=[0,0,0], rotation=[0,0,0])
-log_state, log_forces, log_time, log_extras, log_acc, log_setpoints = SCfunc_FlightSimulation(aircraft, runtime=60)
+log_state, log_forces, log_time, log_extras, log_acc, log_setpoints = SCfunc_FlightSimulation(aircraft, runtime=45)
 
 DEBUG = False
 if DEBUG:
@@ -70,13 +70,11 @@ ang_plt[2].plot(log_time, np.array(log_state[1]).T[2], label = 'Aircraft')
 ang_plt[2].plot(log_time, np.array(log_setpoints[1]).T[2], 'r', label = 'setpoint')
 ang_plt[2].set_ylabel('Z (Yaw)')
 
-# ang_plt[3].plot(log_time, np.array(np.array(log_extras[3]).T[0]), '--',label = 'Hover')
-# ang_plt[3].plot(log_time, np.array(np.array(log_extras[3]).T[1]), '--',label = 'Roll')
-# ang_plt[3].plot(log_time, np.array(np.array(log_extras[3]).T[2]), label = 'Pitch')
-# ang_plt[3].plot(log_time, np.array(np.array(log_extras[3]).T[3]), label = 'Yaw')
-# ang_plt[3].legend()
-# ang_plt[3].set_ylabel('Throttle (Avg)')
-# ang_plt[3].set_xlabel('time')
+ang_plt[3].plot(log_time, np.array(np.array(log_extras[4]).T[0]), label = 'Hover')
+ang_plt[3].plot(log_time, np.array(np.array(log_extras[4]).T[1]), label = 'Forward')
+ang_plt[3].legend()
+ang_plt[3].set_ylabel('Flight mode divide')
+ang_plt[3].set_xlabel('time')
 
 # plt.tight_layout()
 # plt.show()

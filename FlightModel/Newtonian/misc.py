@@ -110,6 +110,11 @@ def SCfunc_LinearRamp(x1, x2, x, value1, value2):
     mix = np.clip(m*x+b, a_max=1, a_min=0)
     value = (1-mix)*value1 + (mix)*value2
     return value
+
+def SCfunc_RPM2RadSec(RPM):
+    return RPM/60 * 2 * np.pi
+def SCfunc_RadSec2RPM(omega):
+    return omega * 60 / (2*np.pi)
     
 
 DEBUG = False
