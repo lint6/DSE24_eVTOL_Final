@@ -1,10 +1,11 @@
 import numpy as np 
 import matplotlib.pyplot as plt 
 from scipy.integrate import solve_ivp
+from scipy.fft import fft
 
 class SDOFVibrationForwardFlight:
 
-    def __init__(self, L=0.8, E=70, I=1000, T_min=400, T_max=540, C_damp=0.01, m=1, RPM=1000, gust_velocity=19, gust_time=0.0, impulse_duration=0.1):
+    def __init__(self, L=1.2, E=220, I=135000, T_min=900, T_max=1100, C_damp=0.03, m=1, RPM=1000, gust_velocity=19, gust_time=0, impulse_duration=0.1):
         '''Initialize the SDOFVibration Class'''
         ### Input length in [m], E in [GPA], I in [mm^4], T_min and T_max in [N], C_damp in [-]
         self.L = L # [m]
@@ -98,8 +99,87 @@ class SDOFVibrationForwardFlight:
         plt.legend()
         plt.show()
 
+    def plot_frequency_response(self, t_span=[0, 10], y0=[0.0, 0.0]):
+        ''' Plot the Frequency Domain Response (Amplitude Spectrum) '''
+        # Solve the motion to get displacement over time
+        sol = self.solve_motion(t_span, y0)
+        
+        # Perform Fourier Transform on displacement (y[0]) over time (sol.t)
+        displacement = sol.y[0]
+        dt = sol.t[1] - sol.t[0]  # Time step
+        N = len(displacement)  # Number of data points
+        freqs = np.fft.fftfreq(N, dt)  # Frequency bins
+
+        # Perform FFT
+        fft_result = fft(displacement)
+        fft_magnitude = np.abs(fft_result)  # Magnitude of the FFT
+
+        # Plot frequency response (Amplitude Spectrum)
+        plt.figure(figsize=(10, 6))
+        plt.plot(freqs[:N // 2], fft_magnitude[:N // 2])  # Plot positive frequencies
+        plt.xlabel('Frequency [Hz]')
+        plt.ylabel('Amplitude')
+        plt.title('Frequency Domain Response')
+        plt.grid(True)
+        plt.show()
+
+
+    def analyze_resonance(self, t_span=[0, 10], y0=[0.0, 0.0]):
+        ''' Analyze the System for Resonance and Plot It '''
+        # Natural frequency
+        m_eq = self.calculate_equivalent_mass()
+        K = 3 * self.E * self.I / self.L**3  # Stiffness constant
+        omega_n = np.sqrt(K / m_eq)  # Natural frequency in radians per second
+        f_n = omega_n / (2 * np.pi)  # Natural frequency in Hz
+
+        # Excitation frequency (based on RPM)
+        f_excitation = self.RPM / 60  # RPM to Hz conversion
+
+        # Solve the motion to get displacement over time
+        sol = self.solve_motion(t_span, y0)
+
+        # Perform Fourier Transform on displacement (y[0]) over time (sol.t)
+        displacement = sol.y[0]
+        dt = sol.t[1] - sol.t[0]  # Time step
+        N = len(displacement)  # Number of data points
+        freqs = np.fft.fftfreq(N, dt)  # Frequency bins
+
+        # Perform FFT
+        fft_result = fft(displacement)
+        fft_magnitude = np.abs(fft_result)  # Magnitude of the FFT
+
+        # Plot frequency response (Amplitude Spectrum)
+        plt.figure(figsize=(10, 6))
+        plt.plot(freqs[:N // 2], fft_magnitude[:N // 2], label="Frequency Response")
+        
+        # Highlight the natural frequency as a red vertical line
+        plt.axvline(f_n, color='red', linestyle='--', linewidth=2, label=f"Natural Frequency: {f_n:.2f} Hz")
+        
+        # Highlight the excitation frequency as a dashed green line
+        plt.axvline(f_excitation, color='green', linestyle='--', linewidth=2, label=f"Excitation Frequency: {f_excitation:.2f} Hz")
+        
+        plt.xlabel('Frequency [Hz]')
+        plt.ylabel('Amplitude')
+        plt.title('Frequency Domain Response with Resonance Analysis')
+        plt.legend()
+        plt.grid(True)
+        plt.show()
+
+        # Display results
+        print(f"Natural Frequency: {f_n:.2f} Hz")
+        print(f"Excitation Frequency: {f_excitation:.2f} Hz")
+
+        # Check for resonance
+        if np.isclose(f_n, f_excitation, atol=0.1):  # Consider resonance if the difference is small
+            print("Resonance detected!")
+        else:
+            print("No resonance detected.")
+
 
 if __name__ == '__main__':
     sys = SDOFVibrationForwardFlight()
     sys.plot_response()
     sys.plot_force()
+    sys.plot_frequency_response()
+    sys.analyze_resonance()
+
