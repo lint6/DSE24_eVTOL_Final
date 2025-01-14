@@ -51,7 +51,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.05):
         rotor_count = 4
         
         # Control
-        setpoint_pos = [0,0,-60]
+        setpoint_pos = [0,0,-250]
         setpoint_ang = [0,0,0]
         rpm = np.ones(rotor_count) * 0
         far_distance = 75
@@ -289,7 +289,7 @@ def SCfunc_parameter_Mu():
 def SCfunc_parameter_llambda_c():
     return  lambda x : x[5]/(x[4]*x[3]) * np.sin(x[6])
 
-def SCfunc_RotorRPM(throttle, current_rpm, dt, resistance = 0, max_power = 5000, inertia_rotor = 25):
+def SCfunc_RotorRPM(throttle, current_rpm, dt, resistance = 0, max_power = 300000, inertia_rotor = 25):
     resistance += current_rpm**2*0.0001 #temp value for rotor resistance
     power_delivery = throttle * max_power
     detla_rpm = (power_delivery - resistance)/inertia_rotor

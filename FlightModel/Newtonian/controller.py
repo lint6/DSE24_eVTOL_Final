@@ -63,7 +63,7 @@ def SCcon_ForwardFlight(state_in_1, state_in_2, error_in, allocation, dt):
     # Angle
     roll_set  = np.clip(SCfunc_PIDController(-1*np.array(flight_error).T[1], k_p=1, t_i=99999, t_d=0, dt=dt),
                     a_min=-30, a_max=30)
-    pitch_set = np.clip(SCfunc_PIDController(np.array(flight_error).T[0], k_p=2, t_i=99999, t_d=0, dt=dt),
+    pitch_set = np.clip(SCfunc_PIDController(np.array(flight_error).T[0], k_p=0.7, t_i=99999, t_d=1, dt=dt),
                     a_min=-30, a_max=30)
     ang_set = [roll_set,pitch_set,0]
 
@@ -74,7 +74,7 @@ def SCcon_ForwardFlight(state_in_1, state_in_2, error_in, allocation, dt):
     # Throttle
     roll_throttle  = np.clip(SCfunc_PIDController(np.array(error_in[2]).T[0], k_p=0.05, t_i=250, t_d=5, dt=dt),
                              a_min=-1, a_max=1)
-    pitch_throttle = np.clip(-1*SCfunc_PIDController(np.array(error_in[2]).T[1], k_p=1.25, t_i=150, t_d=1, dt=dt),
+    pitch_throttle = np.clip(-1*SCfunc_PIDController(np.array(error_in[2]).T[1], k_p=0.1, t_i=150, t_d=1, dt=dt),
                              a_min=-1, a_max=1)
     yaw_throttle   = np.clip(-1*SCfunc_PIDController(yaw_error, k_p=0.012, t_i=120, t_d=0.3, dt=dt),
                              a_min=-1, a_max=1)
