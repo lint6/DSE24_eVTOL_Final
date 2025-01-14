@@ -33,6 +33,9 @@ class BalanceOfPlant:
         #Constants
         self.SB_constant = 5.670367e-8 #Stefan-Boltzmann constant [W/m^2 K^4]
 
+        #Converter
+        self.converter_efficiency = 0.981
+
 
     def AirPower(self): #Assumes ISA SL conditions for now
         #Calculate compressor power
@@ -87,7 +90,7 @@ class BalanceOfPlant:
         self.HTC_coolant_flow = self.Q_htc/(self.C_p_HTC_coolant*self.delta_T_HTC_coolant) #Required mass flow of HTC coolant [kg/s]
 
         #Calculate radiator area.
-        self.HTC_rad_convec_coeff = 1015 #HTC radiator heat transfer coefficient [W/m^2-K]
+        self.HTC_rad_convec_coeff = 240 #HTC radiator heat transfer coefficient [W/m^2-K]
         self.HTC_rad_Tr = 273.15+95 #HTC radiator temperature [K]
         self.HTC_rad_emissivity = 0.8 #HTC radiator emissivity
 
@@ -124,7 +127,7 @@ class BalanceOfPlant:
         # print(f"Mean coolant flow {np.mean(self.LTC_coolant_flow):.2f} kg/s")
 
          #Calculate radiator area. 
-        self.LTC_rad_convec_coeff = 1015+273.15 #HTC radiator heat transfer coefficient [W/m^2-K]
+        self.LTC_rad_convec_coeff = 240 #HTC radiator heat transfer coefficient [W/m^2-K]
         self.LTC_rad_Tr = 273.15+95 #HTC radiator temperature [K]
         self.LTC_rad_emissivity = 0.8 #HTC radiator emissivity
 
@@ -145,7 +148,7 @@ class BalanceOfPlant:
         self.k_WaterPower = 1e3 #Coefficient to liquid water flow, CHECK THIS VALUE
 
         #Calculate water power [W]
-        self.P_Water = self.k_WaterPower*(max(self.CellParameters.water_liquid_flow)) #Power to circulate water [W]
+        self.P_Water = self.k_WaterPower*(0.5*(self.CellParameters.water_flow)) #Power to circulate water [W]
         # print(max(self.CellParameters.water_liquid_flow))
         # print(f"Max water power is {max(self.P_Water):.2f} W")
     
@@ -160,6 +163,8 @@ class BalanceOfPlant:
     def BOPPower(self):
         #Calculate total power required for BOP systems [W]
         self.P_BOP = self.P_air+self.P_HTC+self.P_LTC+self.P_Water+self.P_Elec
+        self.P_BOP_gross = self.P_BOP/self.converter_efficiency #Before losses
+        self.P_converter_loss = self.P_BOP_gross-self.P_BOP
         # print(f"Mean BOP power is {np.mean(self.P_BOP):.2f} W, which is {(np.mean(self.P_BOP)/self.CellParameters.P_D)*100:.2f} % of total cell power")
     
     def BOPPieChart(self):

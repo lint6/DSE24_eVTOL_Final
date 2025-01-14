@@ -16,12 +16,15 @@ from CellWeights import CellWeights
 #Because highest stack pressures give lower weights for a set design power, but they also give lower net power (due to higher P_BOP)
 
 safety_factor = 1 
-P_pemfc = 78.952e3 #Input from performance
+P_motor = 78.952e3 #Input from performance
+P_battery = 7e3 #Input from performance
 P_avionics = 2110.50 #Get this from the Avionics class [W]
-converter_efficiency = 0.981 #Based on Miro three-level DC/DC converter
+
+converter_efficiency = 0.98 #Based on NASA SoA DC/DC converter 
+inverter_efficiency = 0.98 #Based on Yamaguchi IEEE paper for SiC inverter efficiency
 motor_efficiency = 0.89 #From motor graph, check if accurate
 
-P_net = safety_factor * (((P_pemfc+P_avionics)/converter_efficiency)/motor_efficiency)  #Net required power 
+P_net = safety_factor * (((P_motor)/(converter_efficiency*motor_efficiency*inverter_efficiency))+P_avionics/(converter_efficiency**2)+P_battery/converter_efficiency)  #Power that fuel cell needs to deliver during cruise. Note that BoP power and converter is already included in BalanceOfPlant.
 P_range = 0.5*P_net #Range to iterate over
 P_iterate = np.linspace(P_net,P_net+P_range,1000)
 tolerance = 100
@@ -62,7 +65,7 @@ for j in input_pressures:
             if Weights.W_PEMFC[n] == min(Weights.W_PEMFC):
                 index = n
 
-        if P_net - tolerance <= (inputCell.P_D-BOP.P_BOP[index]) <= P_net + tolerance:
+        if P_net - tolerance <= (inputCell.P_D-BOP.P_BOP_gross[index]) <= P_net + tolerance:
             P_D_list.append(i)
             Weight_list.append(Weights.W_PEMFC[index])
             break

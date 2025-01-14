@@ -35,8 +35,8 @@ class CellWeights:
         self.W_tank = 13.4*self.W_hydrogen + 13.3 #Hydrogen tank weight, based on regression from Powertrain sheet [kg], assumes 700 bar 
         # print(f"Required hydrogen tank weight is {np.median(self.W_tank)} kg") 
 
-        self.S_tank = (24.6*self.W_hydrogen + 0.796)*(1e-3) #Hydrogen tank volume, based on regression from Powertrain sheet [L], converted to [m^3]
-        #For actual tank dimensions, consult H2 tank specifications sheet
+        self.tank_diameter = (0.977*self.W_tank + 379)*(1e-3) #Hydrogen tank volume, based on regression converted to [m]
+        self.tank_length = (6.95*self.W_tank+600)*(1e-3) #Hydrogan tank length, based on regression converted to [m]
     
     def AirWeight(self): #Calculates the weights of the air system, based on fractions from Datta
         #Compressor weight [kg]
@@ -154,6 +154,10 @@ class CellWeights:
         self.W_PEMFC = self.W_stack + self.W_hydrogen + self.W_tank + self.W_air + self.W_HTC + self.W_LTC + self.W_Elec
         # print(f"Min PEMFC weight is {min(self.W_PEMFC)} kg")
 
+        self.l_sys = (2.52*self.W_PEMFC + 467)*(1e-3) #System length [m] from regression in Powertrain sheet
+        self.w_sys = (1.05*self.W_PEMFC + 448)*(1e-3) #System width [m] from regression in Powertrain sheet
+        self.h_sys = (-0.0116*self.W_PEMFC+622)*(1e-3) #System height [m], etc.
+
     def WeightsPieChart(self):
         #Create pie chart of the weight components
         labels = ["Stack", "H2", "H2 Tank", "Air", "HTC", "LTC", "Electrical"]
@@ -214,7 +218,7 @@ class CellWeights:
 
         print(f"======GENERAL CHARACTERISTICS=====")
         print(f"Design power [kW]: {self.CellParameters.P_D*1e-3:.2f}")
-        print(f"Net power [kW]: {(self.CellParameters.P_D-self.BalanceOfPlant.P_BOP[index])*1e-3:.2f}")
+        print(f"Net power [kW]: {(self.CellParameters.P_D-self.BalanceOfPlant.P_BOP_gross[index])*1e-3:.2f}")
         print(f"Design voltage [V]: {self.CellParameters.V_D:.2f}")
         print(f"Design current [A]: {self.CellParameters.I_D:.2f}")
         print(f"Stack temperature [K]: {self.IVCurves.T:.2f}")
@@ -228,7 +232,7 @@ class CellWeights:
         print(f"Cell power density [W/cm^2]: {self.IVCurves.p[index]:.4f}")
         print(f"Cell heat [W/cm^2]: {self.IVCurves.q[index]:.4f}")
         print(f"Efficiency: {self.IVCurves.v[index]/self.IVCurves.E_h:.4f}")
-        print(f"Specific power [kW/kg]: {((self.CellParameters.P_D-self.BalanceOfPlant.P_BOP[index])*1e-3)/self.W_PEMFC[index]:.4f}")
+        print(f"Specific power [kW/kg]: {((self.CellParameters.P_D-self.BalanceOfPlant.P_BOP_gross[index])*1e-3)/self.W_PEMFC[index]:.4f}")
 
         print(f"======MASS FLOWS=====")
         print(f"H2 flow [kg/s]: {self.CellParameters.H2_flow[index]:.4f}")
@@ -254,9 +258,10 @@ class CellWeights:
         print(f"Turbine power [W]: {self.BalanceOfPlant.P_turb[index]:.2f}")
         print(f"HTC power [W]: {self.BalanceOfPlant.P_HTC[index]:.2f}")
         print(f"LTC power [W]: {self.BalanceOfPlant.P_LTC[index]:.2f}")
-        print(f"Water power [W]: {self.BalanceOfPlant.P_Water:.2f}")
+        print(f"Water power [W]: {self.BalanceOfPlant.P_Water[index]:.2f}")
         print(f"Electrical power [W]: {self.BalanceOfPlant.P_Elec:.2f}")
-        print(f"Total BOP power [W]: {self.BalanceOfPlant.P_BOP[index]:.2f}")
+        print(f"Converter losses [W]: {self.BalanceOfPlant.P_converter_loss[index]:.2f}")
+        print(f"Gross BOP power [W]: {self.BalanceOfPlant.P_BOP_gross[index]:.2f}")
 
         print(f"======WEIGHTS=====")
         print(f"Stack weight [kg]: {self.W_stack[index]:.2f}")
@@ -269,11 +274,12 @@ class CellWeights:
         print(f"Total PEMFC weight [kg]: {self.W_PEMFC[index]:.2f}")
         
         print(f"======DIMENSIONS=====")
+        print(f"PEMFC System: {self.l_sys[index]:.4f} x {self.w_sys[index]:.4f} x {self.h_sys[index]:.4f} [m]")
         print(f"HTC Radiator: {self.S_HTC_radiator[index]:.4f} [m^3] ({self.BalanceOfPlant.HTC_A_r[index]:.2f} [m^2] x {self.t_HTC_radiator:.4f} [m])")
         print(f"LTC Radiator: {self.S_LTC_radiator[index]:.4f} [m^3] ({self.BalanceOfPlant.LTC_A_r[index]:.2f} [m^2] x {self.t_LTC_radiator:.4f} [m])")
-        print(f"CEM: {self.S_comp:.6f} [m^3]")
-        print(f"H2 tank: {self.S_tank[index]:.4f} [m^3]")
-        print(f"Stack: {self.S_stack[index]:.4f} [m^3] ({self.CellParameters.A_c[index]*1e-4:.2f} [m^2] x {self.L_stack[index]:.4f} [m])")
+        # print(f"CEM: {self.S_comp:.6f} [m^3]")
+        print(f"H2 tank: {self.tank_diameter[index]:.4f} diameter [m], {self.tank_length[index]:.4f} length [m]")
+        # print(f"Stack: {self.S_stack[index]:.4f} [m^3] ({self.CellParameters.A_c[index]*1e-4:.2f} [m^2] x {self.L_stack[index]:.4f} [m])")
 
 
 
