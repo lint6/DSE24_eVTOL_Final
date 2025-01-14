@@ -659,8 +659,8 @@ class EnergyAnalysis:
         bars_below = ['Cruise2', 'Descent2']
 
         #Generate list of potential pemfc line values
-        line_values = np.linspace(powers_dict['Cruise1'],powers_dict['V_climb'],10000)
-        tolerance = 1000
+        line_values = np.linspace(powers_dict['Cruise1'],powers_dict['V_climb'],100000)
+        tolerance = 100
         self.pemfc_line = 0
 
         for i in line_values:
@@ -670,6 +670,9 @@ class EnergyAnalysis:
             if 0 <= abs(area_diff) <= tolerance:
                 self.pemfc_line = i
                 break
+        
+        self.P_rotors = powers_dict['Loiter']
+        self.P_battery = self.pemfc_line - self.P_rotors
 
     def calculate_amps(self):
         amps_dict = self.mission_data['amps']
@@ -760,6 +763,8 @@ class EnergyAnalysis:
         print(f'Phases: {phases}')
         print(f'Phases length: {len(phases)}')
         print(f'Energy Values length: {len(energy_values)}')
+        print(f'Rotor power: {self.P_rotors:.2f} [W]')
+        print(f'Battery power: {self.P_battery:.2f} [W]')
 
         # sizing the bars
         bar_positions = range(len(phases)) 
