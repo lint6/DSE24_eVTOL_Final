@@ -53,7 +53,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
         # Control
         setpoint_pos = [0,0,-20]
         setpoint_ang = [0,0,0]
-        rpm = np.ones(rotor_count) * .11*4000
+        rpm = np.ones(rotor_count) * .25*4000
         far_distance = 75
         close_distance = 25
         allocation = np.array([[0.1,-0.1,-0.1,0.1],[-0.1,-0.1,0.1,0.1],[-0.1,0.1,-0.1,0.1],[1,1,1,1]]) # Roll, Pitch, Yaw, Hover
@@ -65,7 +65,12 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
         
         
         # Logging
-        log_state = [[[pos_x,pos_y,pos_z]],[[ang_x,ang_y,ang_z]],[[vel_x, vel_y, vel_z]],[[rot_x, rot_y, rot_z]]] # [position, angle, velocity, rotation]
+        log_state = [[[pos_x,pos_y,pos_z]], # Position
+                     [[ang_x,ang_y,ang_z]], # Angle
+                     [[vel_x, vel_y, vel_z]], # Velocity
+                     [[rot_x, rot_y, rot_z]], # Rotation
+                     [[0, 0, 0]], # Acceleration
+                     [[0, 0, 0]]] # Acceleration Angular
         log_state_spherical = [[[0,0,0]],[[0,0,0]],[[0,0,0]]] #[target, velocity, control]
         log_forces = [[[0,0,0]], [[0,0,0]]] # [Forces, moments]
         log_extras = [[[0,0,0,0]], [[0,0,0]], [[0,0,0]], [[0,0,0,0]], [[0,0]]] 
@@ -115,6 +120,9 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
             ang_acc_y = ang_acc[1]
             ang_acc_z = ang_acc[2]
             
+            dvel = [lat_acc_x, lat_acc_y, lat_acc_z]
+            drot = ang_acc
+            
             # Velocity
             vel_x = vel_x + lat_acc_x * dt
             vel_y = vel_y + lat_acc_y * dt
@@ -152,10 +160,14 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
             pos = [pos_x,pos_y,pos_z]
             ang = [ang_x,ang_y,ang_z]
 
+            
+
             log_state[0].append(pos) # Position
             log_state[1].append(ang) # Angle
             log_state[2].append(vel) # Velocity
-            log_state[3].append(rot) # Rotation
+            log_state[3].append(rot) # Rotation (Angular velocity)
+            log_state[4].append(dvel) #Acceleration
+            log_state[5].append(drot) #Acceleration Angular
             
             
             
@@ -211,15 +223,13 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
                     rpm[i] = 4000
                     
                     
-            aircraft.UpdateAircraftState(pos, ang)
-            
-            updates = [ SCfunc_UpdateAssembly(u_forces=[[0],[0],[rpm[0]]], u_moments=[[0],[0],[rpm[0]]]), 
-                        SCfunc_UpdateAssembly(u_forces=[[0],[0],[rpm[1]]], u_moments=[[0],[0],[rpm[1]]]),
-                        SCfunc_UpdateAssembly(u_forces=[[0],[0],[rpm[2]]], u_moments=[[0],[0],[rpm[2]]]), 
-                        SCfunc_UpdateAssembly(u_forces=[[0],[0],[rpm[3]]], u_moments=[[0],[0],[rpm[3]]]),
+            updates = [ SCfunc_UpdateAssembly(u_forces=[[0],[0],[rpm[0]]], u_moments=[[0],[0],[rpm[0]]]), # Rotor 1
+                        SCfunc_UpdateAssembly(u_forces=[[0],[0],[rpm[1]]], u_moments=[[0],[0],[rpm[1]]]), # Rotor 2
+                        SCfunc_UpdateAssembly(u_forces=[[0],[0],[rpm[2]]], u_moments=[[0],[0],[rpm[2]]]), # Rotor 3
+                        SCfunc_UpdateAssembly(u_forces=[[0],[0],[rpm[3]]], u_moments=[[0],[0],[rpm[3]]]), # Rotor 4
                         SCfunc_UpdateAssembly()]
-            
-            aircraft.UpdatePoints(update_variables = updates)
+            state = [i[-1] for i in log_state]
+            aircraft.Update(state = state, update_variables = updates)
             
             # Logging
             log_forces[0].append(aircraft.forces)
@@ -234,10 +244,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
             # log_extras[3].append([np.max(throttle_hover), np.max(throttle_rotate_x), np.max(throttle_rotate_y), np.max(throttle_rotate_z)])
 
             log_time.append(log_time[-1]+dt)
-            
-            # log_acc[0][0].append(lat_acc_x)
-            # log_acc[0][1].append(lat_acc_y)
-            # log_acc[0][2].append(lat_acc_z)
+
             '''Exit Conditions'''
             if time.time() - start_time >= 600:
                 Run = False
@@ -255,25 +262,6 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
 
 def ExampleFunction(Constant): #the input modify the function that is to be returned
     return lambda variable: variable*Constant #Return a function that can be stored in a variable
-
-#x = [u,w, theta, R, omega] should have u and w in the x list
-def SCfunc_parameter_velo():
-    return lambda x : np.sqrt(x[0]**2 + x[1]**2)
-
-def SCfunc_parameter_alpha_attack():
-    return lambda x : x[2] - np.arctan(x[1]/x[0])
-
-# var = SCfunc_parameter_velo()
-# var1 = SCfunc_parameter_alpha_attack()
-
-# # x.append(var)
-# # x.append(var1)
-# # x = [u,w,theta, R, omega, var(x), var1(x)]
-def SCfunc_parameter_Mu():
-    return lambda x : x[5]/(x[4]*x[3]) * np.cos(x[6])
-
-def SCfunc_parameter_llambda_c():
-    return  lambda x : x[5]/(x[4]*x[3]) * np.sin(x[6])
 
 def SCfunc_RotorRPM(throttle, current_rpm, dt, counter_torque = 0, max_torque = 500, inertia_rotor = 60, radius = 1):
     omega = SCfunc_RPM2RadSec(current_rpm)

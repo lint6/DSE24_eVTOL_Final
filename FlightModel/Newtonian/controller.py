@@ -31,13 +31,8 @@ def SCfunc_PIDController(error, k_p, t_i, t_d, dt, FULL=False): #Standard PID co
     else:
         return output
 
-def SCfunc_PDController(error, k_p, t_d, dt): #Standard PID controller
-    p_error = error[-1]
-    d_error = (error[-1]-error[-2])/dt
-    output = -k_p * (p_error + d_error*t_d)
-    return output
-
 def SCfunc_PController(error, k_p): #Standard P controller
+    #Obsolete, use PID with Ti and Td = 0
     output = -k_p * error
     return output
 
@@ -159,7 +154,7 @@ def SCcon_HoverFlight(state_in, error_in, allocation, dt):
                              a_min=-1, a_max=1)
     yaw_throttle   = np.clip(SCfunc_PIDController( -1 *np.array(rot).T[2], k_p=0.012, t_i=120, t_d=0.3, dt=dt),
                              a_min=-1, a_max=1)
-    hover_throttle = np.clip(SCfunc_PIDController(np.array(vel_error).T[2], k_p=0.2, t_i=False, t_d=2, dt=dt),
+    hover_throttle = np.clip(SCfunc_PIDController(np.array(vel_error).T[2], k_p=0.5, t_i=0, t_d=3, dt=dt),
                              a_min=-1, a_max=1)
 
     # Allocation
