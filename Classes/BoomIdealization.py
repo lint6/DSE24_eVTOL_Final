@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 class BoomIdealization:
 
-    def __init__(self, r=1.5, Vy=-1300000, A=1000, tau_y=190, t = 3):
+    def __init__(self, r=4.5, Vy=-1300000, A=1000, tau_y=190, t = 3):
         ''' Initialize the BoomIdealization Class '''
         ### Input radius r in [m], Vy in [N], Ixx in [mm^4], stringer area A in [mm^2], yield shear stress tau_y in [MPa], t in [mm]
         self.r = r # [m]
@@ -103,7 +103,7 @@ class BoomIdealization:
         plt.grid(True)
         plt.show()
 
-    def plot_shear_flow(self, k=0.00003):
+    def plot_shear_flow(self, k=0.0003):
         ''' Plot the Shear Flow Magnitudes as Circular Arcs along the Circular Shape '''
         shear_sides = np.abs(self.calculate_shear_flow())  # Get the magnitudes of shear flow values
         boom_x, boom_y = self.calculate_boom_coordinates()  # Get boom coordinates

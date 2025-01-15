@@ -31,9 +31,6 @@ class CriticalBucklingStress:
         plt.legend(fontsize=12)
         plt.show()
 
-    def calculation_buckling(self):
-        t = 0.001 # [m] skin thickness, get from boom idealization
-        
 if __name__ == '__main__':
     CBS = CriticalBucklingStress()
     CBS.plot_critical_buckling_stress()
