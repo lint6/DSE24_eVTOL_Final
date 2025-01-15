@@ -12,17 +12,17 @@ class BEMT():
         self.rho = 1.225 # kg/m^3, the air density
 
         # airfoil specification
-        self.a_r = 0.10 * (180 / np.pi)  # [-/deg], the profile lift curve slope in the linear region NACA2414 0.1225
-        self.intercept_cl = 0.0 #NACA2414 0.2379
+        self.a_r = 0.1085 * (180 / np.pi)  # [-/deg], the profile lift curve slope in the linear region NACA2414 0.1225
+        self.intercept_cl = 0.2379 #NACA2414 0.2379
 
         # specify initial rotor sizing parameters
-        self.R = 1.2 # m, the rotor radius in meters
+        self.R = 1.17 # m, the rotor radius in meters
         self.b = 6 # - , number of blades
         self.cutout = 0.15 * self.R
-        self.r_bar_e = 0.95 #effective blade radius due to tip losses, approximate input for now
+        self.r_bar_e = 0.96 #effective blade radius due to tip losses, approximate input for now
 
         #rotational velocity
-        self.omega = 145 # rad/s, rotational velocity
+        self.omega = 98 # rad/s, rotational velocity
 
         #transition
         self.SOS = 343 # m/s, transition air speed
@@ -31,7 +31,7 @@ class BEMT():
         self.n_rotors = 6
 
         #element structural properties
-        self.E = 200 * (10**9) #Young's modulus in [Pa]
+        self.E = 120 * (10**9) #Young's modulus in [Pa]
         self.I = (1 / 12) * 0.1 * ((0.12 * 0.1)**3) #m^4
 
     def discretise(self, num_elements=None):
@@ -42,8 +42,8 @@ class BEMT():
         #print(self.r_list)
 
         #setup chord
-        c_root = 0.1 # meters
-        taper = 1 # -
+        c_root = 0.075 # meters
+        taper = 0.8 # -
         c_tip = c_root * taper
         c_avg = 0.5 * (c_root + c_root * taper)
         self.AR = (self.R - self.cutout) / c_avg
@@ -59,7 +59,7 @@ class BEMT():
 
         #setup theta
         theta_root = np.deg2rad(20)
-        theta_tip = np.deg2rad(5)
+        theta_tip = np.deg2rad(6)
 
         #slope of the twist distribution
         slope_t = (theta_tip - theta_root)/(self.R - self.cutout)
@@ -145,11 +145,18 @@ class BEMT():
         V_c = V_f * np.sin(gamma)
 
         # compute induced velocity at point r
-        induced_1 = (a_r * self.b * c_r) / (16 * math.pi * self.R)
-        induced_2 = -1 * (induced_1 + (V_c / (2 * V_t)))
-        induced_3 = math.sqrt((induced_1 + (V_c / (2 * V_t))) ** 2 + ((induced_1 * 2) * ((r_bar * theta_r) - (V_c / V_t))))
-        v_r = V_t * (induced_2 + induced_3)
-        #print(f"v_r ={v_r}")
+        v_i_hov = self.induced()
+        V_bar = V_f/v_i_hov
+        alpha_disc = alpha_v + gamma
+        array = np.array([0.0,0.0,0.0,0.0,0.0])
+        array[0] = 1
+        array[1] = 2 * V_bar * math.sin(alpha_disc)
+        array[2] = (V_bar ** 2)
+        array[3] = 0
+        array[4] = -1
+        roots = np.roots(array)[3]
+        v_i_bar = np.real(roots)
+        v_r = v_i_bar * v_i_hov
 
         # axial and in-plane
         V_ax = (V_c * np.cos(alpha_v)) + (-V_ho * np.sin(alpha_v))
@@ -217,7 +224,7 @@ class BEMT():
         #moments analysis
         dMom_r = dT_r * np.sin(psi)
 
-        prop_2 = [dL_r,dD_r,dT_r,dQ_r,dP_r,dFx,alpha,stall,M_r,dMom_r,dX]
+        prop_2 = [dL_r,dD_r,dT_r,dQ_r,dP_r,dFx,alpha,stall,M_r,dMom_r,dX,v_r]
         return prop_2
 
     def flapping(self, dL_psi90=None, dL_psi270=None):
@@ -239,7 +246,7 @@ class BEMT():
             sum_dL = sum(dL_psi270[:(i+1)])
             d_max = (11 * sum_dL * (self.r_list[i]**4))/(120 * self.E * self.I)
             d_psi270.append(d_max)
-        print(f"d psi 90 {d_psi90[-5]}")
+        #print(f"d psi 90 {d_psi90[-5]}")
         #print(f"d psi 270 {d_psi270[-5]}")
         amp_r = [max - min for max, min in zip(d_psi90, d_psi270)]
         return amp_r
@@ -412,20 +419,23 @@ class BEMT():
         # return the values
         return self.dL_r_interp, self.dD_r_interp
 
-
+    def induced(self):
+        v_r_hov = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 5.613125546549002, 5.850520904347805, 6.078599548671493, 6.297841149640315, 6.508678166592937, 6.711502128191865, 6.906668867475168, 7.09450291729418, 7.275301225408243, 7.449336313922077, 7.616858981560541, 7.7781006272402164, 7.933275257926644, 8.082581231715281, 8.226202777610302, 8.364311325985922, 8.497066677745387, 8.624618035402172, 8.747104915439289, 8.864657958159235, 8.977399648668756, 9.085444960532632, 9.188901931888337, 9.287872182367815, 9.382451377967385, 9.472729649997696, 9.558791973397218, 9.640718508976263, 9.718584913551403, 9.792462621413573, 9.862419100132136, 9.928518083319153, 9.990819782653302, 10.049381081182577, 10.10425570968228, 10.155494407634349, 10.203145070210468, 10.247252882481263, 10.287860441933327, 10.325007870252211, 10.35873291522049, 10.389071043483472, 10.416055524849154, 10.439717508712503, 10.46008609312547, 10.477188386972236, 10.491049565653336, 10.501692920631385, 10.509139903144499, 10.513410162350565, 10.514521578125697, 10.51249028870284, 10.507330713301217, 10.499055569863808, 10.487675887987553, 10.473201017099514, 10.45563862990114, 10.43499472107183, 10.41127360119178, 10.384477885812206, 10.35460847956827, 10.32166455519562, 10.285643527275449, 10.246541020494409, 10.20435083216446, 10.159064888702972, 10.110673195724551, 10.05916378134258, 10.004522632218936, 9.946733621834712, 9.885778430380983, 9.82163645558601, 9.754284713702045, 9.683697729769408, 9.609847416155286, 9.532702938228065, 9.452230565870842, 9.36839350935787, 9.281151737909608, 9.190461779001753, 9.096276496224275, 0.0, 0.0, 0.0, 0.0]
+        v_r_avg_hov = sum(v_r_hov)/len(v_r_hov)
+        return v_r_avg_hov
 
 
 if __name__ == '__main__':
     BEMT = BEMT()
 
     #which analysis
-    vertical = True
+    vertical = False
     forward = True
     interpolation = False
     controlstability = False
 
     #initialise discretisation and insert number of elements (minimum 100 for accuracy)
-    num_elements = 70
+    num_elements = 100
     BEMT.discretise(num_elements=num_elements)
 
     if vertical==True:
@@ -471,6 +481,7 @@ if __name__ == '__main__':
                 stall_r_list1.append(0.0)
                 M_r_list1.append(0.0)
 
+        print(v_r_list1)
         #integration for one blade
         L = sum(dL_r_list1)
         D = sum(dD_r_list1)
@@ -515,7 +526,7 @@ if __name__ == '__main__':
         print(f"for {BEMT.n_rotors} rotors:")
         print(f"L {L * BEMT.b * BEMT.n_rotors} D {D * BEMT.b * BEMT.n_rotors} T {T * BEMT.b * BEMT.n_rotors} Q {Q * BEMT.b * BEMT.n_rotors} P_r {P_r * BEMT.b * BEMT.n_rotors}  Fx {Fx * BEMT.b * BEMT.n_rotors}")
 
-        T_req = 7758.73
+        T_req = (709.63 * 9.80665 * 1.10)/(np.cos(10*(np.pi/180)))
         n_rotor = T_req/(T*BEMT.b)
         print("---------------------")
         print(f"You would need {n_rotor} rotors to generate {T_req} [N] of thrust")
@@ -544,7 +555,7 @@ if __name__ == '__main__':
         print("\033[32mForward flight:\033[0m")
 
         #specify forward flight regime
-        V_f = 0
+        V_f = 22
         gamma = 0.0
         alpha_v = 0.0 * (np.pi/180) #in radians
 
@@ -560,6 +571,7 @@ if __name__ == '__main__':
         M_r_list2 = []
         dMom_r_list2 = []
         dX_r_list2 = []
+        v_r_list2 = []
 
         dL_r_list3 = []
         dD_r_list3 = []
@@ -572,6 +584,8 @@ if __name__ == '__main__':
         M_r_list3 = []
         dMom_r_list3 = []
         dX_r_list3 = []
+        v_r_list3 = []
+
 
         L = 0
         D = 0
@@ -602,10 +616,11 @@ if __name__ == '__main__':
 
         dL_r_list2 = []
         L = 0
-        n = 5
+        n = 3
 
         for i in range(n):
             for psi in BEMT.psi_list:
+                #print(f"psi = {psi*(180/np.pi)}")
                 for chord, theta, a, r in zip(BEMT.c_r_list, BEMT.theta_r_list, BEMT.a_r_list, BEMT.r_list):
                     #print(f"r = {r}")
                     v_fl = amp_r[BEMT.r_list.index(r)] * np.cos(psi) * BEMT.omega
@@ -623,6 +638,7 @@ if __name__ == '__main__':
                         M_r_list3.append(prop_2[8])
                         dMom_r_list3.append(prop_2[9])
                         dX_r_list3.append(prop_2[10])
+                        v_r_list3.append(prop_2[11])
                     else:
                         dL_r_list3.append(0.0)
                         dD_r_list3.append(0.0)
@@ -635,6 +651,7 @@ if __name__ == '__main__':
                         M_r_list3.append(0.0)
                         dMom_r_list3.append(0.0)
                         dX_r_list3.append(0.0)
+                        v_r_list3.append(0.0)
 
                 dL_r_list2.append(dL_r_list3)
                 L += sum(dL_r_list3)
@@ -664,6 +681,8 @@ if __name__ == '__main__':
                 dX_r_list2.append(dX_r_list3)
                 X += sum(dX_r_list3)
 
+                v_r_list2.append(v_r_list3)
+
                 dL_r_list3 = []
                 dD_r_list3 = []
                 dT_r_list3 = []
@@ -675,10 +694,11 @@ if __name__ == '__main__':
                 M_r_list3 = []
                 dMom_r_list3 = []
                 dX_r_list3 = []
+                v_r_list3 = []
 
-            print(dL_r_list2[30])
+            #print(dL_r_list2[30])
             amp_r = BEMT.flapping(dL_psi90=dL_r_list2[30],dL_psi270=dL_r_list2[90])
-
+            #print(f"v_r{v_r_list2}")
             if i != (n - 1):
                 dL_r_list2 = []
                 dD_r_list2 = []
