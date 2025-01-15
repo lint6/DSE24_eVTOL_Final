@@ -17,7 +17,7 @@ physics.py
 import numpy as np
 from misc import *
 
-def SCfunc_PIDController(error, k_p, t_i, t_d, dt, FULL=False): #Standard PID controller
+def SCfunc_PIDController(error, k_p, t_i, t_d, dt, FULL=False): # Standard PID controller
     p_error = error[-1]
     i_error = np.sum(error) * dt
     d_error = (error[-1]-error[-2])/dt
@@ -31,8 +31,8 @@ def SCfunc_PIDController(error, k_p, t_i, t_d, dt, FULL=False): #Standard PID co
     else:
         return output
 
-def SCfunc_PController(error, k_p): #Standard P controller
-    #Obsolete, use PID with Ti and Td = 0
+def SCfunc_PController(error, k_p): # Standard P controller, Obsolete
+    # Obsolete, use PID with Ti and Td = 0
     output = -k_p * error
     return output
 
@@ -95,17 +95,12 @@ def SCcon_ForwardFlight(state_in_1, state_in_2, error_in, allocation, dt):
     # print(throttle)
     return throttle, state_in_1[2], error_in, ang_set
 
-
 def SCcon_HoverFlight(state_in, error_in, allocation, dt):
     # Assign Data In
     vel = state_in[2] # Historical velocity
     rot = state_in[3] # Historical rotational velocity
     ang = state_in[1] # Historical rotation
     allocation = allocation # Control allocation
-    
-    #DEBUG
-    TUNING_vel = False
-    TUNING_ang = False
 
     # Errors
     pos_error = error_in[0] # Historical position error, Cartesian
@@ -123,10 +118,7 @@ def SCcon_HoverFlight(state_in, error_in, allocation, dt):
                      a_min=-5, a_max=5)
     Vz_set = np.clip(-1*SCfunc_PIDController(np.array(pos_error).T[2], k_p=1.6, t_i=250, t_d=0.4, dt=dt),
                      a_min=-2, a_max=2)
-    if TUNING_vel:
-        vel_set = [0,0,-50]
-    else:
-        vel_set = [Vx_set,Vy_set,Vz_set]
+    vel_set = [Vx_set,Vy_set,Vz_set]
 
     # Velocity Error
     vel_error_now = np.array(vel_set) - np.array(vel[-1])
@@ -138,10 +130,7 @@ def SCcon_HoverFlight(state_in, error_in, allocation, dt):
     pitch_set = np.clip(SCfunc_PIDController(np.array(vel_error).T[0], k_p=1, t_i=False, t_d=0, dt=dt),
                     a_min=-30, a_max=30)
     yaw_set   = ang[-1][2]
-    if TUNING_ang:
-        ang_set = [0,0,0]
-    else:
-        ang_set = [roll_set,pitch_set,yaw_set]
+    ang_set = [roll_set,pitch_set,yaw_set]
         
     # Angle Error
     ang_error_now = np.array(ang_set) - np.array(ang[-1]) # Current error in angle
@@ -171,3 +160,42 @@ def SCcon_HoverFlight(state_in, error_in, allocation, dt):
     throttle += hover_throttle
     
     return throttle, vel_set, ang_set, vel_error, ang_error
+
+def SCcon_FlyByWire(state_in, error_in, allocation, dt):
+    # Assign data in
+    pos = state_in[0] # Historical position
+    ang = state_in[1] # Historical angle in
+    pos_error = error_in[0] # Historical position error
+    ang_error = error_in[1] # Historical angle error in
+    
+    
+    
+    
+    
+    
+    
+    
+    # Throttle
+    roll_throttle  = np.clip(SCfunc_PIDController(np.array(ang_error).T[0], k_p=0.05, t_i=250, t_d=5, dt=dt),
+                             a_min=-1, a_max=1)
+    pitch_throttle = np.clip(SCfunc_PIDController(-1*np.array(ang_error).T[1], k_p=0.05, t_i=250, t_d=5, dt=dt),
+                             a_min=-1, a_max=1)
+    yaw_throttle   = np.clip(SCfunc_PIDController( -1 *np.array(rot).T[2], k_p=0.012, t_i=120, t_d=0.3, dt=dt),
+                             a_min=-1, a_max=1)
+    hover_throttle = np.clip(SCfunc_PIDController(np.array(vel_error).T[2], k_p=0.5, t_i=0, t_d=3, dt=dt),
+                             a_min=-1, a_max=1)
+    
+    # Allocation
+    roll_throttle  = allocation[0] * roll_throttle
+    pitch_throttle = allocation[1] * pitch_throttle
+    yaw_throttle   = allocation[2] * yaw_throttle
+    hover_throttle = allocation[3] * hover_throttle
+    
+    #Grouping
+    throttle = 0
+    throttle += roll_throttle
+    throttle += pitch_throttle
+    throttle += yaw_throttle
+    throttle += hover_throttle
+    
+    return throttle, ang_set, error

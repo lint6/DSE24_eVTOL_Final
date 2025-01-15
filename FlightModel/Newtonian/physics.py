@@ -51,12 +51,17 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
         rotor_count = 4
         
         # Control
-        setpoint_pos = [0,0,-20]
+        setpoint_pos = [0,0,0]
         setpoint_ang = [0,0,0]
-        rpm = np.ones(rotor_count) * .25*4000
+        setpoint_vel = [0,0,0]
+        setpoint_rot = [0,0,0]
+        rpm = np.ones(rotor_count) * .3*4000
         far_distance = 75
         close_distance = 25
-        allocation = np.array([[0.1,-0.1,-0.1,0.1],[-0.1,-0.1,0.1,0.1],[-0.1,0.1,-0.1,0.1],[1,1,1,1]]) # Roll, Pitch, Yaw, Hover
+        allocation = np.array([[0.1,-0.1,-0.1,0.1],
+                               [-0.1,-0.1,0.1,0.1],
+                               [-0.1,0.1,-0.1,0.1],
+                               [1,1,1,1]]) # Roll, Pitch, Yaw, Hover
         
         
         
@@ -71,7 +76,9 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
                      [[rot_x, rot_y, rot_z]], # Rotation
                      [[0, 0, 0]], # Acceleration
                      [[0, 0, 0]]] # Acceleration Angular
-        log_state_spherical = [[[0,0,0]],[[0,0,0]],[[0,0,0]]] #[target, velocity, control]
+        log_state_spherical = [[[0,0,0]], # Target
+                               [[0,0,0]], # Velocity
+                               [[0,0,0]]] # Control
         log_forces = [[[0,0,0]], [[0,0,0]]] # [Forces, moments]
         log_extras = [[[0,0,0,0]], [[0,0,0]], [[0,0,0]], [[0,0,0,0]], [[0,0]]] 
         log_error_cartesian= [[[0,0,0]], [[0,0,0]], [[0,0,0]], [[0,0,0]]] # [position, angle, velocity, rotation]
@@ -82,20 +89,6 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
         
         while Run:
             '''Simulation Loop'''
-            #Below is the information we have when we cerate an object using Aircraft
-
-            """
-            class SCobj_Aircraft():
-                def __init__(self, points, position, rotation):
-                    self.points = points #list of ForcePoint objects
-                    self.mass = None 
-                    self.cog = None # 1x3 matrix 
-                    self.intertia = None #Tensor
-                    self.forces = None # 1x3 matrix
-                    self.position = np.array(position) #position of the aircraft in global space 1x3 matrix
-                    self.rotation = np.array(rotation) #rotation of the aircraft in global space 1x3 matrix
-                    self.UpdatePoints()
-            """
             # Setpoints
             # if log_time[-1]>0:
             #     setpoint_pos = [0,0,-200]
@@ -162,43 +155,32 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
 
             
 
-            log_state[0].append(pos) # Position
-            log_state[1].append(ang) # Angle
-            log_state[2].append(vel) # Velocity
-            log_state[3].append(rot) # Rotation (Angular velocity)
-            log_state[4].append(dvel) #Acceleration
-            log_state[5].append(drot) #Acceleration Angular
+            log_state[0].append(pos)  # Position
+            log_state[1].append(ang)  # Angle
+            log_state[2].append(vel)  # Velocity
+            log_state[3].append(rot)  # Rotation (Angular velocity)
+            log_state[4].append(dvel) # Acceleration
+            log_state[5].append(drot) # Acceleration Angular
             
+            # Cartesian Errors
+            log_error_cartesian[0].append(setpoint_pos - log_state[0][-1])
+            log_error_cartesian[1].append(setpoint_ang - log_state[1][-1])
+            log_error_cartesian[2].append(setpoint_vel - log_state[2][-1])
+            log_error_cartesian[3].append(setpoint_rot - log_state[3][-1])
             
-            
-            
-            
-            
-            
-            # side slip angle
-            # angtle of atack -- geomatry how force functino, hiahdfbvjkadbfjkhadbfv
+            # Sphereical
+            # States
+            vect_tgt = SCfunc_CartesianToSpherical(log_error_cartesian[0][-1])[1]
+            vect_vel = SCfunc_CartesianToSpherical(log_state[2][-1])[1]
+            log_state_spherical[0].append(vect_tgt)
+            log_state_spherical[1].append(vect_vel)
+            log_state_spherical[2].append([0,0,0]) # For compeletness, updated in SCcon_ForwardFlight if in autopilot
             
             # Controllers
-            Controlled = True
-            if Controlled:
-                # Generating Vectors
-                delta_x = setpoint_pos[0]-pos_x
-                delta_y = setpoint_pos[1]-pos_y
-                delta_z = setpoint_pos[2]-pos_z
-                log_error_cartesian[0].append([delta_x,delta_y,delta_z]) # Position error in global frame
-
-                # Vector to Target from AC, spherical coord
-                vect_tgt = SCfunc_CartesianToSpherical([delta_x, delta_y, delta_z])[1]
-                
-                # Velocity Vector, spherical coord
-                vect_vel = SCfunc_CartesianToSpherical([vel_x, vel_y, vel_z])[1]
-
-
-                log_state_spherical[0].append(vect_tgt)
-                log_state_spherical[1].append(vect_vel)
-                
-                
-                throttle_ForwardFlight, log_state_spherical[2], log_error_spherical, setpoint_ang_for= SCcon_ForwardFlight(log_state_spherical, log_state, log_error_spherical, allocation, dt=dt)
+            autopilot = False
+            flybywire = True
+            if autopilot: # Waypoint mode, mimicing autopilot
+                throttle_ForwardFlight, log_state_spherical[2], log_error_spherical, setpoint_ang_for = SCcon_ForwardFlight(log_state_spherical, log_state, log_error_spherical, allocation, dt=dt)
                 
                 throttle_HoverFlight, setpoint_vel, setpoint_ang_hov, log_error_cartesian[2], log_error_cartesian[1] = SCcon_HoverFlight(log_state, log_error_cartesian, allocation, dt=dt)
 
@@ -206,14 +188,15 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
                 
                 setpoint_ang = SCfunc_LinearRamp(far_distance, close_distance, vect_tgt[0], np.array(setpoint_ang_for), np.array(setpoint_ang_hov))
                 mix_value = SCfunc_LinearRamp(far_distance, close_distance, vect_tgt[0], 0, 1) # 0 for forward and 1 for hover
-                # SCfunc_LinearRamp(far_distance, close_distance, vect_tgt[0], throttle_ForwardFlight, throttle_HoverFlight)
+
+            elif flybywire: # angle mode, mimicing fly-by-wire
+                # TODO: Finish implemting FBW control scheme
+                print(log_error_cartesian[-1])
                 
-                # print(SCfunc_LinearRamp(500, 100, vect_tgt[0], 0, 1))
+            else: # Uncontrolled Flight
+                throttle = 0
                 
-                
-                rpm = SCfunc_RotorRPM(throttle, rpm, dt)
-                
-                
+            rpm = SCfunc_RotorRPM(throttle, rpm, dt)
             
             # Update aircraft
             for i in range(len(rpm)): #Limiting RPM
