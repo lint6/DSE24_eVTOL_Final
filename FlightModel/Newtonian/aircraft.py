@@ -18,6 +18,7 @@ a full aircraft '
 '''
 
 from classbank import *
+import numpy as np
 
 '''The axis are always in the order of X Y Z'''
 '''X+ to the front of aircraft'''
@@ -39,6 +40,83 @@ def SCfunc_UpdateAssembly(u_forces   = [[0],[0],[0]], #Assembles the ForcePoint 
     variables = [u_forces, u_moments, u_mass, u_inertia, u_position, u_rotation]
     return variables
 
+def SCfunc_Airligator():
+    radius_rotor = 1.2 #radius of rotor
+    radius_rotor_ring = 5 # radius of rotor position ring
+    rotor_mass = 0
+    rotor_inertia =[[0,0,0],
+                    [0,0,0],
+                    [0,0,0]]
+     
+    
+    
+    rotor_1 = SCobj_ForcePoint( forces   = [0, 0, 0], #[N, WITHOUT gravitational froce]
+                                moments  = [0, 0, 0],   #[N*m]
+                                mass     = rotor_mass,       #[kg] 
+                                inertia  = rotor_inertia,
+                                position = [radius_rotor_ring * np.sin(np.pi/3), 
+                                            radius_rotor_ring * np.cos(np.pi/3),
+                                            0],   # [m from the body axis origin ]
+                                rotation = [10,0,0],)  # euler angle degrees 
+    
+    rotor_2 = SCobj_ForcePoint( forces   = [0, 0, 0], #[N, WITHOUT gravitational froce]
+                                moments  = [0, 0, 0],   #[N*m]
+                                mass     = rotor_mass,       #[kg] 
+                                inertia  = rotor_inertia,
+                                position = [radius_rotor_ring * np.sin(2*np.pi/3), 
+                                            radius_rotor_ring * np.cos(2*np.pi/3),
+                                            0],   # [m from the body axis origin ]
+                                rotation = [-10,0,0],)  # euler angle degrees 
+    
+    rotor_3 = SCobj_ForcePoint( forces   = [0, 0, 0], #[N, WITHOUT gravitational froce]
+                                moments  = [0, 0, 0],   #[N*m]
+                                mass     = rotor_mass,       #[kg] 
+                                inertia  = rotor_inertia,
+                                position = [radius_rotor_ring * np.sin(np.pi), 
+                                            radius_rotor_ring * np.cos(np.pi),
+                                            0],   # [m from the body axis origin ]
+                                rotation = [0,0,0],)  # euler angle degrees 
+    
+    rotor_4 = SCobj_ForcePoint( forces   = [0, 0, 0], #[N, WITHOUT gravitational froce]
+                                moments  = [0, 0, 0],   #[N*m]
+                                mass     = rotor_mass,       #[kg] 
+                                inertia  = rotor_inertia,
+                                position = [radius_rotor_ring * np.sin(4*np.pi/3), 
+                                            radius_rotor_ring * np.cos(4*np.pi/3),
+                                            0],   # [m from the body axis origin ]
+                                rotation = [-10,0,0],)  # euler angle degrees 
+    
+    rotor_5 = SCobj_ForcePoint( forces   = [0, 0, 0], #[N, WITHOUT gravitational froce]
+                                moments  = [0, 0, 0],   #[N*m]
+                                mass     = rotor_mass,       #[kg] 
+                                inertia  = rotor_inertia,
+                                position = [radius_rotor_ring * np.sin(5*np.pi/3), 
+                                            radius_rotor_ring * np.cos(5*np.pi/3),
+                                            0],   # [m from the body axis origin ]
+                                rotation = [10,0,0],)  # euler angle degrees 
+        
+    rotor_6 = SCobj_ForcePoint( forces   = [0, 0, 0], #[N, WITHOUT gravitational froce]
+                                moments  = [0, 0, 0],   #[N*m]
+                                mass     = rotor_mass,       #[kg] 
+                                inertia  = rotor_inertia,
+                                position = [radius_rotor_ring * np.sin(0), 
+                                            radius_rotor_ring * np.cos(0),
+                                            0],   # [m from the body axis origin ]
+                                rotation = [0,0,0],)  # euler angle degrees 
+    
+    body    = SCobj_ForcePoint( forces   = [0, 0, 0], #[N, WITHOUT gravitational froce]
+                                moments  = [0, 0, 0],   #[N*m]
+                                mass     =  718,       #[kg] 
+                                inertia  =[[100,0,0],   # [....]
+                                        [0,100,0],
+                                        [0,0,100]],
+                                position = [0,0,0],   # [m from the body axis origin ]
+                                rotation = [0,0,0],)  # euler angle degrees 
+    
+    
+    
+    
+    
 def SCfunc_PointGeneration(): #Returns a list of points with ForcePoint class, modify this function to add or remove points from the aicraft
     '''Points'''
     example_point = SCobj_ForcePoint(forces   = [0,10,ExampleFunction(3)], #[N, WITHOUT gravitational froce]
