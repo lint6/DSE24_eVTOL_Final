@@ -108,5 +108,5 @@ class IVCurves:
         plt.show()
 
 #This is just to get the curves for now, move to UI later
-# object = IVCurves(p_s=2.50)
+# object = IVCurves(p_s=1.50)
 # object.PlotCurves()

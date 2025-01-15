@@ -27,8 +27,14 @@ class Radiator:
         self.rho_a = 1.204 #[kg/m^3]
         self.c_pa = 1.006e3 #[J/kg K]
 
+        #Battery heat (only if using for battery thermal system)
+        self.n_cells = 82 #Number of Superbattery cells
+        self.ESR = 0.3e-3 #[mOhm], from Superbattery data sheet
+        self.I_max = 460 #[A], max current from BatteryTest
+        self.Q_battery = self.n_cells*(self.ESR*(self.I_max**2))
+
         #Heat
-        self.Q_rad = 17.6e3  #Heat to be rejected by radiator, calculated in BalanceOfPlant
+        self.Q_rad = 115214.26  #Heat to be rejected by radiator, calculated in BalanceOfPlant
 
     def RadiatorSizing(self):
         self.T_a_out = np.linspace(273.15+20,323.15,500)

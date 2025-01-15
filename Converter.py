@@ -6,12 +6,12 @@ class Converter:
     def __init__(self):
         self.converter_efficiency = 0.98 #NASA SoA
         self.inverter_efficiency = 0.98 #Yamaguchi
-        self.motor_efficiency = 0.89
+        self.motor_efficiency = 0.93
 
         #Power inputs from performance
         self.P_net_motor = 71817.87e-3 #Net motor power [kW]
         self.P_net_bat = 7134.52e-3 
-        self.P_net_BOP = 8
+        self.P_net_BOP = 7396.33e-3
         self.P_net_av = 2.11
 
         self.P_bat = self.P_net_bat/self.converter_efficiency #Power through battery converter [kW]
@@ -62,6 +62,11 @@ class Converter:
         self.BOP_loss = 140.53e-3 #[kW], input from PEMFC model
         self.conversion_loss = (self.P_motor-self.P_net_motor) + (self.P_av-self.P_net_av) + (self.P_bat-self.P_net_bat) + self.BOP_loss
         print(f"Total conversion losses are {self.conversion_loss:.2f} [kW]")
+    
+    def TotalWeights(self):
+        self.W_PDU = 16 #[kg], from EPEC product specification for passive PDUFPHN1PXXX 
+        self.W_total = self.W_Totconv + self.W_Motinv + self.W_PDU
+        print(f"Total infrastructure weight is {self.W_total:.2f} [kg]")
 
 
 
@@ -71,3 +76,4 @@ Convert.ConverterWeight()
 Convert.ConverterSize()
 Convert.Inverter()
 Convert.ConversionLosses()
+Convert.TotalWeights()

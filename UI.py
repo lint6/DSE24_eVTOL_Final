@@ -22,14 +22,14 @@ P_avionics = 2110.50 #Get this from the Avionics class [W]
 
 converter_efficiency = 0.98 #Based on NASA SoA DC/DC converter 
 inverter_efficiency = 0.98 #Based on Yamaguchi IEEE paper for SiC inverter efficiency
-motor_efficiency = 0.89 #From motor graph, check if accurate
+motor_efficiency = 0.93 #From motor graph, check if accurate
 
 P_net = safety_factor * (((P_motor)/(converter_efficiency*motor_efficiency*inverter_efficiency))+P_avionics/(converter_efficiency**2)+P_battery/converter_efficiency)  #Power that fuel cell needs to deliver during cruise. Note that BoP power and converter is already included in BalanceOfPlant.
 P_range = 0.5*P_net #Range to iterate over
 P_iterate = np.linspace(P_net,P_net+P_range,1000)
 tolerance = 100
 
-mission_time = 77.27*60 #Mission time [s]
+mission_time = 81.61*60 #Mission time [s]
 
 input_pressures = np.linspace(1.00,2.50,100) #Input stack pressures
 P_D_list = []

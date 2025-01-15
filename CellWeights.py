@@ -28,7 +28,7 @@ class CellWeights:
         self.S_stack = self.L_stack * (self.CellParameters.A_c*1e-4) #Stack volume [m^3]
     
     def HydrogenWeight(self):
-        self.W_hydrogen = self.CellParameters.H2_flow*self.missiontime #Calculate weight of hydrogen based on hydrogen mass flow and mission time [kg]
+        self.W_hydrogen = 1.1*self.CellParameters.H2_flow*self.missiontime #Calculate weight of hydrogen based on hydrogen mass flow and mission time [kg], safety factor of 1.2
         # print(f"Required Hydrogen weight is {np.median(self.W_hydrogen):.2f} kg")
     
     def TankWeight(self):
@@ -210,6 +210,14 @@ class CellWeights:
         plt.tight_layout()
         plt.show()
 
+        labels = ["Air", "HTC", "LTC", "Water", "Electronics"]
+        values = [self.BalanceOfPlant.P_air[index]/self.BalanceOfPlant.P_BOP[index], self.BalanceOfPlant.P_HTC[index]/self.BalanceOfPlant.P_BOP[index], self.BalanceOfPlant.P_LTC[index]/self.BalanceOfPlant.P_BOP[index], self.BalanceOfPlant.P_Water[index]/self.BalanceOfPlant.P_BOP[index], self.BalanceOfPlant.P_Elec/self.BalanceOfPlant.P_BOP[index]]
+
+        plt.pie(values, labels=labels, autopct='%1.1f%%')
+        plt.title("BOP Power Components")
+        plt.axis("equal")
+        plt.show()
+
     def OutputCharacteristics(self):
         index = 0
         for i in range(len(self.W_PEMFC)):
@@ -219,6 +227,7 @@ class CellWeights:
         print(f"======GENERAL CHARACTERISTICS=====")
         print(f"Design power [kW]: {self.CellParameters.P_D*1e-3:.2f}")
         print(f"Net power [kW]: {(self.CellParameters.P_D-self.BalanceOfPlant.P_BOP_gross[index])*1e-3:.2f}")
+        print(f"Max power (rated) [kW]: {self.IVCurves.p[-1]*self.CellParameters.A_c[index]*self.CellParameters.n_c[index]:.2f}")
         print(f"Design voltage [V]: {self.CellParameters.V_D:.2f}")
         print(f"Design current [A]: {self.CellParameters.I_D:.2f}")
         print(f"Stack temperature [K]: {self.IVCurves.T:.2f}")
@@ -278,7 +287,7 @@ class CellWeights:
         print(f"PEMFC System: {self.l_sys[index]:.4f} x {self.w_sys[index]:.4f} x {self.h_sys[index]:.4f} [m]")
         print(f"HTC Radiator: {self.S_HTC_radiator[index]:.4f} [m^3] ({self.BalanceOfPlant.HTC_A_r[index]:.2f} [m^2] x {self.t_HTC_radiator:.4f} [m])")
         print(f"LTC Radiator: {self.S_LTC_radiator[index]:.4f} [m^3] ({self.BalanceOfPlant.LTC_A_r[index]:.2f} [m^2] x {self.t_LTC_radiator:.4f} [m])")
-        # print(f"CEM: {self.S_comp:.6f} [m^3]")
+        print(f"CEM: {self.S_comp:.6f} [m^3]")
         print(f"H2 tank: {self.tank_diameter[index]:.4f} diameter [m], {self.tank_length[index]:.4f} length [m]")
         # print(f"Stack: {self.S_stack[index]:.4f} [m^3] ({self.CellParameters.A_c[index]*1e-4:.2f} [m^2] x {self.L_stack[index]:.4f} [m])")
 
@@ -298,7 +307,7 @@ class CellWeights:
 # BOP.WaterPower()
 # BOP.ElecPower()
 # BOP.BOPPower()
-# BOP.BOPPieChart()
+# # BOP.BOPPieChart()
 # Weights = CellWeights(IVCurves=inputIV,CellParameters=inputCell,BalanceOfPlant=BOP)
 # Weights.StackWeight()
 # Weights.HydrogenWeight()
