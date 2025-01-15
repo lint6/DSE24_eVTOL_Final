@@ -9,8 +9,10 @@ def calculate_battery_pack(
     height_mm,
     max_discharge_power_cell_w,
     power_required_w,
-    duration_s,
-    max_cell_current_a
+    battery_energy_req,
+    max_cell_current_a,
+    additional_energy_wh,
+    battery_weight_LV
 ):
     # Calculate number of cells in series 
     
@@ -27,7 +29,7 @@ def calculate_battery_pack(
     cells_in_parallel = math.ceil(current_required_a / max_cell_current_a)
 
     # Ensure the required energy is met
-    energy_required_wh = power_required_w * (duration_s / 3600)
+    energy_required_wh = (battery_energy_req + additional_energy_wh)    # *1.25   #1.25 for 80% DOD
     energy_per_parallel_string_wh = cells_in_series * nominal_energy_wh
     min_parallel_cells_for_energy = math.ceil(energy_required_wh / energy_per_parallel_string_wh)
 
@@ -41,7 +43,7 @@ def calculate_battery_pack(
     total_cells = cells_in_series * cells_in_parallel
 
     # Weight of the battery pack
-    battery_weight_kg = total_cells * mass_per_cell_kg
+    battery_weight_kg = total_cells * mass_per_cell_kg + battery_weight_LV
 
     # Overall capacity of the battery pack
     total_capacity_ah = cells_in_parallel * nominal_capacity_ah
@@ -77,7 +79,7 @@ def calculate_battery_pack(
 
     return results
 
-# # Example inputs Tesla 4680 Gen 2
+# Example inputs Tesla 4680 Gen 2
 # inputs = {
 #     "nominal_capacity_ah": 25.73,
 #     "nominal_voltage_v": 3.7,
@@ -86,16 +88,18 @@ def calculate_battery_pack(
 #     "diameter_mm": 46,
 #     "height_mm": 80,
 #     "max_discharge_power_cell_w": 521,
-#     "power_required_w": 42961,
-#     "duration_s": 315,
-#     "max_cell_current_a": 2.73*25.73 ,
+#     "power_required_w": 38534.7,
+#     "battery_energy_req": 2739.93,
+#     "max_cell_current_a": 2.73 * 25.73,
+#     "additional_energy_wh": 2408,
+#     "battery_weight_LV": 20,                         #[kg] average 24v helicopter batteries
 # }
 
 
 # 5.4734537493158182813355227148331
 
 
-#Example inputs Skeleton Superbattery 
+# #Example inputs Skeleton Superbattery 
 inputs = {
     "nominal_capacity_ah": 23.0,
     "nominal_voltage_v": 2.25,
@@ -104,9 +108,12 @@ inputs = {
     "diameter_mm": 60,
     "height_mm": 138,
     "max_discharge_power_cell_w": 1060,
-    "power_required_w": 42961,
-    "duration_s": 315,
+    "power_required_w": 38534.7,
+    "battery_energy_req": 2739.93,
     "max_cell_current_a": 460 ,
+    "additional_energy_wh": 2408,
+    "battery_weight_LV": 20,                         #[kg] average 24v helicopter batteries     42961
+
 }
 
 # Calculate battery pack design
@@ -116,7 +123,13 @@ battery_pack_design = calculate_battery_pack(**inputs)
 for key, value in battery_pack_design.items():
     print(f"{key}: {value}")
 
-#--------------------------------------------------------------------------------------------------------------------
 
-# This is for the Low Voltage Battery 
+# ----------------------------------------------------------------------------------------------------------
+
+# LV auxiliary battery will be 24 V
+# It will power the following:
+# - Avionics                    - 2.11 kW
+# - FC Startup                  - 
+# - Emergency systems     - 
+# - Controls                    - 
 
