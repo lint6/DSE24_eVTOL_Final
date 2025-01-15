@@ -683,6 +683,32 @@ class EnergyAnalysis:
 
         return self.mission_data['energies']
     
+    def calculate_pemfc_line(self):
+        #Draws the PEMFC line, such that the area of the last 3 and first 4 flight phases above the line is equal to the negative area of Cruise 2 and Descent 2 below the line
+        #Alex needs this for battery sizing
+        times_dict = self.mission_data['times']
+        powers_dict = self.mission_data['powers']
+
+        #Bars for energy balance
+        bars_above = ['HIGE1', 'V_climb', 'HOGE1', 'Climb1', 'HOGE3', 'V_Descent', 'HIGE2']
+        bars_below = ['Cruise2', 'Descent2']
+
+        #Generate list of potential pemfc line values
+        line_values = np.linspace(powers_dict['Cruise1'],powers_dict['V_climb'],100000)
+        tolerance = 100
+        self.pemfc_line = 0
+
+        for i in line_values:
+            area_above = sum(times_dict[bar] * max(0, powers_dict[bar] - i) for bar in bars_above)
+            area_below =  sum(times_dict[bar] * max(0, i - powers_dict[bar]) for bar in bars_below)
+            area_diff = area_above-area_below
+            if 0 <= abs(area_diff) <= tolerance:
+                self.pemfc_line = i
+                break
+        
+        self.P_rotors = powers_dict['Loiter']
+        self.P_battery = self.pemfc_line - self.P_rotors
+
     def calculate_amps(self):
         amps_dict = self.mission_data['amps']
         powers_dict = self.performance.P
@@ -741,6 +767,26 @@ class EnergyAnalysis:
         # average and peak power lines
         plt.axhline(average_power, color='red', linestyle='--', label=f'Average Power ({average_power:.2f} W)')
         plt.axhline(peak_power, color='blue', linestyle='--', label=f'Peak Power ({peak_power:.2f} W)')
+        plt.axhline(self.pemfc_line, color='orange', linestyle='--', label=f'PEMFC Power ({self.pemfc_line:.2f} W)')
+
+        # calculating energy required from battery  -
+        E_above =[]
+        P_above = []
+        start = 0
+        for i in range(0,14):
+            if power_values[i] >= self.pemfc_line:
+                p_per_phase = (power_values[i] - self.pemfc_line)
+                E_per_phase = p_per_phase*time_values[i]/3600
+                E_above.append(E_per_phase)
+                P_above.append(p_per_phase)
+                
+        del P_above[4:6]
+        del E_above[4:6]
+        batt_P_max = max(P_above)
+        
+        #print(f'Powers required from battery per phase:{P_above} W')
+        print(f'The peak power for the battery is: {batt_P_max:2f} W')
+        print(f'The Energy required from the battery is: {sum(E_above):.2f} Wh')
 
         # labels and title
         plt.xlabel('Time (s)', fontsize=12)
@@ -771,6 +817,8 @@ class EnergyAnalysis:
         print(f'Phases: {phases}')
         print(f'Phases length: {len(phases)}')
         print(f'Energy Values length: {len(energy_values)}')
+        print(f'Rotor power: {self.P_rotors:.2f} [W]')
+        print(f'Battery power: {self.P_battery:.2f} [W]')
 
         # sizing the bars
         bar_positions = range(len(phases)) 
@@ -838,39 +886,42 @@ def run():
     # Instantiate the EnergyAnalysis class
     energy_analysis = EnergyAnalysis(performance=analysis)
 
-    # # Calculate mission phase times
-    # times = energy_analysis.calculate_missionphase_time()
+    # Calculate mission phase times
+    times = energy_analysis.calculate_missionphase_time()
 
-    # # Calculate energies
-    # energies = energy_analysis.calculate_energy_required()
+    # Calculate energies
+    energies = energy_analysis.calculate_energy_required()
 
-    # # Calculate amps
-    # amps = energy_analysis.calculate_amps()
+    #Initiate PEMFC line calculation
+    energy_analysis.calculate_pemfc_line()
 
-    # #print("Mission Phase Times:")
-    # #print(times)
-    # total_time = times['total']/60
-    # print(f'Total Mission time = {total_time:.2f} [min]')
+    # Calculate amps
+    amps = energy_analysis.calculate_amps()
 
-    # #print("\nMission Energies (Wh):")
-    # #print(energies)
-    # total_energy = energies['total']
-    # loiter_energy = energies['Loiter']
-    # loiter_time = times['Loiter']/60
-    # print(f'Total Energy Consumption = {total_energy:.2f} [Wh]')
+    #print("Mission Phase Times:")
+    #print(times)
+    total_time = times['total']/60
+    print(f'Total Mission time = {total_time:.2f} [min]')
 
-    # print(f'Loiter power required = {analysis.min_power:.2f} [kW] at a speed of {analysis.min_power_velocity*3.6:.2f} [km/h]')
-    # print(f'Loiter time = {loiter_time} [min]')
-    # print(f'Energy Consumption during loiter = {loiter_energy:.2f} [Wh]')
+    #print("\nMission Energies (Wh):")
+    #print(energies)
+    total_energy = energies['total']
+    loiter_energy = energies['Loiter']
+    loiter_time = times['Loiter']/60
+    print(f'Total Energy Consumption = {total_energy:.2f} [Wh]')
 
-    # #print("\nMission Amps:")
-    # #print(amps)
-    # max_amps = amps['max']
-    # print(f'Max amps = {max_amps:.2f} [A]')
+    print(f'Loiter power required = {analysis.min_power:.2f} [kW] at a speed of {analysis.min_power_velocity*3.6:.2f} [km/h]')
+    print(f'Loiter time = {loiter_time} [min]')
+    print(f'Energy Consumption during loiter = {loiter_energy:.2f} [Wh]')
 
-    # # plot the PEMFC power vs mission phase/time
-    # #energy_analysis.visual_PEMFC_power()
-    # #energy_analysis.visual_PEMFC_energy()
+    #print("\nMission Amps:")
+    #print(amps)
+    max_amps = amps['max']
+    print(f'Max amps = {max_amps:.2f} [A]')
+
+    # plot the PEMFC power vs mission phase/time
+    energy_analysis.visual_PEMFC_power()
+    energy_analysis.visual_PEMFC_energy()
 
 # Execute the run function
 if __name__ == "__main__":
