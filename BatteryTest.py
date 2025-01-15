@@ -88,8 +88,8 @@ def calculate_battery_pack(
 #     "diameter_mm": 46,
 #     "height_mm": 80,
 #     "max_discharge_power_cell_w": 521,
-#     "power_required_w": 38534.7,
-#     "battery_energy_req": 2739.93,
+#     "power_required_w": 32981.91,
+#     "battery_energy_req": 2428.40,
 #     "max_cell_current_a": 2.73 * 25.73,
 #     "additional_energy_wh": 2408,
 #     "battery_weight_LV": 20,                         #[kg] average 24v helicopter batteries
@@ -108,8 +108,8 @@ inputs = {
     "diameter_mm": 60,
     "height_mm": 138,
     "max_discharge_power_cell_w": 1060,
-    "power_required_w": 38534.7,
-    "battery_energy_req": 2739.93,
+    "power_required_w": 32981.91,
+    "battery_energy_req": 2428.40,
     "max_cell_current_a": 460 ,
     "additional_energy_wh": 2408,
     "battery_weight_LV": 20,                         #[kg] average 24v helicopter batteries     42961
