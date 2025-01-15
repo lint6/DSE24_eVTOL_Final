@@ -734,6 +734,25 @@ class EnergyAnalysis:
         plt.axhline(peak_power, color='blue', linestyle='--', label=f'Peak Power ({peak_power:.2f} W)')
         plt.axhline(self.pemfc_line, color='orange', linestyle='--', label=f'PEMFC Power ({self.pemfc_line:.2f} W)')
 
+        # calculating energy required from battery  -
+        E_above =[]
+        P_above = []
+        start = 0
+        for i in range(0,14):
+            if power_values[i] >= self.pemfc_line:
+                p_per_phase = (power_values[i] - self.pemfc_line)
+                E_per_phase = p_per_phase*time_values[i]/3600
+                E_above.append(E_per_phase)
+                P_above.append(p_per_phase)
+                
+        del P_above[4:6]
+        del E_above[4:6]
+        batt_P_max = max(P_above)
+        
+        #print(f'Powers required from battery per phase:{P_above} W')
+        print(f'The peak power for the battery is: {batt_P_max:2f} W')
+        print(f'The Energy required from the battery is: {sum(E_above):.2f} Wh')
+
         # labels and title
         plt.xlabel('Time (s)', fontsize=12)
         plt.ylabel('Power (W)', fontsize=12)
