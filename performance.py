@@ -5,7 +5,7 @@ from scipy.optimize import fsolve
 
 class PerformanceAnalysis:
 
-    def __init__(self, MTOW = 709, climb_angle = 9, descent_angle = -5, vertical_climb = 0.76, vertical_descent = -0.5, steep_descent = -7.6):
+    def __init__(self, MTOW = 709.63, climb_angle = 9, descent_angle = -5, vertical_climb = 0.76, vertical_descent = -0.5, steep_descent = -7.6):
         
         # constants
         self.g = 9.80665
@@ -20,12 +20,12 @@ class PerformanceAnalysis:
         self.MTOW_N = self.MTOW * self.g #N
 
         # rotor inputs
-        self.rotor_radius = 1.2 #m
+        self.rotor_radius = 1.17 #m
         self.number_of_blades = 6
         self.number_of_rotors = 6
-        self.omega = 145 #rad/s
-        self.C_l_alpha = 5.73 #1/rad
-        self.chord = 0.1 #m
+        self.omega = 125 #rad/s
+        self.C_l_alpha = 6.22 #1/rad
+        self.chord = 0.07 #m
         self.solidity = (self.chord*self.number_of_blades)/(self.rotor_radius*np.pi)
         #self.pitch_x = 8 # pitch angle variation over span aqs a function of x
 
@@ -63,7 +63,7 @@ class PerformanceAnalysis:
         # hover induced power
         
         def pitch_equation(x):
-            return 20 - (15 * (x - 0.15) / (1 - 0.15))
+            return 20 - (14 * (x - 0.15) / (1 - 0.15)) # linear from 20 to 6 
         
         def lambda_equation(lambda_i, x):
             return self.solidity * self.C_l_alpha * ((pitch_equation(x) *(np.pi/180)) - lambda_i / x) * x - 8 * lambda_i**2
@@ -74,23 +74,49 @@ class PerformanceAnalysis:
             return lambda_i_solution[0]
 
         # Solve for lambda_i over a range of x
-        x_values = np.linspace(0.15, 1, 100)  # chord starts at 0.15 and ends at 1
-        #self.pitch_x = 20 - (15 * (x - 0.15) / (1 - 0.15))  # Linear equation from 20 degrees to 5 degrees as a function of x
+        x_values = np.linspace(0.15, 0.96, 100)  # chord starts at 0.15 and ends at 0.96 (tip losses) TODO
         lambda_values = np.array([solve_lambda(x) for x in x_values])  # Solve for lambda_i at each x
-        hover_vi_values = lambda_values * (self.omega * self.rotor_radius)
 
         delta_x = x_values[1] - x_values[0]  # Assuming evenly spaced x values
-        self.v_i_hov = np.sum(hover_vi_values) * delta_x  # Approximate integral
 
-        self.thrust = 8027.793
+        self.lambda_v = np.trapz(lambda_values) * delta_x
+        #hover_vi_values = lambda_values * (self.omega * self.rotor_radius)
+        self.v_i_hov = self.lambda_v * (self.omega * self.rotor_radius)
+
+
+        # Plot hover_vi_values vs x_values
+        # plt.plot(x_values, hover_vi_values)
+        # plt.xlabel('x')
+        # plt.ylabel('hover_vi_values')
+        # plt.title('Hover Induced Velocity vs x')
+        # plt.grid(True)
+        # plt.show()
+
+        #self.v_i_hov = np.sum(hover_vi_values) * delta_x  # Approximate integral
+
+        self.thrust = 7873.38
+        self.c_t = self.thrust / (self.rho * (self.omega * self.rotor_radius) ** 2 * self.pi * self.rotor_radius ** 2)
+        self.cl_bar = 6.6*self.c_t / self.solidity
+        self.alpha_m = self.cl_bar / self.C_l_alpha
+        self.C_D_p_bar_1 = 0.0087 - 0.0216 * self.alpha_m + 0.4 * (self.alpha_m**2) #bailey
+        self.C_D_p_bar_2 = 0.011 + 0.4 * (self.alpha_m**2) #marinescu
+        self.C_D_p_bar_3 = 0.009 + 0.73 * (self.alpha_m**2) #talbot
+
+
         self.P_i_hov = self.thrust * self.v_i_hov # k factor is 1 as rotors are away from fuselage, assumed that Thrust = Weight
 
         # profile power
-        self.C_D_p_bar = 0.01 # TODO: CHANGE LATER based on airfoil tools
+        self.C_D_p_bar = 0.01005 # TODO: CHANGE LATER based on airfoil tools
 
         self.P_p_hov = ((self.solidity*self.C_D_p_bar)/8) * self.rho *((self.omega*self.rotor_radius)**3)*(self.pi*(self.rotor_radius**2)) * self.number_of_rotors
 
         self.P_hoge = self.P_i_hov + self.P_p_hov
+
+        self.v_i_momentum = np.sqrt((self.MTOW_N / 4) / (2 * self.rho * np.pi * self.rotor_radius ** 2))
+        self.P_hov_ideal = self.MTOW_N * self.v_i_momentum 
+
+        self.FM = self.P_hov_ideal / self.P_hoge
+
 
     def hoge_chart(self):
         def air_density(altitude, temp):
@@ -104,7 +130,7 @@ class PerformanceAnalysis:
             pressure_at_alt = P0 * (1 - lapse_rate * altitude / T0) ** (g / (R * lapse_rate))
             return pressure_at_alt / (R * temp_at_alt)
         
-        C_D_p_bar_mom = 0.01 # TODO: CHANGE LATER based on airfoil tools
+        C_D_p_bar_mom = 0.01005 # TODO: CHANGE LATER based on airfoil tools
 
         weight_values = np.linspace(600, 870, 100)  # Varying weight from 400 to 800 kg
         temperature_range = [-30, -20, -10, 0, 10, 20, 30]  # Temperature range
@@ -121,7 +147,7 @@ class PerformanceAnalysis:
 
                     feet_per_meter = 3.28084
                     altitude_ft = altitude * feet_per_meter
-                    P_available = 130000 * (1 - 0.005 * (altitude_ft / 1000))
+                    P_available = 200000 * (1 - 0.005 * (altitude_ft / 1000))
 
                     P_i_mom = mtow_v * v_i_mom
                     P_p_mom = ((self.solidity * C_D_p_bar_mom) / 8) * rho * ((self.omega * self.rotor_radius) ** 3) * (self.pi * (self.rotor_radius ** 2)) * self.number_of_rotors
@@ -152,19 +178,18 @@ class PerformanceAnalysis:
 
         # HIGE
         self.z_D_ratios = {     # taken from prouty page 66, height above ground/rotor diameter relate to v_i_ratio
-            0.1: 0.6,
-            0.2: 0.63,
-            0.3: 0.7,
-            0.4: 0.77,
+            0.1: 0.55,
+            0.2: 0.65,
+            0.3: 0.72,
+            0.4: 0.78,
             0.5: 0.8,
-            0.6: 0.82,
-            0.7: 0.88,
+            0.6: 0.83,
+            0.7: 0.86,
             0.8: 0.89,
-            0.9: 0.9,
-            1.0: 0.91,
-            1.1: 0.92,
+            0.9: 0.92,
+            1.0: 0.925,
+            1.1: 0.93,
             1.2: 0.93,
-            1.3: 1
         }
 
         def interpolate_ratio(z_D):
@@ -175,7 +200,7 @@ class PerformanceAnalysis:
             return polynomial(z_D)
 
         # Calculate the ratio using height over ground divided by rotor diameter
-        self.height_over_ground = np.linspace(0.1, 1.3*2*self.rotor_radius, 100)
+        self.height_over_ground = np.linspace(0.1, 1.2*2*self.rotor_radius, 100)
         self.z_D_values = self.height_over_ground / (2*self.rotor_radius)
         self.ratio_values = np.array([interpolate_ratio(z_D) if interpolate_ratio(z_D) is not None else 0.6 for z_D in self.z_D_values])
 
@@ -184,10 +209,10 @@ class PerformanceAnalysis:
 
         self.P_hige = self.P_p_hov + self.P_i_hov * interpolate_ratio(0.5)
 
-        plt.plot(self.z_D_values, self.P_hige_values, label='P_hige vs z_D')
-        plt.xlabel('z/D')
-        plt.ylabel('P_hige')
-        plt.title('Induced Velocity Ratio vs Height Above Ground/Rotor Diameter')
+        plt.plot(self.z_D_values, self.P_hige_values/1000, label='P_hige vs z_D')
+        plt.xlabel('z/D [-]')
+        plt.ylabel('P_hige [kW]')
+        plt.title('HIGE power vs Height Above Ground/Rotor Diameter')
         plt.legend()
         plt.grid()
         plt.show()
@@ -219,6 +244,7 @@ class PerformanceAnalysis:
         self.roots = np.roots(array)[3]
         self.v_i_bar = np.real(self.roots) 
         self.v_i_ff = self.v_i_bar*self.v_i_hov
+        #print(self.v_i_ff)
 
         self.P_i_ff = self.T * self.v_i_ff
 
@@ -233,20 +259,20 @@ class PerformanceAnalysis:
         # climb power
         self.ROC = self.V_point * math.tan(math.radians(self.gamma_climb)) # rate of climb
         self.P_loss_climb = self.MTOW_N * self.ROC # power loss due to climb
-        self.P_climb = self.P_loss_climb * 1.045 # TODO: CHECK THIS FACTOR
+        self.P_climb = self.P_loss_climb * 1.045 # Accounts for power losses
 
         self.P_total_climb = self.P_ff + self.P_climb
 
         # descent power
         self.ROC_descent = self.V_point * math.tan(math.radians(self.gamma_descent)) # rate of descent
         self.P_loss_descent = self.MTOW_N * self.ROC_descent # power loss due to descent
-        self.P_descent = self.P_loss_descent * 1.045 # TODO: CHECK THIS FACTOR
+        self.P_descent = self.P_loss_descent * 1.045 # Accounts for power losses
 
         self.P_total_descent = self.P_ff + self.P_descent
 
         # steep descent power
         self.P_loss_steep_descent = self.MTOW_N * self.steep_descent # power loss due to steep descent
-        self.P_steep_descent = self.P_loss_steep_descent * 1.045 # TODO: CHECK THIS FACTOR
+        self.P_steep_descent = self.P_loss_steep_descent * 1.045 # Accounts for power losses
 
         self.P_total_steep_descent = self.P_ff + self.P_steep_descent
 
@@ -276,7 +302,8 @@ class PerformanceAnalysis:
         P_i = []
         P_par = []
         P_total_level = []
-        P_hoge = []
+        P_hoge = [] 
+        v_i = []
 
         for velocity in V:
             self.iterate_design(new_V_point=velocity)
@@ -286,12 +313,16 @@ class PerformanceAnalysis:
             P_par.append(self.P_par_ff / 1000)
             P_total_level.append(self.P_ff / 1000)
             P_hoge.append(self.P_hoge / 1000)
+            v_i.append(self.v_i_ff)
 
 
         # Identify velocity corresponding to minimum flight-level power
         self.min_power = min(P_total_level)
         self.min_power_watts = self.min_power * 1000
         self.min_power_velocity = V[P_total_level.index(self.min_power)]
+        min_power_index = P_total_level.index(min(P_total_level))
+        self.induced_velocity = v_i[min_power_index]
+        print(self.induced_velocity)
 
         # Find the induced power corresponding to the min_power_velocity
         self.min_power_induced = P_i[V.tolist().index(self.min_power_velocity)] * 1000
@@ -336,16 +367,20 @@ class PerformanceAnalysis:
         self.min_power_climb = min(P_total_CD)
         self.min_power_climb_watts = self.min_power_climb * 1000
         self.min_power_velocity_climb = V[P_total_CD.index(self.min_power_climb)]
+        self.min_power_vertical_velocity_climb = self.min_power_velocity_climb * math.tan(math.radians(self.gamma_climb))
+
 
         # Identify velocity corresponding to minimum descent power
         self.min_power_descent = min(P_total_descent)
         self.min_power_descent_watts = self.min_power_descent * 1000
         self.min_power_velocity_descent = V[P_total_descent.index(self.min_power_descent)]
+        self.min_power_vertical_velocity_descent = self.min_power_velocity_descent * math.tan(math.radians(self.gamma_descent))
 
         # Identify velocity corresponding to minimum steep descent power
         self.power_steep_descent = P_total_CD_steep[V.tolist().index(self.min_power_velocity_climb)]
         self.power_steep_descent_watts = self.power_steep_descent * 1000
         self.power_velocity_steep_descent = self.min_power_velocity_climb
+
 
         # Plot climb, descent, and steep descent powers in the same graph
         plt.figure()
@@ -421,7 +456,7 @@ class PerformanceAnalysis:
 
     def print_results(self):
         # Create a table of flight phases and corresponding power usage, vertical speed, and horizontal speed
-        flight_phases = ["HIGE", "HOGE","Vertical Climb", "Vertical Descent", "Forward Flight", "Angled Climb", "Angled Descent", "Steep Descent"]
+        flight_phases = ["HIGE", "HOGE","Vertical Climb", "Vertical Descent", "Forward Flight", "Angled Climb", "Steep Descent", "Angled Descent"]
         power_usage = [
             f"{self.P_hige/1000:.2f}",
             f"{self.P_hoge/1000:.2f}",
@@ -438,9 +473,9 @@ class PerformanceAnalysis:
             f"{self.vertical_climb:.2f}",
             f"{self.vertical_descent:.2f}",
             "0.00",
-            f"{self.ROC:.2f}",
+            f"{self.min_power_vertical_velocity_climb:.2f}",
             f"{self.steep_descent:.2f}",
-            f"{self.ROC_descent:.2f}",
+            f"{self.min_power_vertical_velocity_descent:.2f}",
         ]
         horizontal_speed = [
             "0.00",
@@ -770,6 +805,11 @@ def run():
     
     # Call functions
     analysis.hover_powers()
+    print(analysis.v_i_hov, analysis.v_i_momentum)
+    print(analysis.P_p_hov, analysis.P_i_hov, analysis.P_hov_ideal)
+    print(analysis.solidity)
+    #print(analysis.induced_velocity)
+    #print(analysis.v_i_ff)
     analysis.hoge_chart()
     analysis.hige_powers()
     analysis.vertical_climb_descent_powers()
@@ -783,9 +823,13 @@ def run():
 
     # Print
     analysis.print_results()
+    print(f'Figure of Merit is: {analysis.FM}')
+    print(f'avg alpha: {analysis.alpha_m}')
+    print(max(analysis.C_D_p_bar_1, analysis.C_D_p_bar_2, analysis.C_D_p_bar_3))
 
     # Final power
     analysis.final_power()
+    print(analysis.ROC_descent, analysis.P_descent, analysis.P_ff, analysis.P_total_descent, analysis.P_steep_descent, analysis.P_total_steep_descent)
 
     print(f"------------------------------------------------------")
     print(f"\033[1mEnergy Analysis:\033[0m")
