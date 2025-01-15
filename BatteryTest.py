@@ -9,7 +9,7 @@ def calculate_battery_pack(
     height_mm,
     max_discharge_power_cell_w,
     power_required_w,
-    duration_s,
+    battery_energy_req,
     max_cell_current_a,
     additional_energy_wh,
     battery_weight_LV
@@ -29,7 +29,7 @@ def calculate_battery_pack(
     cells_in_parallel = math.ceil(current_required_a / max_cell_current_a)
 
     # Ensure the required energy is met
-    energy_required_wh = (power_required_w * (duration_s / 3600) + additional_energy_wh)    # *1.25   #1.25 for 80% DOD
+    energy_required_wh = (battery_energy_req + additional_energy_wh)    # *1.25   #1.25 for 80% DOD
     energy_per_parallel_string_wh = cells_in_series * nominal_energy_wh
     min_parallel_cells_for_energy = math.ceil(energy_required_wh / energy_per_parallel_string_wh)
 
@@ -88,8 +88,8 @@ def calculate_battery_pack(
 #     "diameter_mm": 46,
 #     "height_mm": 80,
 #     "max_discharge_power_cell_w": 521,
-#     "power_required_w": 42961,
-#     "duration_s": 315,
+#     "power_required_w": 38534.7,
+#     "battery_energy_req": 2739.93,
 #     "max_cell_current_a": 2.73 * 25.73,
 #     "additional_energy_wh": 2408,
 #     "battery_weight_LV": 20,                         #[kg] average 24v helicopter batteries
@@ -108,8 +108,8 @@ inputs = {
     "diameter_mm": 60,
     "height_mm": 138,
     "max_discharge_power_cell_w": 1060,
-    "power_required_w": 42961,
-    "duration_s": 315,
+    "power_required_w": 38534.7,
+    "battery_energy_req": 2739.93,
     "max_cell_current_a": 460 ,
     "additional_energy_wh": 2408,
     "battery_weight_LV": 20,                         #[kg] average 24v helicopter batteries     42961
