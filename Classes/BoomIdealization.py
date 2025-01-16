@@ -3,11 +3,11 @@ import matplotlib.pyplot as plt
 
 class BoomIdealization:
 
-    def __init__(self, r=0.75, Vy=-30000.4, A=70.5, tau_y=283, t=3):
+    def __init__(self, r=0.75, Vy=-7873.38, A=70.5, tau_y=283, t=1.5):
         ''' Initialize the BoomIdealization Class '''
         ### Input radius r in [m], Vy in [N], Ixx in [mm^4], stringer area A in [mm^2], yield shear stress tau_y in [MPa], t in [mm]
         self.r = r  # [m]
-        self.Vy = Vy # [N] # included the load factor 
+        self.Vy = Vy * 1.5 * 2.5 # [N] # included the load factor 
         self.A = A * (0.001)**2  # [m^2]
         self.tau_y = tau_y * 10**6  # [Pa]
         self.t = t * 0.001  # [m]
@@ -36,7 +36,6 @@ class BoomIdealization:
             next_idx = (i + 1) % self.num_booms
             area = self.A + (self.t * b / 6) * (4 + (boom_y[prev_idx] / boom_y[i]) + (boom_y[next_idx] / boom_y[i]))
             boom_areas.append(area)
-            print(area)
         return boom_areas 
 
     def calculate_Ixx(self):
