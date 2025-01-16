@@ -16,8 +16,8 @@ from CellWeights import CellWeights
 #Because highest stack pressures give lower weights for a set design power, but they also give lower net power (due to higher P_BOP)
 
 safety_factor = 1 
-P_motor = 38760.60 #Input from performance
-P_battery = 5651.78 #Input from performance
+P_motor = 42713.81 #Input from performance
+P_battery = 6902.44 #Input from performance
 P_avionics = 2110.50 #Get this from the Avionics class [W]
 
 converter_efficiency = 0.98 #Based on NASA SoA DC/DC converter 
@@ -29,7 +29,7 @@ P_range = 0.5*P_net #Range to iterate over
 P_iterate = np.linspace(P_net,P_net+P_range,1000)
 tolerance = 100
 
-mission_time = 81.61*60 #Mission time [s]
+mission_time = 79.28*60 #Mission time [s]
 
 input_pressures = np.linspace(1.00,2.50,100) #Input stack pressures
 P_D_list = []

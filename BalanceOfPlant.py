@@ -34,7 +34,7 @@ class BalanceOfPlant:
         self.SB_constant = 5.670367e-8 #Stefan-Boltzmann constant [W/m^2 K^4]
 
         #Converter
-        self.converter_efficiency = 0.981
+        self.converter_efficiency = 0.98
 
 
     def AirPower(self): #Assumes ISA SL conditions for now
