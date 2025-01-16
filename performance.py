@@ -61,8 +61,8 @@ class PerformanceAnalysis:
     def hover_powers(self):
 
         # hover induced power
-        self.v_i_momentum = np.sqrt((self.MTOW_N / self.number_of_rotors) / (2 * self.rho * np.pi * self.rotor_radius ** 2))
-
+        #self.v_i_momentum = np.sqrt((self.MTOW_N / self.number_of_rotors) / (2 * self.rho * np.pi * self.rotor_radius ** 2))
+    
         #self.phi_r = np.tan(self.v_i_momentum / (self.omega * self.rotor_radius)) * (180 / np.pi)
         
         def pitch_equation(x):
@@ -73,9 +73,12 @@ class PerformanceAnalysis:
         
         c_l_intercept = 0.6458
         
-        def lambda_equation(lambda_i, x):
-            return ((chord_equation(x) * self.number_of_blades) / (np.pi * self.rotor_radius)) * (self.C_l_alpha * ((pitch_equation(x) * (np.pi / 180)) - lambda_i / x) + c_l_intercept) * x - 8 * lambda_i**2
+        # def lambda_equation(lambda_i, x):
+        #     return ((chord_equation(x) * self.number_of_blades) / (np.pi * self.rotor_radius)) * (self.C_l_alpha * ((pitch_equation(x) * (np.pi / 180)) - lambda_i / x) + c_l_intercept) * x - 8 * lambda_i**2
 
+        def lambda_equation(lambda_i, x):
+            return self.number_of_blades * (self.C_l_alpha * ((pitch_equation(x) * (np.pi / 180)) - lambda_i / x) + c_l_intercept) * x * chord_equation(x) - 8 * lambda_i**2 * np.pi * self.rotor_radius
+        
         # Function to solve for lambda_i at a given x
         def solve_lambda(x, initial_guess=0.1):
             lambda_i_solution = fsolve(lambda_equation, initial_guess, args=(x,))
@@ -84,12 +87,13 @@ class PerformanceAnalysis:
         # Solve for lambda_i over a range of x
         x_values = np.linspace(0.15, 0.96, 100)  # chord starts at 0.15 and ends at 0.96 (tip losses) TODO
         lambda_values = np.array([solve_lambda(x) for x in x_values])  # Solve for lambda_i at each x
+        hover_vi_values = lambda_values * (self.omega * self.rotor_radius)
 
         delta_x = x_values[1] - x_values[0]  # Assuming evenly spaced x values
 
         self.lambda_v = np.trapz(lambda_values) * delta_x
         #hover_vi_values = lambda_values * (self.omega * self.rotor_radius)
-        self.v_i_hov = self.lambda_v * (self.omega * self.rotor_radius)
+        self.v_i_hov = self.lambda_v * (self.omega * self.rotor_radius) 
 
 
         # Plot hover_vi_values vs x_values
@@ -102,7 +106,7 @@ class PerformanceAnalysis:
 
         #self.v_i_hov = np.sum(hover_vi_values) * delta_x  # Approximate integral
 
-        self.thrust = 7782.52 # todo: change later
+        self.thrust = self.MTOW_N # todo: change later
 
         self.c_t = self.thrust / (self.rho * (self.omega * self.rotor_radius) ** 2 * self.pi * self.rotor_radius ** 2)
         self.cl_bar = 6.6*self.c_t / self.solidity
@@ -112,7 +116,7 @@ class PerformanceAnalysis:
         self.C_D_p_bar_3 = 0.009 + 0.73 * (self.alpha_m**2) #talbot
 
 
-        self.P_i_hov = 1.06 * self.thrust * self.v_i_hov # k factor is 1 as rotors are away from fuselage, assumed that Thrust = Weight
+        self.P_i_hov = 1.1 * self.thrust * self.v_i_hov # k factor is 1.1 cuz we account for some losses but not all
 
         # profile power
         self.C_D_p_bar = 0.008348 # TODO: CHANGE LATER based on airfoil tools
@@ -121,7 +125,7 @@ class PerformanceAnalysis:
 
         self.P_hoge = self.P_i_hov + self.P_p_hov
 
-        self.P_hov_ideal = self.MTOW_N * self.v_i_momentum 
+        self.P_hov_ideal = self.MTOW_N * self.v_i_hov
 
         self.FM = self.P_hov_ideal / self.P_hoge
 
@@ -861,7 +865,7 @@ def run():
     
     # Call functions
     analysis.hover_powers()
-    print(f'induced velocity: {analysis.v_i_hov}, ideal induced velocity: {analysis.v_i_momentum}')
+    print(f'induced velocity: {analysis.v_i_hov}, ideal induced velocity: {analysis.v_i_hov}')
     print(f'profile power: {analysis.P_p_hov}, induced power: {analysis.P_i_hov}, hover power: {analysis.P_hoge}')
     print(f'ideal hover power: {analysis.P_hov_ideal}')
     print(f'Figure of Merit is: {analysis.FM}')
