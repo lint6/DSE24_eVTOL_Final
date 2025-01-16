@@ -2,13 +2,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 from airfoil import AirfoilData
+from scipy.interpolate import RegularGridInterpolator
 
 
 class BEMT():
     # coding on blade-element momentum theory
 
     def __init__(self):
-        # constants
+        # constants  mn
         self.rho = 1.225 # kg/m^3, the air density
 
         # airfoil specification
@@ -22,7 +23,7 @@ class BEMT():
         self.r_bar_e = 0.96 #effective blade radius due to tip losses, approximate input for now
 
         #rotational velocity
-        self.omega = 98 # rad/s, rotational velocity
+        self.omega = 125 # rad/s, rotational velocity
 
         #transition
         self.SOS = 343 # m/s, transition air speed
@@ -31,8 +32,8 @@ class BEMT():
         self.n_rotors = 6
 
         #element structural properties
-        self.E = 120 * (10**9) #Young's modulus in [Pa]
-        self.I = (1 / 12) * 0.1 * ((0.12 * 0.1)**3) #m^4
+        self.E = 163 * (10**9) #Young's modulus in [Pa]
+        self.I = 25628.91 * (10**-12) #m^4
 
     def discretise(self, num_elements=None):
 
@@ -254,9 +255,8 @@ class BEMT():
     def controlstability(self):
         # specify forward flight regime
         # specify forward flight regime
-        V_f_values = [0, 10, 20, 30, 40, 50]
+        V_f_values = np.linspace(0,50,10)
         gamma = 0.0
-
         alpha_v = np.linspace((-90*np.pi)/180, (90*np.pi)/180, num=10)
 
         results = {V_f: {'C_T': [], 'C_Fx': [], 'C_X': [], 'C_Q': [], 'C_P': []} for V_f in V_f_values}
@@ -270,7 +270,12 @@ class BEMT():
                 dQ_r_list2 = []
                 dP_r_list2 = []
                 dFx_r_list2 = []
+                alpha_r_list2 = []
+                stall_r_list2 = []
+                M_r_list2 = []
+                dMom_r_list2 = []
                 dX_r_list2 = []
+                v_r_list2 = []
 
                 dL_r_list3 = []
                 dD_r_list3 = []
@@ -278,7 +283,12 @@ class BEMT():
                 dQ_r_list3 = []
                 dP_r_list3 = []
                 dFx_r_list3 = []
+                alpha_r_list3 = []
+                stall_r_list3 = []
+                M_r_list3 = []
+                dMom_r_list3 = []
                 dX_r_list3 = []
+                v_r_list3 = []
 
                 L = 0
                 D = 0
@@ -286,6 +296,7 @@ class BEMT():
                 Q = 0
                 P = 0
                 Fx = 0
+                Mom = 0
                 X = 0
 
                 for psi in BEMT.psi_list:
@@ -294,51 +305,101 @@ class BEMT():
                         # print(f"r = {r}")
                         if BEMT.cutout < r < BEMT.r_e:
                             prop_2 = BEMT.forward(omega=BEMT.omega, theta_r=theta, c_r=chord, r=r, dr=BEMT.dr, a_r=a,
-                                                  V_f=V_f, gamma=gamma, psi=psi, alpha_v=alpha_v_1)
+                                                  V_f=V_f, gamma=gamma, psi=psi, alpha_v=alpha_v_1, v_fl=0.0)
                             dL_r_list3.append(prop_2[0])
-                            dD_r_list3.append(prop_2[1])
-                            dT_r_list3.append(prop_2[2])
-                            dQ_r_list3.append(prop_2[3])
-                            dP_r_list3.append(prop_2[4])
-                            dFx_r_list3.append(prop_2[5])
-                            dX_r_list3.append(prop_2[10])
                         else:
                             dL_r_list3.append(0.0)
-                            dD_r_list3.append(0.0)
-                            dT_r_list3.append(0.0)
-                            dQ_r_list3.append(0.0)
-                            dP_r_list3.append(0.0)
-                            dFx_r_list3.append(0.0)
-                            dX_r_list3.append(0.0)
 
                     dL_r_list2.append(dL_r_list3)
                     L += sum(dL_r_list3)
 
-                    dD_r_list2.append(dD_r_list3)
-                    D += sum(dD_r_list3)
-
-                    dT_r_list2.append(dT_r_list3)
-                    T += sum(dT_r_list3)
-
-                    dQ_r_list2.append(dQ_r_list3)
-                    Q += sum(dQ_r_list3)
-
-                    dP_r_list2.append(dP_r_list3)
-                    P += sum(dP_r_list3)
-
-                    dFx_r_list2.append(dFx_r_list3)
-                    Fx += sum(dFx_r_list3)
-
-                    dX_r_list2.append(dX_r_list3)
-                    X += sum(dX_r_list3)
-
                     dL_r_list3 = []
-                    dD_r_list3 = []
-                    dT_r_list3 = []
-                    dQ_r_list3 = []
-                    dP_r_list3 = []
-                    dFx_r_list3 = []
-                    dX_r_list3 = []
+
+                # print(dL_r_list2[30],dL_r_list2[90])
+                amp_r = BEMT.flapping(dL_psi90=dL_r_list2[30], dL_psi270=dL_r_list2[90])
+
+                dL_r_list2 = []
+                L = 0
+                n = 1
+
+                for i in range(n):
+                    for psi in BEMT.psi_list:
+                        # print(f"psi = {psi*(180/np.pi)}")
+                        for chord, theta, a, r in zip(BEMT.c_r_list, BEMT.theta_r_list, BEMT.a_r_list, BEMT.r_list):
+                            # print(f"r = {r}")
+                            v_fl = amp_r[BEMT.r_list.index(r)] * np.cos(psi) * BEMT.omega
+                            # print(v_fl)
+                            if BEMT.cutout < r < BEMT.r_e:
+                                prop_2 = BEMT.forward(omega=BEMT.omega, theta_r=theta, c_r=chord, r=r, dr=BEMT.dr,
+                                                      a_r=a, V_f=V_f, gamma=gamma, psi=psi, alpha_v=alpha_v_1, v_fl=v_fl)
+                                dL_r_list3.append(prop_2[0])
+                                dD_r_list3.append(prop_2[1])
+                                dT_r_list3.append(prop_2[2])
+                                dQ_r_list3.append(prop_2[3])
+                                dP_r_list3.append(prop_2[4])
+                                dFx_r_list3.append(prop_2[5])
+                                alpha_r_list3.append(prop_2[6])
+                                stall_r_list3.append(prop_2[7])
+                                M_r_list3.append(prop_2[8])
+                                dMom_r_list3.append(prop_2[9])
+                                dX_r_list3.append(prop_2[10])
+                                v_r_list3.append(prop_2[11])
+                            else:
+                                dL_r_list3.append(0.0)
+                                dD_r_list3.append(0.0)
+                                dT_r_list3.append(0.0)
+                                dQ_r_list3.append(0.0)
+                                dP_r_list3.append(0.0)
+                                dFx_r_list3.append(0.0)
+                                alpha_r_list3.append(0.0)
+                                stall_r_list3.append(0.0)
+                                M_r_list3.append(0.0)
+                                dMom_r_list3.append(0.0)
+                                dX_r_list3.append(0.0)
+                                v_r_list3.append(0.0)
+
+                        dL_r_list2.append(dL_r_list3)
+                        L += sum(dL_r_list3)
+
+                        dD_r_list2.append(dD_r_list3)
+                        D += sum(dD_r_list3)
+
+                        dT_r_list2.append(dT_r_list3)
+                        T += sum(dT_r_list3)
+
+                        dQ_r_list2.append(dQ_r_list3)
+                        Q += sum(dQ_r_list3)
+
+                        dP_r_list2.append(dP_r_list3)
+                        P += sum(dP_r_list3)
+
+                        dFx_r_list2.append(dFx_r_list3)
+                        Fx += sum(dFx_r_list3)
+
+                        alpha_r_list2.append(alpha_r_list3)
+                        stall_r_list2.append(stall_r_list3.count(1))
+                        M_r_list2.append(max(M_r_list3))
+
+                        dMom_r_list2.append(dMom_r_list3)
+                        Mom += sum(dMom_r_list3)
+
+                        dX_r_list2.append(dX_r_list3)
+                        X += sum(dX_r_list3)
+
+                        v_r_list2.append(v_r_list3)
+
+                        dL_r_list3 = []
+                        dD_r_list3 = []
+                        dT_r_list3 = []
+                        dQ_r_list3 = []
+                        dP_r_list3 = []
+                        dFx_r_list3 = []
+                        alpha_r_list3 = []
+                        stall_r_list3 = []
+                        M_r_list3 = []
+                        dMom_r_list3 = []
+                        dX_r_list3 = []
+                        v_r_list3 = []
 
                 # print(stall_r_list2)
                 T = T / BEMT.psi_elements
@@ -365,7 +426,103 @@ class BEMT():
                 results[V_f]['C_Q'].append(C_Q)
                 results[V_f]['C_P'].append(C_P)
 
-        plot = False
+        interpolate_C_T = True
+        if interpolate_C_T==True:
+            # Assuming `results` is already computed
+            # Extract C_T as an example
+            C_T_surface = np.array([results[V_f]['C_T'] for V_f in V_f_values])
+
+            # Create interpolator for C_T
+            interpolator = RegularGridInterpolator((V_f_values, alpha_v), C_T_surface)
+
+            # Define a grid for interpolation
+            V_f_query = np.linspace(0, 50, 100)  # Dense forward flight speeds
+            alpha_v_query = np.linspace((-90 * np.pi) / 180, (90 * np.pi) / 180, 100)  # Dense alpha_v range
+
+            # Create a mesh for query
+            V_f_mesh, alpha_v_mesh = np.meshgrid(V_f_query, alpha_v_query)
+            query_points = np.array([V_f_mesh.ravel(), alpha_v_mesh.ravel()]).T
+
+            # Interpolate values
+            C_T_interpolated = interpolator(query_points).reshape(V_f_mesh.shape)
+            np.savetxt("C_T_interpolated.csv", C_T_interpolated, delimiter=",")
+
+            # Plot 3D Interpolated Surface
+            fig = plt.figure(figsize=(10, 10))
+            ax = fig.add_subplot(111, projection='3d')
+            surf = ax.plot_surface(alpha_v_mesh, V_f_mesh, C_T_interpolated, cmap='viridis', edgecolor='k')
+            ax.set_xlabel('alpha_v (radians)')
+            ax.set_ylabel('V_f (Forward Flight Speed)')
+            ax.set_zlabel('C_T')
+            ax.set_title('3D Interpolated Surface of C_T')
+            fig.colorbar(surf, ax=ax, shrink=0.5, aspect=10)
+            plt.show()
+
+        interpolate_C_X = True
+        if interpolate_C_X == True:
+            # Assuming `results` is already computed
+            # Extract C_T as an example
+            C_X_surface = np.array([results[V_f]['C_X'] for V_f in V_f_values])
+
+            # Create interpolator for C_X
+            interpolator = RegularGridInterpolator((V_f_values, alpha_v), C_X_surface)
+
+            # Define a grid for interpolation
+            V_f_query = np.linspace(0, 50, 100)  # Dense forward flight speeds
+            alpha_v_query = np.linspace((-90 * np.pi) / 180, (90 * np.pi) / 180, 100)  # Dense alpha_v range
+
+            # Create a mesh for query
+            V_f_mesh, alpha_v_mesh = np.meshgrid(V_f_query, alpha_v_query)
+            query_points = np.array([V_f_mesh.ravel(), alpha_v_mesh.ravel()]).T
+
+            # Interpolate values
+            C_X_interpolated = interpolator(query_points).reshape(V_f_mesh.shape)
+            np.savetxt("C_X_interpolated.csv", C_X_interpolated, delimiter=",")
+
+            # Plot 3D Interpolated Surface
+            fig = plt.figure(figsize=(10, 10))
+            ax = fig.add_subplot(111, projection='3d')
+            surf = ax.plot_surface(alpha_v_mesh, V_f_mesh, C_X_interpolated, cmap='viridis', edgecolor='k')
+            ax.set_xlabel('alpha_v (radians)')
+            ax.set_ylabel('V_f (Forward Flight Speed)')
+            ax.set_zlabel('C_X')
+            ax.set_title('3D Interpolated Surface of C_X')
+            fig.colorbar(surf, ax=ax, shrink=0.5, aspect=10)
+            plt.show()
+
+        interpolate_C_Q = True
+        if interpolate_C_Q == True:
+            # Assuming `results` is already computed
+            # Extract C_T as an example
+            C_Q_surface = np.array([results[V_f]['C_Q'] for V_f in V_f_values])
+
+            # Create interpolator for C_T
+            interpolator = RegularGridInterpolator((V_f_values, alpha_v), C_Q_surface)
+
+            # Define a grid for interpolation
+            V_f_query = np.linspace(0, 50, 100)  # Dense forward flight speeds
+            alpha_v_query = np.linspace((-90 * np.pi) / 180, (90 * np.pi) / 180, 100)  # Dense alpha_v range
+
+            # Create a mesh for query
+            V_f_mesh, alpha_v_mesh = np.meshgrid(V_f_query, alpha_v_query)
+            query_points = np.array([V_f_mesh.ravel(), alpha_v_mesh.ravel()]).T
+
+            # Interpolate values
+            C_Q_interpolated = interpolator(query_points).reshape(V_f_mesh.shape)
+            np.savetxt("C_Q_interpolated.csv", C_Q_interpolated, delimiter=",")
+
+            # Plot 3D Interpolated Surface
+            fig = plt.figure(figsize=(10, 10))
+            ax = fig.add_subplot(111, projection='3d')
+            surf = ax.plot_surface(alpha_v_mesh, V_f_mesh, C_Q_interpolated, cmap='viridis', edgecolor='k')
+            ax.set_xlabel('alpha_v (radians)')
+            ax.set_ylabel('V_f (Forward Flight Speed)')
+            ax.set_zlabel('C_Q')
+            ax.set_title('3D Interpolated Surface of C_Q')
+            fig.colorbar(surf, ax=ax, shrink=0.5, aspect=10)
+            plt.show()
+
+        plot = True
         if plot==True:
             # Plot 2D Graphs
             fig, axs = plt.subplots(5, 1, figsize=(10, 15), sharex=True)
@@ -414,8 +571,8 @@ class BEMT():
 
     def interpolation(self):
         # interpolate with numpy the values of lift and drag as a function of the radius position
-        self.dL_r_interp = np.interp(self.r_list, self.r_list, [self.vertical(omega=self.omega, theta_r=theta, c_r=chord, r=r, dr=self.dr, V_c=0.0, a_r=a)[0] if self.cutout < r < self.r_e else 0.0 for chord, theta, a, r in zip(self.c_r_list, self.theta_r_list, self.a_r_list, self.r_list)])
-        self.dD_r_interp = np.interp(self.r_list, self.r_list, [self.vertical(omega=self.omega, theta_r=theta, c_r=chord, r=r, dr=self.dr, V_c=0.0, a_r=a)[1] if self.cutout < r < self.r_e else 0.0 for chord, theta, a, r in zip(self.c_r_list, self.theta_r_list, self.a_r_list, self.r_list)])
+        self.dL_r_interp = np.interp(self.r_list, self.r_list, [self.forward(omega=self.omega, theta_r=theta, c_r=chord, r=r, dr=self.dr, V_f=32.04, a_r=a, psi=(1.5 * np.pi), gamma=0.0, alpha_v=0.0, v_fl=0.0)[0] if self.cutout < r < self.r_e else 0.0 for chord, theta, a, r in zip(self.c_r_list, self.theta_r_list, self.a_r_list, self.r_list)])
+        self.dD_r_interp = np.interp(self.r_list, self.r_list, [self.forward(omega=self.omega, theta_r=theta, c_r=chord, r=r, dr=self.dr, V_f=32.04, a_r=a, psi=(1.5* np.pi), gamma=0.0, alpha_v=0.0, v_fl=0.0)[1] if self.cutout < r < self.r_e else 0.0 for chord, theta, a, r in zip(self.c_r_list, self.theta_r_list, self.a_r_list, self.r_list)])
         # return the values
         return self.dL_r_interp, self.dD_r_interp
 
@@ -429,8 +586,8 @@ if __name__ == '__main__':
     BEMT = BEMT()
 
     #which analysis
-    vertical = False
-    forward = True
+    vertical = True
+    forward = False
     interpolation = False
     controlstability = False
 
@@ -443,7 +600,7 @@ if __name__ == '__main__':
         print("\033[34mVertical Flight:\033[0m")
 
         #specify vertical flight regime
-        V_c = 0.0
+        V_c = 0.76
 
         dL_r_list1 = []
         dD_r_list1 = []
@@ -526,7 +683,7 @@ if __name__ == '__main__':
         print(f"for {BEMT.n_rotors} rotors:")
         print(f"L {L * BEMT.b * BEMT.n_rotors} D {D * BEMT.b * BEMT.n_rotors} T {T * BEMT.b * BEMT.n_rotors} Q {Q * BEMT.b * BEMT.n_rotors} P_r {P_r * BEMT.b * BEMT.n_rotors}  Fx {Fx * BEMT.b * BEMT.n_rotors}")
 
-        T_req = (709.63 * 9.80665 * 1.10)/(np.cos(10*(np.pi/180)))
+        T_req = (953.15 * 9.80665 * 1.10)/(np.cos(10*(np.pi/180)))
         n_rotor = T_req/(T*BEMT.b)
         print("---------------------")
         print(f"You would need {n_rotor} rotors to generate {T_req} [N] of thrust")
@@ -555,7 +712,7 @@ if __name__ == '__main__':
         print("\033[32mForward flight:\033[0m")
 
         #specify forward flight regime
-        V_f = 22
+        V_f = 32.04
         gamma = 0.0
         alpha_v = 0.0 * (np.pi/180) #in radians
 
@@ -732,6 +889,7 @@ if __name__ == '__main__':
         Mom = Mom / BEMT.psi_elements
         X = X / BEMT.psi_elements
 
+        print(f"X= {X*BEMT.b}")
         LD = L / D
         TFx = T / Fx
         stall_factor = sum(stall_r_list2)/(num_elements*BEMT.psi_elements)
@@ -774,7 +932,7 @@ if __name__ == '__main__':
         print(f"for {BEMT.n_rotors} rotors:")
         print(f"L {L * BEMT.b * BEMT.n_rotors} D {D * BEMT.b * BEMT.n_rotors} T {T * BEMT.b * BEMT.n_rotors} Q {Q * BEMT.b * BEMT.n_rotors} P_r {P * BEMT.b * BEMT.n_rotors}  Fx {Fx * BEMT.b * BEMT.n_rotors}")
 
-        T_req = 7758.73 / np.cos(alpha_v)
+        T_req = (709.63 * 9.80665 * 1.10) / (np.cos(10 * (np.pi / 180)))
         n_rotor = T_req / (T * BEMT.b)
         print("---------------------")
         print(f"You would need {n_rotor} rotors to generate {T_req} [N] of thrust")
@@ -800,51 +958,77 @@ if __name__ == '__main__':
     if interpolation==True:
         #interpolate lift and drag
         dL_r_interp, dD_r_interp = BEMT.interpolation()
-        # Find the index corresponding to the cutout
-        cutout_index = next(i for i, r in enumerate(BEMT.r_list) if r > BEMT.cutout)
 
-        # Find the maximum values of lift and drag
-        max_lift = max(dL_r_interp)
-        max_drag = max(dD_r_interp)
+        # Fit a polynomial of the given degree
+        coefficients = np.polyfit(BEMT.r_list, dL_r_interp, 1)
 
-        # Find the indices of the maximum values
-        max_lift_index = np.argmax(dL_r_interp)
-        max_drag_index = np.argmax(dD_r_interp)
+        # Create a polynomial function from the coefficients
+        polynomial = np.poly1d(coefficients)
 
-        # Calculate the slope and intercept for lift
-        m_lift = (max_lift - dL_r_interp[cutout_index]) / (BEMT.r_list[max_lift_index] - BEMT.r_list[cutout_index])
-        b_lift = dL_r_interp[cutout_index] - m_lift * BEMT.r_list[cutout_index]
+        # Generate a range of x values for interpolation
+        x_interp = np.linspace(BEMT.cutout, BEMT.r_bar_e * BEMT.R, 100)
 
-        # Calculate the slope and intercept for drag
-        m_drag = (max_drag - dD_r_interp[cutout_index]) / (BEMT.r_list[max_drag_index] - BEMT.r_list[cutout_index])
-        b_drag = dD_r_interp[cutout_index] - m_drag * BEMT.r_list[cutout_index]
+        # Use the polynomial to calculate the interpolated y values
+        y_interp = polynomial(x_interp)
 
-        # Generate polynomial equations
-        poly_eq_lift = np.poly1d([m_lift, b_lift])
-        poly_eq_drag = np.poly1d([m_drag, b_drag])
-
-        print("Equation for interpolated Lift (dL):")
-        print(poly_eq_lift)
-
-        print("Equation for interpolated Drag (dD):")
-        print(poly_eq_drag)
-
-
-        fig, axes = plt.subplots(2, 1, figsize=(8, 6), sharex=True)
-
-        axes[0].plot(BEMT.r_list, dL_r_interp, label='Interpolated Lift')
-        axes[0].plot(BEMT.r_list, poly_eq_lift(BEMT.r_list), label='Polynomial Fit Lift', linestyle='--')
-        axes[0].set_ylabel("Lift [N]")
-        axes[0].legend()
-
-        axes[1].plot(BEMT.r_list, dD_r_interp, label='Interpolated Drag', color='r')
-        axes[1].plot(BEMT.r_list, poly_eq_drag(BEMT.r_list), label='Polynomial Fit Drag', linestyle='--', color='orange')
-        axes[1].set_ylabel("Drag [N]")
-        axes[1].set_xlabel("Radial position [m]")
-        axes[1].legend()
-
+        # Plot the original data points and the interpolated curve
+        plt.plot(BEMT.r_list, dL_r_interp, label='Original data')
+        plt.plot(x_interp, y_interp, label=f'Polynomial degree {30}')
+        plt.legend()
+        plt.xlabel('X')
+        plt.ylabel('Y')
+        plt.title('Polynomial Interpolation')
+        plt.grid(True)
+        print(sum(dL_r_interp))
+        print(sum(dD_r_interp))
         plt.show()
-        BEMT.controlstability()
+
+
+        # # Find the index corresponding to the cutout
+        # cutout_index = next(i for i, r in enumerate(BEMT.r_list) if r > BEMT.cutout)
+        #
+        # # Find the maximum values of lift and drag
+        # max_lift = max(dL_r_interp)
+        # max_drag = max(dD_r_interp)
+        #
+        # # Find the indices of the maximum values
+        # max_lift_index = np.argmax(dL_r_interp)
+        # max_drag_index = np.argmax(dD_r_interp)
+        #
+        # # Calculate the slope and intercept for lift
+        # m_lift = (max_lift - dL_r_interp[cutout_index]) / (BEMT.r_list[max_lift_index] - BEMT.r_list[cutout_index])
+        # b_lift = dL_r_interp[cutout_index] - m_lift * BEMT.r_list[cutout_index]
+        #
+        # # Calculate the slope and intercept for drag
+        # m_drag = (max_drag - dD_r_interp[cutout_index]) / (BEMT.r_list[max_drag_index] - BEMT.r_list[cutout_index])
+        # b_drag = dD_r_interp[cutout_index] - m_drag * BEMT.r_list[cutout_index]
+        #
+        # # Generate polynomial equations
+        # poly_eq_lift = np.poly1d([m_lift, b_lift])
+        # poly_eq_drag = np.poly1d([m_drag, b_drag])
+        #
+        # print("Equation for interpolated Lift (dL):")
+        # print(poly_eq_lift)
+        #
+        # print("Equation for interpolated Drag (dD):")
+        # print(poly_eq_drag)
+
+
+        # fig, axes = plt.subplots(2, 1, figsize=(8, 6), sharex=True)
+        #
+        # axes[0].plot(BEMT.r_list, dL_r_interp, label='Interpolated Lift')
+        # axes[0].plot(BEMT.r_list, poly_eq_lift(BEMT.r_list), label='Polynomial Fit Lift', linestyle='--')
+        # axes[0].set_ylabel("Lift [N]")
+        # axes[0].legend()
+        #
+        # axes[1].plot(BEMT.r_list, dD_r_interp, label='Interpolated Drag', color='r')
+        # axes[1].plot(BEMT.r_list, poly_eq_drag(BEMT.r_list), label='Polynomial Fit Drag', linestyle='--', color='orange')
+        # axes[1].set_ylabel("Drag [N]")
+        # axes[1].set_xlabel("Radial position [m]")
+        # axes[1].legend()
+        #
+        # plt.show()
+        # BEMT.controlstability()
 
     if controlstability==True:
         BEMT.controlstability()
