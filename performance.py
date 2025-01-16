@@ -71,8 +71,11 @@ class PerformanceAnalysis:
         def chord_equation(x):
             return 0.075 - (0.015 * (x - 0.15) / (1 - 0.15))  # linear from 0.075 to 0.06, taper
         
+        c_l_intercept = 0.2379
+        
         def lambda_equation(lambda_i, x):
-            return ((chord_equation(x) * self.number_of_blades) / (np.pi * self.rotor_radius)) * self.C_l_alpha * ((pitch_equation(x) *(np.pi/180)) - lambda_i / x) * x - 8 * lambda_i**2
+            return ((chord_equation(x) * self.number_of_blades) / (np.pi * self.rotor_radius)) * (self.C_l_alpha * ((pitch_equation(x) * (np.pi / 180)) - lambda_i / x) + c_l_intercept) * x - 8 * lambda_i**2
+
 
         # Function to solve for lambda_i at a given x
         def solve_lambda(x, initial_guess=0.1):
@@ -103,13 +106,13 @@ class PerformanceAnalysis:
         self.thrust = 7873.38
         self.c_t = self.thrust / (self.rho * (self.omega * self.rotor_radius) ** 2 * self.pi * self.rotor_radius ** 2)
         self.cl_bar = 6.6*self.c_t / self.solidity
-        self.alpha_m = self.cl_bar / self.C_l_alpha
+        self.alpha_m = (self.cl_bar - c_l_intercept) / self.C_l_alpha 
         self.C_D_p_bar_1 = 0.0087 - 0.0216 * self.alpha_m + 0.4 * (self.alpha_m**2) #bailey
         self.C_D_p_bar_2 = 0.011 + 0.4 * (self.alpha_m**2) #marinescu
         self.C_D_p_bar_3 = 0.009 + 0.73 * (self.alpha_m**2) #talbot
 
 
-        self.P_i_hov = self.MTOW_N * self.v_i_hov # k factor is 1 as rotors are away from fuselage, assumed that Thrust = Weight
+        self.P_i_hov = 1.06 * self.thrust * self.v_i_hov # k factor is 1 as rotors are away from fuselage, assumed that Thrust = Weight
 
         # profile power
         self.C_D_p_bar = 0.01005 # TODO: CHANGE LATER based on airfoil tools
