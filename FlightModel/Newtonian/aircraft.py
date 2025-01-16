@@ -19,6 +19,7 @@ a full aircraft '
 
 from classbank import *
 from misc import *
+from component import *
 import numpy as np
 
 '''The axis are always in the order of X Y Z'''
@@ -26,9 +27,6 @@ import numpy as np
 '''Y+ to the right of the aircraft'''
 '''Z+ to the down of the aircraft'''
 '''Rotation follow right-hand rule'''
-
-def ExampleFunction(Constant): #the input modify the function that is to be returned
-    return lambda variable: variable*Constant #Return a function that can be stored in a variable
 
 def SCfunc_UpdateAssembly(u_forces   = [[0],[0],[0]], #Assembles the ForcePoint update variables
                           u_moments  = [[0],[0],[0]],
@@ -41,8 +39,8 @@ def SCfunc_UpdateAssembly(u_forces   = [[0],[0],[0]], #Assembles the ForcePoint 
     variables = [u_forces, u_moments, u_mass, u_inertia, u_position, u_rotation]
     return variables
 
-def SCaircraft_Airligator():
-    radius_rotor = 1.2 #radius of rotor
+def SCcraft_Airligator():
+    radius_rotor = 1.17 #radius of rotor
     radius_rotor_ring = 5 # radius of rotor position ring
     rotor_mass = 0
     rotor_inertia =[[0,0,0],
@@ -260,11 +258,8 @@ def SCaircraft_Airligator():
               body_1,
               tank_1]
     return points
-    
-    
-    
-    
-def SCfunc_PointGeneration(): #Returns a list of points with ForcePoint class, modify this function to add or remove points from the aicraft
+     
+def SCcraft_PointGenerationExample(): #Returns a list of points with ForcePoint class, modify this function to add or remove points from the aicraft
     '''Points'''
     example_point = SCobj_ForcePoint(forces   = [0,10,ExampleFunction(3)], #[N, WITHOUT gravitational froce]
                                      moments  = [0,0,0],   #[N*m]
@@ -288,50 +283,34 @@ def SCfunc_PointGeneration(): #Returns a list of points with ForcePoint class, m
     points = [example_point, example_point2]
     return points
 
-'''Verification Functions''' #functions used for verification of the simulation model
-def SCfunc_VerifyThrust(R): #Mimic single input (RPM) function for thrust
-    #TODO Finish up Ct calculation
-    area = np.pi * R**2
-    rho = 1.225
-    return lambda state, rpm: area*rho*(SCfunc_RPM2RadSec(rpm)*R)**2*-0.0087
-
-def SCfunc_VerifyTorque(R, clockwise): #Mimic single input (RPM) function for torque
-    #TODO Finish up Cq calculation
-    area = np.pi * R**2
-    rho = 1.225
-    if clockwise:
-        return lambda state, rpm: area*rho*(SCfunc_RPM2RadSec(rpm)*R)**2*0.0001*R
-    else:
-        return lambda state, rpm: area*rho*(SCfunc_RPM2RadSec(rpm)*R)**2*0.0001*R*-1
-
-def SCaircraft_VerifyAircraft(): #Returns a list of points with ForcePoint class, modify this function to add or remove points from the aicraft
+def SCcraft_VerifyAircraft(): #Returns a list of points with ForcePoint class, modify this function to add or remove points from the aicraft
     '''Points'''
-    rotor_1 = SCobj_ForcePoint(forces   = [0, 0, SCfunc_VerifyThrust(1.2)], #[N, WITHOUT gravitational froce]
-                                     moments  = [0, 0, SCfunc_VerifyTorque(1.2, clockwise=True)],   #[N*m]
+    rotor_1 = SCobj_ForcePoint(forces   = [0, 0, SCfunc_RotorThrust(1.2)], #[N, WITHOUT gravitational froce]
+                                     moments  = [0, 0, SCfunc_RotorTorque(1.2, clockwise=True)],   #[N*m]
                                      mass     =  0,       #[kg] 
                                      inertia  =[[0,0,0],   # [....]
                                                 [0,0,0],
                                                 [0,0,0]],
                                      position = [1,1,0],   # [m from the body axis origin ]
                                      rotation = [10,0,0],)  # euler angle degrees 
-    rotor_2 = SCobj_ForcePoint(forces   = [0, 0, SCfunc_VerifyThrust(1.2)], #[N, WITHOUT gravitational froce]
-                                     moments  = [0, 0, SCfunc_VerifyTorque(1.2, clockwise=False)],   #[N*m]
+    rotor_2 = SCobj_ForcePoint(forces   = [0, 0, SCfunc_RotorThrust(1.2)], #[N, WITHOUT gravitational froce]
+                                     moments  = [0, 0, SCfunc_RotorTorque(1.2, clockwise=False)],   #[N*m]
                                      mass     =  0,       #[kg] 
                                      inertia  =[[0,0,0],   # [....]
                                                 [0,0,0],
                                                 [0,0,0]],
                                      position = [1,-1,0],   # [m from the body axis origin ]
                                      rotation = [-10,0,0],)  # euler angle degrees 
-    rotor_3 = SCobj_ForcePoint(forces   = [0, 0, SCfunc_VerifyThrust(1.2)], #[N, WITHOUT gravitational froce]
-                                     moments  = [0, 0, SCfunc_VerifyTorque(1.2, clockwise=True)],   #[N*m]
+    rotor_3 = SCobj_ForcePoint(forces   = [0, 0, SCfunc_RotorThrust(1.2)], #[N, WITHOUT gravitational froce]
+                                     moments  = [0, 0, SCfunc_RotorTorque(1.2, clockwise=True)],   #[N*m]
                                      mass     =  0,       #[kg] 
                                      inertia  =[[0,0,0],   # [....]
                                                 [0,0,0],
                                                 [0,0,0]],
                                      position = [-1,-1,0],   # [m from the body axis origin ]
                                      rotation = [-10,0,0],)  # euler angle degrees 
-    rotor_4 = SCobj_ForcePoint(forces   = [0, 0, SCfunc_VerifyThrust(1.2)], #[N, WITHOUT gravitational froce]
-                                     moments  = [0, 0, SCfunc_VerifyTorque(1.2, clockwise=False)],   #[N*m]
+    rotor_4 = SCobj_ForcePoint(forces   = [0, 0, SCfunc_RotorThrust(1.2)], #[N, WITHOUT gravitational froce]
+                                     moments  = [0, 0, SCfunc_RotorTorque(1.2, clockwise=False)],   #[N*m]
                                      mass     =  0,       #[kg] 
                                      inertia  =[[0,0,0],   # [....]
                                                 [0,0,0],
@@ -351,14 +330,21 @@ def SCaircraft_VerifyAircraft(): #Returns a list of points with ForcePoint class
     points = [rotor_1, rotor_2, rotor_3, rotor_4, body]
     return points
 
-def SCaircraft_FastAircraft(): # Fast flying fixed-wing aircraft
-    pass
+def SCcraft_FastAircraft(): # Fast flying fixed-wing aircraft
+    engine  = SCobj_ForcePoint( forces   = [0, 0, 0], #[N, WITHOUT gravitational froce]
+                                moments  = [0, 0, 0],   #[N*m]
+                                mass     = 0,       #[kg] 
+                                inertia  = [[0,0,0],
+                                            [0,0,0],
+                                            [0,0,0]],
+                                position = [0,0,0],   # [m from the body axis origin ]
+                                rotation = [0,0,0],)  # euler angle degrees 
 
 '''End'''
 
 Testing = False
 if Testing:
-    aircraft = SCobj_Aircraft(points=SCaircraft_VerifyAircraft(), position=[0,0,0], rotation=[0,0,0])
+    aircraft = SCobj_Aircraft(points=SCcraft_VerifyAircraft(), position=[0,0,0], rotation=[0,0,0])
     # print(aircraft.forces)
     # print(aircraft.moments)
     print('---------Updating Points------------')

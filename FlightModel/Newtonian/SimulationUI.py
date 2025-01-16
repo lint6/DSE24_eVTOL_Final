@@ -15,10 +15,10 @@ None
 
 import numpy as np
 from aircraft import *
-from physics import *
+from simulation import *
 import matplotlib.pyplot as plt
 
-aircraft = SCobj_Aircraft(points=SCaircraft_VerifyAircraft(), position=[0,0,0], rotation=[0,0,0])
+aircraft = SCobj_Aircraft(points=SCcraft_VerifyAircraft(), position=[0,0,0], rotation=[0,0,0])
 log_state, log_forces, log_time, log_extras, log_acc, log_setpoints = SCfunc_FlightSimulation(aircraft, runtime=20)
 
 DEBUG = False
