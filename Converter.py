@@ -9,9 +9,9 @@ class Converter:
         self.motor_efficiency = 0.93
 
         #Power inputs from performance
-        self.P_net_motor = 71817.87e-3 #Net motor power [kW]
-        self.P_net_bat = 7134.52e-3 
-        self.P_net_BOP = 7396.33e-3
+        self.P_net_motor = 38760.60e-3 #Net motor power [kW]
+        self.P_net_bat = 5651.78e-3 
+        self.P_net_BOP = 4081.34e-3
         self.P_net_av = 2.11
 
         self.P_bat = self.P_net_bat/self.converter_efficiency #Power through battery converter [kW]

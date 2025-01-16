@@ -16,8 +16,8 @@ from CellWeights import CellWeights
 #Because highest stack pressures give lower weights for a set design power, but they also give lower net power (due to higher P_BOP)
 
 safety_factor = 1 
-P_motor = 71817.87 #Input from performance
-P_battery = 7134.52 #Input from performance
+P_motor = 38760.60 #Input from performance
+P_battery = 5651.78 #Input from performance
 P_avionics = 2110.50 #Get this from the Avionics class [W]
 
 converter_efficiency = 0.98 #Based on NASA SoA DC/DC converter 
