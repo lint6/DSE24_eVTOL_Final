@@ -17,20 +17,20 @@ class BEMT():
         self.n_rot = n_rot # - , number of rotors
         self.omega = omega # rad/s, rotational velocity
         self.thrust = thrust # desired thrust
-        self.intercept_cl = 0.2 # NACA 2412
+        self.intercept_cl = 0.4595 # NACA 6412
 
 
     def discretise(self, num_elements=1000):
         # divide blade into elements
         self.cutout = 0.15 * self.R
         #self.r_bar_e = 0.95 #effective blade radius due to tip losses, approximate input for now
-        self.r_e = 0.95 * self.R
+        self.r_e = 0.96 * self.R
         self.r_list = np.linspace(0.5 * (self.R / num_elements), self.R - 0.5 * (self.R / num_elements), num_elements)
         self.dr = self.R / num_elements
 
         # setup chord
-        c_root = 0.1 # meters
-        taper = 0.7 # -
+        c_root = 0.07 # meters
+        taper = 0.8 # -
         c_tip = c_root * taper
         c_avg = 0.5 * (c_root + c_tip)
         self.AR = (self.R - self.cutout) / c_avg
@@ -45,7 +45,7 @@ class BEMT():
 
         # setup theta
         theta_root = np.deg2rad(20)
-        theta_tip = np.deg2rad(5)
+        theta_tip = np.deg2rad(6)
 
         slope_t = (theta_tip - theta_root) / (self.R - self.cutout)
 
@@ -103,7 +103,7 @@ class BEMT():
         #Cutout radius for hub
         self.cutout = 0.15 * self.R
         #Effective blade radius due to tip losses (approximated)
-        self.r_e = 0.95 * self.R
+        self.r_e = 0.96 * self.R
         
         self.discretise(num_elements)
 
@@ -114,7 +114,7 @@ class BEMT():
         dP_r_list = []
         dP_ind_list = []
         for chord, theta, a, r in zip(self.c_r_list, self.theta_r_list, self.a_r_list, self.r_list):
-            prop = self.vertical(omega=self.omega, theta_r=theta, c_r=chord, r=r, dr=self.dr, a_r=a, V_c=0)
+            prop = self.vertical(omega=self.omega, theta_r=theta, c_r=chord, r=r, dr=self.dr, a_r=a, V_c =0.76)
             if self.cutout < r < self.r_e:
                 dT_r_list.append(prop[0][2])
                 dL_r_list.append(prop[0][0])
@@ -156,7 +156,7 @@ class BEMT():
             dP_r_list = []
             dP_ind_list = []
             for chord, theta, a, r in zip(self.c_r_list, self.theta_r_list, self.a_r_list, self.r_list):
-                prop = self.vertical(omega=self.omega, theta_r=theta, c_r=chord, r=r, dr=self.dr, a_r=a, V_c=0)
+                prop = self.vertical(omega=self.omega, theta_r=theta, c_r=chord, r=r, dr=self.dr, a_r=a, V_c =0.76)
                 if self.cutout < r < self.r_e:
                     dT_r_list.append(prop[0][2])
                     dL_r_list.append(prop[0][0])
@@ -193,12 +193,12 @@ class BEMT():
         return self.R, self.n_rot
 
 if __name__ == '__main__':
-    a_r = 0.1036 * 180 / np.pi#0.1 * 180 / np.pi
+    a_r = 0.0864 * 180 / np.pi#0.1 * 180 / np.pi
     b = 6
     n_rot = 6
     omega = 100
-    R = 0.99
-    thrust = 7758.73 #7900/np.cos(np.deg2rad(5))  # desired thrust in Newtons
+    R = 0.96
+    thrust = 709.63 * 9.81 *1.1 / np.cos(np.deg2rad(10))  # desired thrust in Newtons
     bemt = BEMT(a_r, b, n_rot, omega, thrust,R)
     radius, num_rotors = bemt.calculate_radius_and_rotors()
 
@@ -207,7 +207,7 @@ if __name__ == '__main__':
     print(f"Final Omega: {bemt.omega}")
     
     # Calculate the thrust coefficient
-    total_thrust = sum([bemt.vertical(omega=bemt.omega, theta_r=theta, c_r=chord, r=r, dr=bemt.dr, a_r=a, V_c=0)[0][2] for chord, theta, a, r in zip(bemt.c_r_list, bemt.theta_r_list, bemt.a_r_list, bemt.r_list)]) * bemt.n_rot * bemt.b
+    total_thrust = sum([bemt.vertical(omega=bemt.omega, theta_r=theta, c_r=chord, r=r, dr=bemt.dr, a_r=a, V_c =0.76)[0][2] for chord, theta, a, r in zip(bemt.c_r_list, bemt.theta_r_list, bemt.a_r_list, bemt.r_list)]) * bemt.n_rot * bemt.b
     thrust_coefficient = total_thrust / (bemt.rho * (bemt.omega ** 2) * (bemt.R ** 4) * bemt.n_rot * bemt.b)
     print(f"Thrust Coefficient: {thrust_coefficient}")
     # print total power required
@@ -217,6 +217,16 @@ if __name__ == '__main__':
     print(f"Root Chord: {bemt.c_r_list[0]}")
     #print tip chord
     print(f"Tip Chord: {bemt.c_r_list[-1]}")
+    #calculate disk loading per rotor
+    disk_loading = total_thrust / (bemt.n_rot*(bemt.R ** 2))
+    #print disk loading
+    #print(f"Disk Loading: {disk_loading}")
+
+    # print a_r
+    print(f"Profile Lift Curve Slope: {bemt.a_r}")
+    
+
+    
     
     
 

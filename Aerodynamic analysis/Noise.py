@@ -5,7 +5,7 @@ from scipy.optimize import fsolve
 
 class RotorSizing:
 
-    def __init__(self, MTOW=718.89, n_blades=6, n_rotor = 8, DL = 34.2, bank_angle = 30, cto_fl = 0.12, cto_turn = 0.15, cto_turb = 0.17, co_ax = 1, d_fact = 0.05, max_v = 50, k_int = 1, A_eq = 0.48, FM = 0.7):
+    def __init__(self, MTOW=709.63, n_blades=6, n_rotor = 6, DL = 34.2, bank_angle = 30, cto_fl = 0.12, cto_turn = 0.15, cto_turb = 0.17, co_ax = 1, d_fact = 0.05, max_v = 50, k_int = 1, A_eq = 0.48, FM = 0.7):
 
         # conversions  
         self.celsius_to_kelvin = 273.15     # addition
@@ -159,18 +159,18 @@ class SoundAnalysis:
         self.r = (self.x**2+self.y**2+self.z**2)**0.5
 
         #Inputs for rotational noise
-        self.R = 1.09 #self.rotorsizing.rotor_radius*self.m_to_f #Get rotor radius in [f]
+        self.R = 1.01 #self.rotorsizing.rotor_radius*self.m_to_f #Get rotor radius in [f]
         self.A = np.pi*(self.R**2) #Rotor area [ft^2]
         self.n = 140 #self.rotorsizing.omega #Rotor rotational speed [rad/s] 
-        self.V = 25*self.m_to_f #self.rotorsizing.V_max*self.m_to_f [ft/s] -> VH is defined as the airspeed in level flight obtained using the minimum specification engine power corresponding to maximum continuous power available
+        self.V = 22*self.m_to_f #self.rotorsizing.V_max*self.m_to_f [ft/s] -> VH is defined as the airspeed in level flight obtained using the minimum specification engine power corresponding to maximum continuous power available
         self.c = self.rotorsizing.speed_of_sound*self.m_to_f #Speed of sound [ft/s]
         self.B = 6 #self.rotorsizing.n_blades
-        self.T = 7758.73*self.N_to_lbs/self.rotorsizing.N_rotors #self.rotorsizing.T_forward_flight*self.N_to_lbs/self.rotorsizing.N_rotors #Thrust [lbs]
+        self.T = 709.63*9.81/(np.cos(np.deg2rad(10)))*self.N_to_lbs/self.rotorsizing.N_rotors #self.rotorsizing.T_forward_flight*self.N_to_lbs/self.rotorsizing.N_rotors #Thrust [lbs]
 
         #Inputs for vortex noise
         self.D = 2*self.R #Rotor diameter [ft]
         self.V_07 = 0.7*((self.n*np.pi*self.D)/60) #Linear speed of 0.7 radius section
-        self.chord = self.rotorsizing.chord*self.m_to_f #Chord [ft]
+        self.chord = 0.07 *self.m_to_f #self.rotorsizing.chord*self.m_to_f #Chord [ft]
         self.A_b = self.B*self.R*self.chord #Total blade area [ft^2]
 
         #Input for noise conversion/addition
@@ -368,12 +368,15 @@ class SoundAnalysis:
         self.f_vortex = (self.V_07*0.28)/self.thickness  #Only valid for small AoA
 
     def display_parameters_rotor(self):
-        print(f"This configuration has {self.n_rotors} rotors")
-        print(f"Equivalent M: {self.M_E :.4f}")
-        print(f"Single rotor SPL: {self.rotational_SPL:.4f} dB")
-        #print(f"Correction factor: {self.rotational_SPL-self.rotational_SPL_uncorrected:.4f} dB")
-        print(f"All rotor SPL: {self.rotational_SPL_total:.4f} dB")
-        print(f"Fundamental frequency: {self.f_rotational:.4f} Hz")
+    #     print(f"This configuration has {self.n_rotors} rotors")
+    #    # print(f"Equivalent M: {self.M_E :.4f}")
+    #     print(f"Single rotor SPL: {self.rotational_SPL:.4f} dB")
+    #     #print(f"Correction factor: {self.rotational_SPL-self.rotational_SPL_uncorrected:.4f} dB")
+    #     print(f"All rotor SPL: {self.rotational_SPL_total:.4f} dB")
+    #     print(f"Fundamental frequency: {self.f_rotational:.4f} Hz")
+        #print rotor sizing characteristics
+        self.rotorsizing.display_parameters()
+
         
     def display_paramenters_vortex(self):
         print(f"Single rotor SPL: {self.vortex_SPL:.4f} dB")
@@ -387,7 +390,7 @@ def run():
 
     analysis.rotational_noise()
     analysis.vortex_noise()
-
+    
 
 # Execute the run function
 if __name__ == "__main__":
