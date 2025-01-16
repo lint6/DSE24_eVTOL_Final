@@ -321,7 +321,7 @@ class Angled_Climb: #angled climb
         return V_c_fast
 
 VerticalFlight = Vertical_Flight(mass=float(718.89/6), P_a=160000)
-ForwardFlight = Forward_Flight(mass=float(718.89/6), Cd0=0.05, V=3, related_vertical=VerticalFlight, P_a=160000)
+ForwardFlight = Forward_Flight(mass=float(718.89/6), Cd0=0.05, V=1, related_vertical=VerticalFlight, P_a=160000)
 AngledClimb = Angled_Climb(mass=float(718.89/6), gamma=0, related_vertical=VerticalFlight, related_forward = ForwardFlight)
 
 
