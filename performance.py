@@ -20,12 +20,12 @@ class PerformanceAnalysis:
         self.MTOW_N = self.MTOW * self.g #N
 
         # rotor inputs
-        self.rotor_radius = 1.17 #m
+        self.rotor_radius = 1.09 #m
         self.number_of_blades = 6
         self.number_of_rotors = 6
-        self.omega = 125 #rad/s
-        self.C_l_alpha = 6.22 #1/rad
-        self.chord = 0.07 #m
+        self.omega = 140 #rad/s
+        self.C_l_alpha = 5.84 #1/rad
+        self.chord = 0.054 #m
         self.solidity = (self.chord*self.number_of_blades)/(self.rotor_radius*np.pi)
         #self.pitch_x = 8 # pitch angle variation over span aqs a function of x
 
@@ -66,16 +66,15 @@ class PerformanceAnalysis:
         #self.phi_r = np.tan(self.v_i_momentum / (self.omega * self.rotor_radius)) * (180 / np.pi)
         
         def pitch_equation(x):
-            return (20 - (14 * (x - 0.15) / (1 - 0.15)))  # linear from 20 to 6 
+            return (10 - (5 * (x - 0.15) / (1 - 0.15)))  # linear from 10 to 5
         
         def chord_equation(x):
-            return 0.075 - (0.015 * (x - 0.15) / (1 - 0.15))  # linear from 0.075 to 0.06, taper
+            return 0.06 - (0.012 * (x - 0.15) / (1 - 0.15)) # linear from 0.06 to 0.048
         
-        c_l_intercept = 0.2379
+        c_l_intercept = 0.6458
         
         def lambda_equation(lambda_i, x):
             return ((chord_equation(x) * self.number_of_blades) / (np.pi * self.rotor_radius)) * (self.C_l_alpha * ((pitch_equation(x) * (np.pi / 180)) - lambda_i / x) + c_l_intercept) * x - 8 * lambda_i**2
-
 
         # Function to solve for lambda_i at a given x
         def solve_lambda(x, initial_guess=0.1):
@@ -103,7 +102,8 @@ class PerformanceAnalysis:
 
         #self.v_i_hov = np.sum(hover_vi_values) * delta_x  # Approximate integral
 
-        self.thrust = 7873.38
+        self.thrust = 7782.52 # todo: change later
+
         self.c_t = self.thrust / (self.rho * (self.omega * self.rotor_radius) ** 2 * self.pi * self.rotor_radius ** 2)
         self.cl_bar = 6.6*self.c_t / self.solidity
         self.alpha_m = (self.cl_bar - c_l_intercept) / self.C_l_alpha 
@@ -112,10 +112,10 @@ class PerformanceAnalysis:
         self.C_D_p_bar_3 = 0.009 + 0.73 * (self.alpha_m**2) #talbot
 
 
-        self.P_i_hov = 1.06 * self.thrust * self.v_i_hov # k factor is 1 as rotors are away from fuselage, assumed that Thrust = Weight
+        self.P_i_hov = 1.01 * self.thrust * self.v_i_hov # k factor is 1 as rotors are away from fuselage, assumed that Thrust = Weight
 
         # profile power
-        self.C_D_p_bar = 0.01005 # TODO: CHANGE LATER based on airfoil tools
+        self.C_D_p_bar = 0.008348 # TODO: CHANGE LATER based on airfoil tools
 
         self.P_p_hov = ((self.solidity*self.C_D_p_bar)/8) * self.rho *((self.omega*self.rotor_radius)**3)*(self.pi*(self.rotor_radius**2)) * self.number_of_rotors
 
@@ -138,7 +138,7 @@ class PerformanceAnalysis:
             pressure_at_alt = P0 * (1 - lapse_rate * altitude / T0) ** (g / (R * lapse_rate))
             return pressure_at_alt / (R * temp_at_alt)
         
-        C_D_p_bar_mom = 0.01005 # TODO: CHANGE LATER based on airfoil tools
+        C_D_p_bar_mom = 0.008348 # TODO: CHANGE LATER based on airfoil tools
 
         weight_values = np.linspace(600, 870, 100)  # Varying weight from 400 to 800 kg
         temperature_range = [-30, -20, -10, 0, 10, 20, 30]  # Temperature range
@@ -179,7 +179,7 @@ class PerformanceAnalysis:
         plt.title('Ceiling Altitude vs Weight for Different Temperatures')
         plt.legend()
         plt.grid(True)
-        plt.show()
+        #plt.show() # TODO 
 
 
     def hige_powers(self):
@@ -223,7 +223,7 @@ class PerformanceAnalysis:
         plt.title('HIGE power vs Height Above Ground/Rotor Diameter')
         plt.legend()
         plt.grid()
-        plt.show()
+        #plt.show() # TODO
 
 
     def vertical_climb_descent_powers(self):
@@ -352,7 +352,7 @@ class PerformanceAnalysis:
         plt.title('Level Flight Power Components vs Velocity')
         plt.legend(loc='best', fontsize='small')
         plt.grid(True)
-        plt.show()
+        #plt.show() # TODO
 
     def plot_CD_power(self):
 
@@ -403,7 +403,7 @@ class PerformanceAnalysis:
         plt.title('Climb, Descent, and Steep Descent Power Components vs Velocity')
         plt.legend(loc='best', fontsize='small')
         plt.grid(True)
-        plt.show()
+        #plt.show() # TODO
 
     def plot_power_pie_chart(self):
         # Draw a pie chart showing the composition of the total level flight power
@@ -419,7 +419,7 @@ class PerformanceAnalysis:
         plt.pie(sizes, labels=labels[:-1], colors=colors, autopct=lambda p: f'{p:.1f}%\n({p * sum(sizes) / 100 / 1000:.2f} kW)', startangle=140, textprops={'color': 'w'})
         plt.title('Composition of Total Level Flight Power')
         plt.legend(labels, loc="upper center", bbox_to_anchor=(0.5, 0.1), ncol=1)
-        plt.show()
+        #plt.show() # TODO
 
     def plot_power_breakdown(self):
 
@@ -460,7 +460,7 @@ class PerformanceAnalysis:
             plt.text(index[i], profile_power[i] + induced_power[i] / 2, f'{induced_power[i] / total_power[i] * 100:.1f}%', ha='center', va='center', color='black', fontsize=8)
             plt.text(index[i], profile_power[i] + induced_power[i] + parasitic_power[i] / 2, f'{parasitic_power[i] / total_power[i] * 100:.1f}%', ha='center', va='center', color='black', fontsize=8)
 
-        plt.show()
+        #plt.show() # TODO
 
     def print_results(self):
         # Create a table of flight phases and corresponding power usage, vertical speed, and horizontal speed
@@ -861,8 +861,10 @@ def run():
     
     # Call functions
     analysis.hover_powers()
-    print(analysis.v_i_hov, analysis.v_i_momentum)
-    print(analysis.P_p_hov, analysis.P_i_hov, analysis.P_hov_ideal)
+    print(f'induced velocity: {analysis.v_i_hov}, ideal induced velocity: {analysis.v_i_momentum}')
+    print(f'profile power: {analysis.P_p_hov}, induced power: {analysis.P_i_hov}, hover power: {analysis.P_hoge}')
+    print(f'ideal hover power: {analysis.P_hov_ideal}')
+    print(f'Figure of Merit is: {analysis.FM}')
     #print(analysis.induced_velocity)
     #print(analysis.v_i_ff)
     analysis.hoge_chart()
@@ -878,57 +880,55 @@ def run():
 
     # Print
     analysis.print_results()
-    print(f'Figure of Merit is: {analysis.FM}')
     print(f'avg alpha: {analysis.alpha_m}')
-    print(max(analysis.C_D_p_bar_1, analysis.C_D_p_bar_2, analysis.C_D_p_bar_3))
+    print(f'max C_D_p: {max(analysis.C_D_p_bar_1, analysis.C_D_p_bar_2, analysis.C_D_p_bar_3)}')
 
     # Final power
     analysis.final_power()
-    print(analysis.ROC_descent, analysis.P_descent, analysis.P_ff, analysis.P_total_descent, analysis.P_steep_descent, analysis.P_total_steep_descent)
 
     print(f"------------------------------------------------------")
     print(f"\033[1mEnergy Analysis:\033[0m")
 
 
-    # Instantiate the EnergyAnalysis class
-    energy_analysis = EnergyAnalysis(performance=analysis)
+    # # Instantiate the EnergyAnalysis class
+    # energy_analysis = EnergyAnalysis(performance=analysis)
 
-    # Calculate mission phase times
-    times = energy_analysis.calculate_missionphase_time()
+    # # Calculate mission phase times
+    # times = energy_analysis.calculate_missionphase_time()
 
-    # Calculate energies
-    energies = energy_analysis.calculate_energy_required()
+    # # Calculate energies
+    # energies = energy_analysis.calculate_energy_required()
 
-    #Initiate PEMFC line calculation
-    energy_analysis.calculate_pemfc_line()
+    # #Initiate PEMFC line calculation
+    # energy_analysis.calculate_pemfc_line()
 
-    # Calculate amps
-    amps = energy_analysis.calculate_amps()
+    # # Calculate amps
+    # amps = energy_analysis.calculate_amps()
 
-    #print("Mission Phase Times:")
-    #print(times)
-    total_time = times['total']/60
-    print(f'Total Mission time = {total_time:.2f} [min]')
+    # #print("Mission Phase Times:")
+    # #print(times)
+    # total_time = times['total']/60
+    # print(f'Total Mission time = {total_time:.2f} [min]')
 
-    #print("\nMission Energies (Wh):")
-    #print(energies)
-    total_energy = energies['total']
-    loiter_energy = energies['Loiter']
-    loiter_time = times['Loiter']/60
-    print(f'Total Energy Consumption = {total_energy:.2f} [Wh]')
+    # #print("\nMission Energies (Wh):")
+    # #print(energies)
+    # total_energy = energies['total']
+    # loiter_energy = energies['Loiter']
+    # loiter_time = times['Loiter']/60
+    # print(f'Total Energy Consumption = {total_energy:.2f} [Wh]')
 
-    print(f'Loiter power required = {analysis.min_power:.2f} [kW] at a speed of {analysis.min_power_velocity*3.6:.2f} [km/h]')
-    print(f'Loiter time = {loiter_time} [min]')
-    print(f'Energy Consumption during loiter = {loiter_energy:.2f} [Wh]')
+    # print(f'Loiter power required = {analysis.min_power:.2f} [kW] at a speed of {analysis.min_power_velocity*3.6:.2f} [km/h]')
+    # print(f'Loiter time = {loiter_time} [min]')
+    # print(f'Energy Consumption during loiter = {loiter_energy:.2f} [Wh]')
 
-    #print("\nMission Amps:")
-    #print(amps)
-    max_amps = amps['max']
-    print(f'Max amps = {max_amps:.2f} [A]')
+    # #print("\nMission Amps:")
+    # #print(amps)
+    # max_amps = amps['max']
+    # print(f'Max amps = {max_amps:.2f} [A]')
 
-    # plot the PEMFC power vs mission phase/time
-    energy_analysis.visual_PEMFC_power()
-    energy_analysis.visual_PEMFC_energy()
+    # # plot the PEMFC power vs mission phase/time
+    # energy_analysis.visual_PEMFC_power()
+    # energy_analysis.visual_PEMFC_energy()
 
 # Execute the run function
 if __name__ == "__main__":
