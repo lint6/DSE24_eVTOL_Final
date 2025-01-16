@@ -61,12 +61,18 @@ class PerformanceAnalysis:
     def hover_powers(self):
 
         # hover induced power
+        self.v_i_momentum = np.sqrt((self.MTOW_N / self.number_of_rotors) / (2 * self.rho * np.pi * self.rotor_radius ** 2))
+
+        #self.phi_r = np.tan(self.v_i_momentum / (self.omega * self.rotor_radius)) * (180 / np.pi)
         
         def pitch_equation(x):
-            return 20 - (14 * (x - 0.15) / (1 - 0.15)) # linear from 20 to 6 
+            return (20 - (14 * (x - 0.15) / (1 - 0.15)))  # linear from 20 to 6 
+        
+        def chord_equation(x):
+            return 0.075 - (0.015 * (x - 0.15) / (1 - 0.15))  # linear from 0.075 to 0.06, taper
         
         def lambda_equation(lambda_i, x):
-            return self.solidity * self.C_l_alpha * ((pitch_equation(x) *(np.pi/180)) - lambda_i / x) * x - 8 * lambda_i**2
+            return ((chord_equation(x) * self.number_of_blades) / (np.pi * self.rotor_radius)) * self.C_l_alpha * ((pitch_equation(x) *(np.pi/180)) - lambda_i / x) * x - 8 * lambda_i**2
 
         # Function to solve for lambda_i at a given x
         def solve_lambda(x, initial_guess=0.1):
@@ -103,7 +109,7 @@ class PerformanceAnalysis:
         self.C_D_p_bar_3 = 0.009 + 0.73 * (self.alpha_m**2) #talbot
 
 
-        self.P_i_hov = self.thrust * self.v_i_hov # k factor is 1 as rotors are away from fuselage, assumed that Thrust = Weight
+        self.P_i_hov = self.MTOW_N * self.v_i_hov # k factor is 1 as rotors are away from fuselage, assumed that Thrust = Weight
 
         # profile power
         self.C_D_p_bar = 0.01005 # TODO: CHANGE LATER based on airfoil tools
@@ -112,7 +118,6 @@ class PerformanceAnalysis:
 
         self.P_hoge = self.P_i_hov + self.P_p_hov
 
-        self.v_i_momentum = np.sqrt((self.MTOW_N / 4) / (2 * self.rho * np.pi * self.rotor_radius ** 2))
         self.P_hov_ideal = self.MTOW_N * self.v_i_momentum 
 
         self.FM = self.P_hov_ideal / self.P_hoge
@@ -322,7 +327,7 @@ class PerformanceAnalysis:
         self.min_power_velocity = V[P_total_level.index(self.min_power)]
         min_power_index = P_total_level.index(min(P_total_level))
         self.induced_velocity = v_i[min_power_index]
-        print(self.induced_velocity)
+        #print(self.induced_velocity)
 
         # Find the induced power corresponding to the min_power_velocity
         self.min_power_induced = P_i[V.tolist().index(self.min_power_velocity)] * 1000
@@ -855,7 +860,6 @@ def run():
     analysis.hover_powers()
     print(analysis.v_i_hov, analysis.v_i_momentum)
     print(analysis.P_p_hov, analysis.P_i_hov, analysis.P_hov_ideal)
-    print(analysis.solidity)
     #print(analysis.induced_velocity)
     #print(analysis.v_i_ff)
     analysis.hoge_chart()
