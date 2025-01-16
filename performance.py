@@ -112,7 +112,7 @@ class PerformanceAnalysis:
         self.C_D_p_bar_3 = 0.009 + 0.73 * (self.alpha_m**2) #talbot
 
 
-        self.P_i_hov = 1.01 * self.thrust * self.v_i_hov # k factor is 1 as rotors are away from fuselage, assumed that Thrust = Weight
+        self.P_i_hov = 1.06 * self.thrust * self.v_i_hov # k factor is 1 as rotors are away from fuselage, assumed that Thrust = Weight
 
         # profile power
         self.C_D_p_bar = 0.008348 # TODO: CHANGE LATER based on airfoil tools
