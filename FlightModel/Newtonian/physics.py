@@ -19,28 +19,50 @@ aircraft.py
 'Functions that handle the bulk of physical relations'
 '''
 import numpy as np
+from misc import *
 
-def SCfunc_Inertia_Disc(m,l):
+def SCphy_Inertia_Disc(m,l):
     I_xx = 0
     I_yy = 0 
     I_zz = (1/12) * m * l**2 
     return I_xx, I_yy, I_zz
 
-def SCfunc_Inertia_Cylinder(m, r, l): # z going through the circle surface, 
+def SCphy_Inertia_Cylinder(m, r, l): # z going through the circle surface, 
     I_xx = ((1/4) * m * r**2) + ((1/12) * m * l**2)
     I_yy = ((1/4) * m * r**2) + ((1/12) * m * l**2)
     I_zz = ((1/2) * m * r**2)
     return I_xx, I_yy, I_zz
 
 
-def SCfunc_Intertia_Box(m, w, d, h): # w = width(y), d= depth(x), h = height(z)
+def SCphy_Intertia_Box(m, w, d, h): # w = width(y), d= depth(x), h = height(z)
     I_xx = ((1/12) * m * (w**2 + h**2))
     I_yy = ((1/12) * m * (h**2 + d**2))
     I_zz = ((1/12) * m * (w**2 + d**2))
     return I_xx, I_yy, I_zz
 
-def SCfunc_Intertia_Sphere(m, r):
+def SCphy_Intertia_Sphere(m, r):
     I_xx = (2/5) * m * r**2
     I_yy = (2/5) * m * r**2
     I_zz = (2/5) * m * r**2
     return I_xx, I_yy, I_zz
+
+def SCphy_ThrustCoef(state):
+    #TODO finish this
+    print ('WARNING, SCphy_ThrustCoef NOT FINISHED')
+    return -0.027
+def SCphy_TorqueCoef(state):
+    #TODO finish this
+    print ('WARNING, SCphy_TorqueCoef NOT FINISHED')
+    return 0.0001
+
+def SCphy_Thrust(state, rpm, R, rho=1.225):
+    CT = SCphy_ThrustCoef(state)
+    area = np.pi * R**2
+    tip_spd = SCfunc_RPM2RadSec(rpm)*R
+    return CT * rho * area * tip_spd**2
+
+def SCphy_Torque(state, rpm, R, rho=1.225):
+    CT = SCphy_TorqueCoef(state)
+    area = np.pi * R**2
+    tip_spd = SCfunc_RPM2RadSec(rpm)*R
+    return CT * rho * area * tip_spd**2 * R

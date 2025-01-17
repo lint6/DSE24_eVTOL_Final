@@ -51,11 +51,11 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
         rotor_count = 4
         
         # Control
-        setpoint_pos = [0,0,0]
-        setpoint_ang = [0,0,0]
-        setpoint_vel = [0,0,0]
-        setpoint_rot = [0,0,0]
-        rpm = np.ones(rotor_count) * .3*4000
+        setpoint_pos = np.array([0,0,-20])
+        setpoint_ang = np.array([0,0,0])
+        setpoint_vel = np.array([0,0,0])
+        setpoint_rot = np.array([0,0,0])
+        rpm = np.ones(rotor_count) * .25*4000
         far_distance = 75
         close_distance = 25
         allocation = np.array([[0.1,-0.1,-0.1,0.1],
@@ -163,7 +163,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
             log_state[5].append(drot) # Acceleration Angular
             
             # Cartesian Errors
-            log_error_cartesian[0].append(np.array(setpoint_pos) - log_state[0][-1])
+            log_error_cartesian[0].append(setpoint_pos - log_state[0][-1])
             log_error_cartesian[1].append(setpoint_ang - log_state[1][-1])
             log_error_cartesian[2].append(setpoint_vel - log_state[2][-1])
             log_error_cartesian[3].append(setpoint_rot - log_state[3][-1])
@@ -177,8 +177,8 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
             log_state_spherical[2].append([0,0,0]) # For compeletness, updated in SCcon_ForwardFlight if in autopilot
             
             # Controllers
-            autopilot = False
-            flybywire = True
+            autopilot = True
+            flybywire = False
             if autopilot: # Waypoint mode, mimicing autopilot
                 throttle_ForwardFlight, log_state_spherical[2], log_error_spherical, setpoint_ang_for = SCcon_ForwardFlight(log_state_spherical, log_state, log_error_spherical, allocation, dt=dt)
                 
@@ -195,8 +195,10 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
                 
             else: # Uncontrolled Flight
                 throttle = 0
+                mix_value = 0
                 
             rpm = SCfunc_RotorRPM(throttle, rpm, dt)
+            print(rpm)
             
             # Update aircraft
             for i in range(len(rpm)): #Limiting RPM

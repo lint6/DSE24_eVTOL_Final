@@ -97,9 +97,11 @@ def SCcon_ForwardFlight(state_in_1, state_in_2, error_in, allocation, dt):
 
 def SCcon_HoverFlight(state_in, error_in, allocation, dt):
     # Assign Data In
+    pos = state_in[0] # Historical position
+    ang = state_in[1] # Historical rotation
     vel = state_in[2] # Historical velocity
     rot = state_in[3] # Historical rotational velocity
-    ang = state_in[1] # Historical rotation
+
     allocation = allocation # Control allocation
 
     # Errors
@@ -137,9 +139,9 @@ def SCcon_HoverFlight(state_in, error_in, allocation, dt):
     ang_error.append(ang_error_now) # Historical Error in angle
     
     # Throttle
-    roll_throttle  = np.clip(SCfunc_PIDController(np.array(ang_error).T[0], k_p=0.05, t_i=250, t_d=5, dt=dt),
+    roll_throttle  = np.clip(-1*SCfunc_PIDController(-1*np.array(ang_error).T[0], k_p=0.05, t_i=250, t_d=5, dt=dt),
                              a_min=-1, a_max=1)
-    pitch_throttle = np.clip(SCfunc_PIDController(-1*np.array(ang_error).T[1], k_p=0.05, t_i=250, t_d=5, dt=dt),
+    pitch_throttle = np.clip(SCfunc_PIDController(np.array(ang_error).T[1], k_p=0.05, t_i=250, t_d=5, dt=dt),
                              a_min=-1, a_max=1)
     yaw_throttle   = np.clip(SCfunc_PIDController( -1 *np.array(rot).T[2], k_p=0.012, t_i=120, t_d=0.3, dt=dt),
                              a_min=-1, a_max=1)
@@ -159,7 +161,7 @@ def SCcon_HoverFlight(state_in, error_in, allocation, dt):
     throttle += yaw_throttle
     throttle += hover_throttle
     
-    return throttle, vel_set, ang_set, vel_error, ang_error
+    return throttle, np.array(vel_set), np.array(ang_set), vel_error, ang_error
 
 def SCcon_FlyByWire(state_in, error_in, allocation, dt):
     # Assign data in
