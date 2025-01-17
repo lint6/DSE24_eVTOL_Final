@@ -90,6 +90,135 @@ def SCfunc_RPM2RadSec(RPM):
 def SCfunc_RadSec2RPM(omega):
     return omega * 60 / (2*np.pi)
 
+
+
+import pandas as pd
+import numpy as np
+
+def assign_keys_to_mesh(csv_file, v_f_values, alpha_v_values, output_file="output.csv"):
+    """
+    Assigns V_f values to each column and alpha_v values to each row in a 100x100 mesh grid.
+    
+    Args:
+    - csv_file (str): Path to the input CSV file (without headers).
+    - v_f_values (list): List of V_f values (length must match number of columns).
+    - alpha_v_values (list): List of alpha_v values (length must match number of rows).
+    - output_file (str): Path for the output CSV file with assigned keys.
+    
+    Returns:
+    - None
+    """
+    
+    # Step 1: Read the CSV file into a DataFrame
+    df = pd.read_csv(csv_file, header=None)
+    
+    # Check if the mesh size is correct
+    if df.shape != (len(alpha_v_values), len(v_f_values)):
+        raise ValueError(f"CSV dimensions ({df.shape}) do not match the specified mesh size ({len(alpha_v_values)} x {len(v_f_values)})")
+    
+    # Step 2: Assign column names (V_f values)
+    df.columns = v_f_values  # Assign V_f values to columns
+    
+    # Step 3: Assign row index (alpha_v values)
+    df.index = alpha_v_values  # Assign alpha_v values to rows
+    
+    # Step 4: Save the new DataFrame with keys as a CSV file
+    df.to_csv(output_file)
+
+    return f"CSV with keys saved as '{output_file}'"
+
+# Example usage
+v_f_values = np.linspace(0, 10, 100)  # V_f values for 100 columns (e.g., from 0 to 10)
+alpha_v_values = np.linspace(0, 20, 100)  # alpha_v values for 100 rows (e.g., from 0 to 20)
+
+# File path to your input CSV (without headers)
+csv_file = r"C:\Users\yunja\OneDrive\Desktop\DSE eVTOL MISC\C_T_interpolated_iter1.csv"
+
+# Call the function
+assign_keys_to_mesh(csv_file, v_f_values, alpha_v_values, output_file="output_with_keys.csv")
+
+
+
+
+def SCfunc_CSV_reading_keys(my_file):
+
+
+    import pandas as pd
+    import numpy as np
+    import os
+    from scipy.interpolate import griddata
+
+    # Load CSV file
+
+    folder_path = r"C:\Users\yunja\OneDrive\Desktop\DSE eVTOL MISC"
+    file_name = my_file  # Replace with your actual CSV filename
+
+    file_path = os.path.join(folder_path, file_name)  # Combine folder and file name
+
+    df = pd.read_csv(file_path)
+
+    # Extract columns as NumPy arrays
+    x = df["V_f"].values  # First input variable
+    y = df["alpha_v"].values  # Second input variable
+    z = df["C_T"].values  # Output variable
+
+    # Define the points and values for interpolation
+    points = np.column_stack((x, y))  # Combine x and y into a 2D array
+    values = z  # Corresponding output values
+
+    # Define the new point of interest (V_f = 5.5, alpha = 6)
+    new_point = np.array([[5.5, 6]])
+
+    # Perform interpolation
+    z_new = griddata(points, values, new_point, method='linear')
+
+    print(f"Interpolated value at (V_f, alpha) = {new_point[0]} is C_T = {z_new[0]}")
+
+    return z_new[0]
+
+
+
+import pandas as pd
+import numpy as np
+import os
+from scipy.interpolate import griddata
+
+def SCfunc_CSV_reading_indexing(my_file):
+    # Load CSV file
+    folder_path = r"C:\Users\yunja\OneDrive\Desktop\DSE eVTOL MISC"
+    file_name = my_file  # Replace with your actual CSV filename
+    file_path = os.path.join(folder_path, file_name)  # Combine folder and file name
+    df = pd.read_csv(file_path, header=None)  # Read CSV without headers
+
+    # Extracting data directly by index (instead of using column names)
+    # For example, assuming that the first two columns are 'V_f' and 'alpha_v', and the last column is 'C_T'
+    num_rows, num_cols = df.shape
+
+    # You can adjust column indices based on the CSV structure
+    x = df.iloc[:, 0].values  # First column (V_f values)
+    y = df.iloc[:, 1].values  # Second column (alpha_v values)
+    z = df.iloc[:, 2].values  # Output variable (C_T values)
+
+    # Define the points and values for interpolation
+    points = np.column_stack((x, y))  # Combine x and y into a 2D array (coordinates)
+    values = z  # Corresponding output values
+
+    # Define the new point of interest (e.g., V_f = 5.5, alpha_v = 6)
+    new_point = np.array([[5.5, 6]])
+
+    # Perform interpolation
+    z_new = griddata(points, values, new_point, method='linear')
+
+    # Print the interpolated value
+    print(f"Interpolated value at (V_f, alpha) = {new_point[0]} is C_T = {z_new[0]}")
+
+    return z_new[0]
+
+# Example call to function with your filename
+result = SCfunc_CSV_reading_indexing(r"C_T_interpolated_iter1.csv")
+print(result)
+
+
 DEBUG = False
 if DEBUG:
     # print(SCfunc_EulerRotation([1,0,0],[10,5,10])[0])
