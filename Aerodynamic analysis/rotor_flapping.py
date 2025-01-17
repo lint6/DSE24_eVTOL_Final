@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import math
 from airfoil import AirfoilData
 from scipy.interpolate import RegularGridInterpolator
+from scipy.integrate import trapz
 
 
 class BEMT():
@@ -13,17 +14,17 @@ class BEMT():
         self.rho = 1.225 # kg/m^3, the air density
 
         # airfoil specification
-        self.a_r = 0.1085 * (180 / np.pi)  # [-/deg], the profile lift curve slope in the linear region NACA2414 0.1225
-        self.intercept_cl = 0.2379 #NACA2414 0.2379
+        self.a_r = 0.102 * (180 / np.pi)  # [-/deg], the profile lift curve slope in the linear region NACA2414 0.1225 NACA6412 0.102
+        self.intercept_cl = 0.6458 #NACA2414 0.2379 NACA6412 0.6458
 
         # specify initial rotor sizing parameters
-        self.R = 1.17 # m, the rotor radius in meters
+        self.R = 1.22 # m, the rotor radius in meters
         self.b = 6 # - , number of blades
         self.cutout = 0.15 * self.R
         self.r_bar_e = 0.96 #effective blade radius due to tip losses, approximate input for now
 
         #rotational velocity
-        self.omega = 125 # rad/s, rotational velocity
+        self.omega = 97 # rad/s, rotational velocity
 
         #transition
         self.SOS = 343 # m/s, transition air speed
@@ -33,7 +34,7 @@ class BEMT():
 
         #element structural properties
         self.E = 163 * (10**9) #Young's modulus in [Pa]
-        self.I = 25628.91 * (10**-12) #m^4
+        self.I = 46053.4579 * (10**-12) #m^4
 
     def discretise(self, num_elements=None):
 
@@ -43,7 +44,7 @@ class BEMT():
         #print(self.r_list)
 
         #setup chord
-        c_root = 0.075 # meters
+        c_root = 0.07 # meters
         taper = 0.8 # -
         c_tip = c_root * taper
         c_avg = 0.5 * (c_root + c_root * taper)
@@ -59,8 +60,8 @@ class BEMT():
         #print(self.c_r_list)
 
         #setup theta
-        theta_root = np.deg2rad(20)
-        theta_tip = np.deg2rad(6)
+        theta_root = np.deg2rad(10)
+        theta_tip = np.deg2rad(5)
 
         #slope of the twist distribution
         slope_t = (theta_tip - theta_root)/(self.R - self.cutout)
@@ -93,6 +94,11 @@ class BEMT():
         induced_2 = -1 * (induced_1 + (V_c / (2 * V_t)))
         induced_3 = math.sqrt((induced_1 + (V_c /(2 * V_t)))**2 + ((induced_1 * 2) * ((r_bar * theta_r) - (V_c / V_t))))
         v_r = V_t * (induced_2 + induced_3)
+
+        # return self.number_of_blades * (self.C_l_alpha * (
+        #             (pitch_equation(x) * (np.pi / 180)) - lambda_i / x) + c_l_intercept) * x * chord_equation(
+        #     x) - 8 * lambda_i ** 2 * np.pi * self.rotor_radius
+        #v_r = 5.8
 
         phi = np.arctan((V_c + v_r)/(omega * r))
         alpha = theta_r - phi
@@ -571,8 +577,8 @@ class BEMT():
 
     def interpolation(self):
         # interpolate with numpy the values of lift and drag as a function of the radius position
-        self.dL_r_interp = np.interp(self.r_list, self.r_list, [self.forward(omega=self.omega, theta_r=theta, c_r=chord, r=r, dr=self.dr, V_f=32.04, a_r=a, psi=(1.5 * np.pi), gamma=0.0, alpha_v=0.0, v_fl=0.0)[0] if self.cutout < r < self.r_e else 0.0 for chord, theta, a, r in zip(self.c_r_list, self.theta_r_list, self.a_r_list, self.r_list)])
-        self.dD_r_interp = np.interp(self.r_list, self.r_list, [self.forward(omega=self.omega, theta_r=theta, c_r=chord, r=r, dr=self.dr, V_f=32.04, a_r=a, psi=(1.5* np.pi), gamma=0.0, alpha_v=0.0, v_fl=0.0)[1] if self.cutout < r < self.r_e else 0.0 for chord, theta, a, r in zip(self.c_r_list, self.theta_r_list, self.a_r_list, self.r_list)])
+        self.dL_r_interp = np.interp(self.r_list, self.r_list, [self.forward(omega=self.omega, theta_r=theta, c_r=chord, r=r, dr=self.dr, V_f=34.93, a_r=a, psi=(1.5 * np.pi), gamma=0.0, alpha_v=0.0, v_fl=0.0)[0] if self.cutout < r < self.r_e else 0.0 for chord, theta, a, r in zip(self.c_r_list, self.theta_r_list, self.a_r_list, self.r_list)])
+        self.dD_r_interp = np.interp(self.r_list, self.r_list, [self.forward(omega=self.omega, theta_r=theta, c_r=chord, r=r, dr=self.dr, V_f=34.93, a_r=a, psi=(1.5* np.pi), gamma=0.0, alpha_v=0.0, v_fl=0.0)[1] if self.cutout < r < self.r_e else 0.0 for chord, theta, a, r in zip(self.c_r_list, self.theta_r_list, self.a_r_list, self.r_list)])
         # return the values
         return self.dL_r_interp, self.dD_r_interp
 
@@ -586,8 +592,8 @@ if __name__ == '__main__':
     BEMT = BEMT()
 
     #which analysis
-    vertical = True
-    forward = False
+    vertical = False
+    forward = True
     interpolation = False
     controlstability = False
 
@@ -600,7 +606,7 @@ if __name__ == '__main__':
         print("\033[34mVertical Flight:\033[0m")
 
         #specify vertical flight regime
-        V_c = 0.76
+        V_c = -1
 
         dL_r_list1 = []
         dD_r_list1 = []
@@ -683,10 +689,35 @@ if __name__ == '__main__':
         print(f"for {BEMT.n_rotors} rotors:")
         print(f"L {L * BEMT.b * BEMT.n_rotors} D {D * BEMT.b * BEMT.n_rotors} T {T * BEMT.b * BEMT.n_rotors} Q {Q * BEMT.b * BEMT.n_rotors} P_r {P_r * BEMT.b * BEMT.n_rotors}  Fx {Fx * BEMT.b * BEMT.n_rotors}")
 
-        T_req = (953.15 * 9.80665 * 1.10)/(np.cos(10*(np.pi/180)))
+        T_req = (832.034 * 9.80665 * 1.10)/(np.cos(10*(np.pi/180)))
         n_rotor = T_req/(T*BEMT.b)
         print("---------------------")
         print(f"You would need {n_rotor} rotors to generate {T_req} [N] of thrust")
+
+        ######Ideal power
+        # x_values = np.linspace(0.15 * BEMT.R, 0.96 * BEMT.R, 100)
+        #
+        # delta_x = x_values[1] - x_values[0]
+        #
+        # print(v_r_list1)
+        # hi = np.trapz(v_r_list1[14:95]) * delta_x
+        list111 = [2.6064851846444075, 2.7625253241373295, 2.913642055425938, 3.0600686364145497, 3.2020178564140505, 3.339684493107723, 3.473247400239225, 3.60287129183786, 3.728708275347019, 3.850899175649772, 3.969574683916361, 4.084856358868647, 4.19685750305276, 4.30568393272721, 4.411434656779716, 4.5142024775091265, 4.61407452401703, 4.711132727246159, 4.805454244300948, 4.897111838529499, 4.986174220887415, 5.0727063573056475, 5.156769746116544, 5.238422669031174, 5.3177204186877765, 5.394715505390457, 5.4694578453166915, 5.541994932181897, 5.612371994100833, 5.680632137172265, 5.746816477129741, 5.810964260242729, 5.873112974514903, 5.933298452107221, 5.991554963809372, 6.04791530629268, 6.102410882797957, 6.155071777842378, 6.20592682646807, 6.255003678501203, 6.302328858242785, 6.347927819970034, 6.391824999589972, 6.434043862753525, 6.474606949708852, 6.5135359171462826, 6.550851577263586, 6.586573934259196, 6.620722218442096, 6.653314918130033, 6.684369809492388, 6.713903984480279, 6.741933876973941, 6.768475287266184, 6.79354340499048, 6.817152830592975, 6.839317595439249, 6.860051180639003, 6.879366534664768, 6.897276089834402, 6.913791777721165, 6.928925043549879, 6.942686859632572, 6.955087737892616, 6.966137741521912, 6.9758464958119815, 6.984223198196032, 6.991276627535713, 6.997015152683133, 7.001446740345707, 7.00457896227862, 7.006419001827043, 7.006973659837711, 7.006249359957145, 7.004252153331403, 7.000987722720169, 6.996461386035752, 6.9906780993155415, 6.983642459134444, 6.975358704461787, 6.965830717965231]
+        hi = sum(list111)/len(list111)
+
+        print(hi)
+        #v_i = np.sqrt((709.63 * 9.80665 * (1/6))/(2 * 1.225 * np.pi * (1.09**2)))
+        v_i = hi
+        print(v_i)
+        P_i = v_i * (709.63 * 9.80665)
+        print(P_i)
+
+        #FM
+        FM1 = P_i/(P_r * BEMT.b * BEMT.n_rotors)
+        print(f"FM1 = {FM1}")
+        FM2 = (C_T/C_P) * (np.sqrt(C_T/2))
+        print(f"FM2 = {FM2}")
+
+
 
         plot = True
         if plot==True:
@@ -712,7 +743,7 @@ if __name__ == '__main__':
         print("\033[32mForward flight:\033[0m")
 
         #specify forward flight regime
-        V_f = 32.04
+        V_f = 37
         gamma = 0.0
         alpha_v = 0.0 * (np.pi/180) #in radians
 
@@ -932,17 +963,17 @@ if __name__ == '__main__':
         print(f"for {BEMT.n_rotors} rotors:")
         print(f"L {L * BEMT.b * BEMT.n_rotors} D {D * BEMT.b * BEMT.n_rotors} T {T * BEMT.b * BEMT.n_rotors} Q {Q * BEMT.b * BEMT.n_rotors} P_r {P * BEMT.b * BEMT.n_rotors}  Fx {Fx * BEMT.b * BEMT.n_rotors}")
 
-        T_req = (709.63 * 9.80665 * 1.10) / (np.cos(10 * (np.pi / 180)))
+        T_req = (832.034 * 9.80665 * 1.10) / (np.cos(10 * (np.pi / 180)))
         n_rotor = T_req / (T * BEMT.b)
         print("---------------------")
         print(f"You would need {n_rotor} rotors to generate {T_req} [N] of thrust")
 
-        plot = False
+        plot = True
         if plot == True:
 
             plt.plot(BEMT.r_list, dL_r_list2[0])
             plt.plot(BEMT.r_list, dL_r_list2[30], color='k')
-            plt.plot(BEMT.r_list, dL_r_list2[60])
+            plt.plot(BEMT.r_list, dL_r_list2[60], color='r')
             plt.plot(BEMT.r_list, dL_r_list2[90], color='b')
             haha = [(x + y + z + t)/4 for x, y, z, t in zip(dL_r_list2[0], dL_r_list2[30], dL_r_list2[60], dL_r_list2[90])]
             plt.plot(BEMT.r_list, haha, color='b')
