@@ -48,12 +48,16 @@ def SCphy_Intertia_Sphere(m, r):
 
 def SCphy_ThrustCoef(state):
     #TODO finish this
-    print ('WARNING, SCphy_ThrustCoef NOT FINISHED')
-    return -0.027
+    print ('WARNING, SCphy_ThrustCoef FINHALLY FINISHED')
+    velocity = float(input("what is the velocity of your interest?"))
+    alpha = float(input("what is the alpha of your interest?"))
+    return SCfunc_CSV_readingg(SCfunc_CSV_readingg(r"C:\Users\yunja\OneDrive\Desktop\DSE eVTOL MISC", r"C_T_interpolated_iter1.csv", velocity, alpha))
+
 def SCphy_TorqueCoef(state):
-    #TODO finish this
-    print ('WARNING, SCphy_TorqueCoef NOT FINISHED')
-    return 0.0001
+    #TODO finish this, C_Q_interpolated_iter1.csvC_Q_interpolated_iter1.csv
+    velocity = float(input("what is the velocity of your interest?"))
+    alpha = float(input("what is the alpha of your interest?"))
+    return SCfunc_CSV_readingg(SCfunc_CSV_readingg(r"C:\Users\yunja\OneDrive\Desktop\DSE eVTOL MISC", r"C_Q_interpolated_iter1.csv" , velocity, alpha))
 
 def SCphy_Thrust(state, rpm, R, rho=1.225):
     CT = SCphy_ThrustCoef(state)

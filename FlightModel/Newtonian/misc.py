@@ -224,14 +224,14 @@ def SCfunc_CSV_reading(file):
     return value
 
 
-def SCfunc_CSV_readingg(file, velocity_input, alpha_input):
+def SCfunc_CSV_readingg(folder_path, file, velocity_input, alpha_input):
 
     import numpy as np
     import os
     import csv
     from scipy.interpolate import interp2d
     
-    folder_path = r"C:\Users\yunja\OneDrive\Desktop\DSE eVTOL MISC"
+    folder_path = folder_path
     file_name = file  # CSV filename
     file_path = os.path.join(folder_path, file_name)  # Full file path
 
@@ -260,7 +260,7 @@ def SCfunc_CSV_readingg(file, velocity_input, alpha_input):
 # Example Usage
 velocity = 25  # Example velocity input
 alpha = 10  # Example angle of attack input (degrees)
-result = SCfunc_CSV_readingg(r"C_T_interpolated_iter1.csv", velocity, alpha)
+result = SCfunc_CSV_readingg(r"C:\Users\yunja\OneDrive\Desktop\DSE eVTOL MISC", r"C_T_interpolated_iter1.csv", velocity, alpha)
 print("interpolated result is :", result)
 
 
