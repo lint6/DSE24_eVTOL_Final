@@ -17,7 +17,7 @@ class PerformanceAnalysis:
 
         #vehicle inputs
         self.MTOW = MTOW #kg
-        self.MTOW_N = self.MTOW * self.g #N
+        self.MTOW_N = self.MTOW * self.g / np.cos(10*(np.pi/180)) #N
 
         # rotor inputs
         self.rotor_radius = 1.09 #m
@@ -95,6 +95,8 @@ class PerformanceAnalysis:
         #hover_vi_values = lambda_values * (self.omega * self.rotor_radius)
         self.v_i_hov = self.lambda_v * (self.omega * self.rotor_radius) 
 
+        #self.v_i_hov = 5.8
+
 
         # Plot hover_vi_values vs x_values
         # plt.plot(x_values, hover_vi_values)
@@ -116,7 +118,7 @@ class PerformanceAnalysis:
         self.C_D_p_bar_3 = 0.009 + 0.73 * (self.alpha_m**2) #talbot
 
 
-        self.P_i_hov = 1.1 * self.thrust * self.v_i_hov # k factor is 1.1 cuz we account for some losses but not all
+        self.P_i_hov = 1 * self.thrust * self.v_i_hov # k factor is 1.1 cuz we account for some losses but not all
 
         # profile power
         self.C_D_p_bar = 0.008348 # TODO: CHANGE LATER based on airfoil tools
