@@ -91,39 +91,7 @@ def SCfunc_RadSec2RPM(omega):
     return omega * 60 / (2*np.pi)
 
 
-
-
-def assign_keys_to_mesh(csv_file, v_f_values, alpha_v_values, output_file="output.csv"):
-    """
-    Assigns V_f values to each column and alpha_v values to each row in a 100x100 mesh grid.
-    
-    Args:
-    - csv_file (str): Path to the input CSV file (without headers).
-    - v_f_values (list): List of V_f values (length must match number of columns).
-    - alpha_v_values (list): List of alpha_v values (length must match number of rows).
-    - output_file (str): Path for the output CSV file with assigned keys.
-    
-    Returns:
-    - None
-    """
-    
-    # Step 1: Read the CSV file into a DataFrame
-    df = pd.read_csv(csv_file, header=None)
-    
-    # Check if the mesh size is correct
-    if df.shape != (len(alpha_v_values), len(v_f_values)):
-        raise ValueError(f"CSV dimensions ({df.shape}) do not match the specified mesh size ({len(alpha_v_values)} x {len(v_f_values)})")
-    
-    # Step 2: Assign column names (V_f values)
-    df.columns = v_f_values  # Assign V_f values to columns
-    
-    # Step 3: Assign row index (alpha_v values)
-    df.index = alpha_v_values  # Assign alpha_v values to rows
-    
-    # Step 4: Save the new DataFrame with keys as a CSV file
-    df.to_csv(output_file)
-
-    return f"CSV with keys saved as '{output_file}'"
+"""
 def SCfunc_CSV_reading_keys(my_file):
 
 
@@ -222,6 +190,9 @@ def SCfunc_CSV_readinggg(file):
         value = row[54] # range of Range of velocities going from np.linspace(0,50,100) 
 
     return value
+
+"""
+
 
 
 def SCfunc_CSV_reading(folder_path, file, velocity_input, alpha_input):
