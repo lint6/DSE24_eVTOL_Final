@@ -194,7 +194,7 @@ def SCfunc_CSV_reading_indexing(my_file):
     #print(f"Interpolated value at (V_f, alpha) = {new_point[0]} is C_T = {z_new[0]}")
 
     return z_new[0]
-def SCfunc_CSV_reading(file):
+def SCfunc_CSV_readinggg(file):
     import numpy as np 
     import os 
     import scipy 
@@ -224,7 +224,7 @@ def SCfunc_CSV_reading(file):
     return value
 
 
-def SCfunc_CSV_readingg(folder_path, file, velocity_input, alpha_input):
+def SCfunc_CSV_reading(folder_path, file, velocity_input, alpha_input):
 
     import numpy as np
     import os
@@ -261,8 +261,8 @@ def SCfunc_CSV_readingg(folder_path, file, velocity_input, alpha_input):
 # Example Usage
 velocity = 45  # Example velocity input
 alpha = 30  # Example angle of attack input (degrees)
-result = SCfunc_CSV_readingg(r"DSE24_eVTOL_Final\FlightModel\Newtonian\CSV_rotor_data", r"C_T_interpolated_iter1.csv", velocity, alpha)
-print("interpolated result is :", result)
+result = SCfunc_CSV_reading(r"DSE24_eVTOL_Final\FlightModel\Newtonian\CSV_rotor_data", r"C_T_interpolated_iter1.csv", velocity, alpha)
+print("interpolated result is :", result) 
 
 DEBUG = False
 if DEBUG:
