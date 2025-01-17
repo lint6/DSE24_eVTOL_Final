@@ -91,108 +91,6 @@ def SCfunc_RadSec2RPM(omega):
     return omega * 60 / (2*np.pi)
 
 
-"""
-def SCfunc_CSV_reading_keys(my_file):
-
-
-    import pandas as pd
-    import numpy as np
-    import os
-    from scipy.interpolate import griddata
-
-    # Load CSV file
-
-    folder_path = r"C:\Users\yunja\OneDrive\Desktop\DSE eVTOL MISC"
-    file_name = my_file  # Replace with your actual CSV filename
-
-    file_path = os.path.join(folder_path, file_name)  # Combine folder and file name
-
-    df = pd.read_csv(file_path)
-
-    # Extract columns as NumPy arrays
-    x = df["V_f"].values  # First input variable
-    y = df["alpha_v"].values  # Second input variable
-    z = df["C_T"].values  # Output variable
-
-    # Define the points and values for interpolation
-    points = np.column_stack((x, y))  # Combine x and y into a 2D array
-    values = z  # Corresponding output values
-
-    # Define the new point of interest (V_f = 5.5, alpha = 6)
-    new_point = np.array([[5.5, 6]])
-
-    # Perform interpolation
-    z_new = griddata(points, values, new_point, method='linear')
-
-    #print(f"Interpolated value at (V_f, alpha) = {new_point[0]} is C_T = {z_new[0]}")
-
-    return z_new[0]
-def SCfunc_CSV_reading_indexing(my_file):
-    import pandas as pd
-    import numpy as np
-    import os
-    from scipy.interpolate import griddata
-
-    # Load CSV file
-    folder_path = r"C:\Users\yunja\OneDrive\Desktop\DSE eVTOL MISC"
-    file_name = my_file  # Replace with your actual CSV filename
-    file_path = os.path.join(folder_path, file_name)  # Combine folder and file name
-    df = pd.read_csv(file_path, header=None)  # Read CSV without headers
-
-    # Extracting data directly by index (instead of using column names)
-    # For example, assuming that the first two columns are 'V_f' and 'alpha_v', and the last column is 'C_T'
-    num_rows, num_cols = df.shape
-
-    # You can adjust column indices based on the CSV structure
-    x = df.iloc[:, 0].values  # First column (V_f values)
-    y = df.iloc[:, 1].values  # Second column (alpha_v values)
-    z = df.iloc[:, 2].values  # Output variable (C_T values)
-
-    # Define the points and values for interpolation
-    points = np.column_stack((x, y))  # Combine x and y into a 2D array (coordinates)
-    values = z  # Corresponding output values
-
-    # Define the new point of interest (e.g., V_f = 5.5, alpha_v = 6)
-    new_point = np.array([[5.5, 6]])
-
-    # Perform interpolation
-    z_new = griddata(points, values, new_point, method='linear')
-
-    # Print the interpolated value
-    #print(f"Interpolated value at (V_f, alpha) = {new_point[0]} is C_T = {z_new[0]}")
-
-    return z_new[0]
-def SCfunc_CSV_readinggg(file):
-    import numpy as np 
-    import os 
-    import scipy 
-    import csv
-
-    folder_path = r"C:\Users\yunja\OneDrive\Desktop\DSE eVTOL MISC"
-    file_name = file  # Replace with your actual CSV filename
-    file_path = os.path.join(folder_path, file_name)  # Combine folder and file name
-
-    alpha_v_rad = np.linspace((-np.pi)/2, (np.pi)/2 , 100)
-    alpha_v_deg = alpha_v_rad * 180 / np.pi
-    velocities = np.linspace(0,50,100)
-    print(alpha_v_deg)
-    print(velocities)
-
-    #Over here chat gpt
-    #write a logic, when i give a speficic velocity and alpha, it interpolate or wtv to choose the correct index?
-    #thank you 
-
-    with open(file_path, newline='') as csvfile:
-        reader = csv.reader(csvfile)
-    
-    # Get the 45th row (index 44) and 55th column (index 54)
-        row = list(reader)[44] # Range of alpha_v values as np.linspace(-(pi/2),(pi/2),100)
-        value = row[54] # range of Range of velocities going from np.linspace(0,50,100) 
-
-    return value
-
-"""
-
 
 
 def SCfunc_CSV_reading(folder_path, file, velocity_input, alpha_input):
@@ -229,14 +127,14 @@ def SCfunc_CSV_reading(folder_path, file, velocity_input, alpha_input):
 
     return interpolated_value
 
-# Example Usage
-velocity = 45  # Example velocity input
-alpha = 30  # Example angle of attack input (degrees)
-result = SCfunc_CSV_reading(r"DSE24_eVTOL_Final\FlightModel\Newtonian\CSV_rotor_data", r"C_T_interpolated_iter1.csv", velocity, alpha)
-print("interpolated result is :", result) 
 
-DEBUG = False
+DEBUG = True
 if DEBUG:
     # print(SCfunc_EulerRotation([1,0,0],[10,5,10])[0])
     # print(SCfunc_CartesianToSpherical([15,-5,1]))
-    print(SCfunc_LinearRamp(x1=0, x2=5, x=-5, value1=0, value2=-5))
+    # print(SCfunc_LinearRamp(x1=0, x2=5, x=-5, value1=0, value2=-5))
+    # Example Usage
+    velocity = 45  # Example velocity input
+    alpha = 30  # Example angle of attack input (degrees)
+    result = SCfunc_CSV_reading(r"DSE24_eVTOL_Final\FlightModel\Newtonian\CSV_rotor_data", r"C_T_interpolated_iter1.csv", velocity, alpha)
+    print("interpolated result is :", result) 
