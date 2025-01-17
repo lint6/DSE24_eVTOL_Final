@@ -263,9 +263,6 @@ alpha = 10  # Example angle of attack input (degrees)
 result = SCfunc_CSV_readingg(r"C:\Users\yunja\OneDrive\Desktop\DSE eVTOL MISC", r"C_T_interpolated_iter1.csv", velocity, alpha)
 print("interpolated result is :", result)
 
-
-
-
 DEBUG = False
 if DEBUG:
     # print(SCfunc_EulerRotation([1,0,0],[10,5,10])[0])
