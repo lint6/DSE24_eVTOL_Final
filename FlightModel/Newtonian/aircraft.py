@@ -219,13 +219,13 @@ def SCcraft_Airligator():
                                 moments  = [0, 0, 0],   #[N*m]
                                 mass     = pax_mass,       #[kg] 
                                 inertia  = pax_inertia,
-                                position = [0,0,0],   # [m from the body axis origin ]
+                                position = [1.6,0,0],   # [m from the body axis origin ]
                                 rotation = [0,0,0],)  # euler angle degrees 
     pax_2   = SCobj_ForcePoint( forces   = [0, 0, 0], #[N, WITHOUT gravitational froce]
                                 moments  = [0, 0, 0],   #[N*m]
                                 mass     = pax_mass,       #[kg] 
                                 inertia  = pax_inertia,
-                                position = [0,0,0],   # [m from the body axis origin ]
+                                position = [1.6,0,0],   # [m from the body axis origin ]
                                 rotation = [0,0,0],)  # euler angle degrees 
     bat_1   = SCobj_ForcePoint( forces   = [0, 0, 0], #[N, WITHOUT gravitational froce]
                                 moments  = [0, 0, 0],   #[N*m]

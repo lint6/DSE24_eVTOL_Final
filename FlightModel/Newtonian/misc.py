@@ -129,7 +129,7 @@ def SCfunc_CSV_reading(folder_path, file, velocity_input, alpha_input):
     return interpolated_value
 
 
-DEBUG = True
+DEBUG = False
 if DEBUG:
     # print(SCfunc_EulerRotation([1,0,0],[10,5,10])[0])
     # print(SCfunc_CartesianToSpherical([15,-5,1]))
