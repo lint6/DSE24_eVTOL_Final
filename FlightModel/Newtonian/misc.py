@@ -233,7 +233,8 @@ def SCfunc_CSV_readingg(folder_path, file, velocity_input, alpha_input):
     
     folder_path = folder_path
     file_name = file  # CSV filename
-    file_path = os.path.join(folder_path, file_name)  # Full file path
+    cwd = os.getcwd()
+    file_path = os.path.join(cwd, folder_path, file_name)  # Full file path
 
     # Define alpha_v (angle of attack) and velocity ranges
     alpha_v_rad = np.linspace(-np.pi/2, np.pi/2, 100)  # 100 values from -90 to 90 degrees
@@ -258,9 +259,9 @@ def SCfunc_CSV_readingg(folder_path, file, velocity_input, alpha_input):
     return interpolated_value
 
 # Example Usage
-velocity = 25  # Example velocity input
-alpha = 10  # Example angle of attack input (degrees)
-result = SCfunc_CSV_readingg(r"C:\Users\yunja\OneDrive\Desktop\DSE eVTOL MISC", r"C_T_interpolated_iter1.csv", velocity, alpha)
+velocity = 45  # Example velocity input
+alpha = 30  # Example angle of attack input (degrees)
+result = SCfunc_CSV_readingg(r"DSE24_eVTOL_Final\FlightModel\Newtonian\CSV_rotor_data", r"C_T_interpolated_iter1.csv", velocity, alpha)
 print("interpolated result is :", result)
 
 DEBUG = False
