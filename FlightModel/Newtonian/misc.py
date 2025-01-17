@@ -92,8 +92,6 @@ def SCfunc_RadSec2RPM(omega):
 
 
 
-import pandas as pd
-import numpy as np
 
 def assign_keys_to_mesh(csv_file, v_f_values, alpha_v_values, output_file="output.csv"):
     """
@@ -126,20 +124,6 @@ def assign_keys_to_mesh(csv_file, v_f_values, alpha_v_values, output_file="outpu
     df.to_csv(output_file)
 
     return f"CSV with keys saved as '{output_file}'"
-
-# Example usage
-v_f_values = np.linspace(0, 10, 100)  # V_f values for 100 columns (e.g., from 0 to 10)
-alpha_v_values = np.linspace(0, 20, 100)  # alpha_v values for 100 rows (e.g., from 0 to 20)
-
-# File path to your input CSV (without headers)
-csv_file = r"C:\Users\yunja\OneDrive\Desktop\DSE eVTOL MISC\C_T_interpolated_iter1.csv"
-
-# Call the function
-assign_keys_to_mesh(csv_file, v_f_values, alpha_v_values, output_file="output_with_keys.csv")
-
-
-
-
 def SCfunc_CSV_reading_keys(my_file):
 
 
@@ -172,18 +156,15 @@ def SCfunc_CSV_reading_keys(my_file):
     # Perform interpolation
     z_new = griddata(points, values, new_point, method='linear')
 
-    print(f"Interpolated value at (V_f, alpha) = {new_point[0]} is C_T = {z_new[0]}")
+    #print(f"Interpolated value at (V_f, alpha) = {new_point[0]} is C_T = {z_new[0]}")
 
     return z_new[0]
-
-
-
-import pandas as pd
-import numpy as np
-import os
-from scipy.interpolate import griddata
-
 def SCfunc_CSV_reading_indexing(my_file):
+    import pandas as pd
+    import numpy as np
+    import os
+    from scipy.interpolate import griddata
+
     # Load CSV file
     folder_path = r"C:\Users\yunja\OneDrive\Desktop\DSE eVTOL MISC"
     file_name = my_file  # Replace with your actual CSV filename
@@ -210,13 +191,79 @@ def SCfunc_CSV_reading_indexing(my_file):
     z_new = griddata(points, values, new_point, method='linear')
 
     # Print the interpolated value
-    print(f"Interpolated value at (V_f, alpha) = {new_point[0]} is C_T = {z_new[0]}")
+    #print(f"Interpolated value at (V_f, alpha) = {new_point[0]} is C_T = {z_new[0]}")
 
     return z_new[0]
+def SCfunc_CSV_reading(file):
+    import numpy as np 
+    import os 
+    import scipy 
+    import csv
 
-# Example call to function with your filename
-result = SCfunc_CSV_reading_indexing(r"C_T_interpolated_iter1.csv")
-print(result)
+    folder_path = r"C:\Users\yunja\OneDrive\Desktop\DSE eVTOL MISC"
+    file_name = file  # Replace with your actual CSV filename
+    file_path = os.path.join(folder_path, file_name)  # Combine folder and file name
+
+    alpha_v_rad = np.linspace((-np.pi)/2, (np.pi)/2 , 100)
+    alpha_v_deg = alpha_v_rad * 180 / np.pi
+    velocities = np.linspace(0,50,100)
+    print(alpha_v_deg)
+    print(velocities)
+
+    #Over here chat gpt
+    #write a logic, when i give a speficic velocity and alpha, it interpolate or wtv to choose the correct index?
+    #thank you 
+
+    with open(file_path, newline='') as csvfile:
+        reader = csv.reader(csvfile)
+    
+    # Get the 45th row (index 44) and 55th column (index 54)
+        row = list(reader)[44] # Range of alpha_v values as np.linspace(-(pi/2),(pi/2),100)
+        value = row[54] # range of Range of velocities going from np.linspace(0,50,100) 
+
+    return value
+
+
+def SCfunc_CSV_readingg(file, velocity_input, alpha_input):
+
+    import numpy as np
+    import os
+    import csv
+    from scipy.interpolate import interp2d
+    
+    folder_path = r"C:\Users\yunja\OneDrive\Desktop\DSE eVTOL MISC"
+    file_name = file  # CSV filename
+    file_path = os.path.join(folder_path, file_name)  # Full file path
+
+    # Define alpha_v (angle of attack) and velocity ranges
+    alpha_v_rad = np.linspace(-np.pi/2, np.pi/2, 100)  # 100 values from -90 to 90 degrees
+    alpha_v_deg = alpha_v_rad * 180 / np.pi  # Convert radians to degrees
+    velocities = np.linspace(0, 50, 100)  # 100 values from 0 to 50 m/s
+
+    # Read CSV data into a NumPy array
+    with open(file_path, newline='') as csvfile:
+        reader = csv.reader(csvfile)
+        data = np.array([list(map(float, row)) for row in reader])  # Convert to float array
+
+    # Ensure the data has the correct shape (100x100)
+    if data.shape != (100, 100):
+        raise ValueError(f"Expected CSV shape (100,100), but got {data.shape}")
+
+    # Create an interpolation function
+    interp_func = interp2d(velocities, alpha_v_deg, data, kind='linear')
+
+    # Interpolate the value at the given velocity and alpha
+    interpolated_value = interp_func(velocity_input, alpha_input)[0]
+
+    return interpolated_value
+
+# Example Usage
+velocity = 25  # Example velocity input
+alpha = 10  # Example angle of attack input (degrees)
+result = SCfunc_CSV_readingg(r"C_T_interpolated_iter1.csv", velocity, alpha)
+print("interpolated result is :", result)
+
+
 
 
 DEBUG = False
