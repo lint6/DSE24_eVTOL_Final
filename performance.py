@@ -5,7 +5,7 @@ from scipy.optimize import fsolve
 
 class PerformanceAnalysis:
 
-    def __init__(self, MTOW = 709.63, climb_angle = 9, descent_angle = -5, vertical_climb = 0.76, vertical_descent = -0.5, steep_descent = -7.6):
+    def __init__(self, MTOW = 765.13, climb_angle = 9, descent_angle = -5, vertical_climb = 0.76, vertical_descent = -0.5, steep_descent = -7.6):
         
         # constants
         self.g = 9.80665
@@ -19,18 +19,18 @@ class PerformanceAnalysis:
         self.MTOW = MTOW #kg
         self.MTOW_N = self.MTOW * self.g / np.cos(10*(np.pi/180)) #N
 
-        # rotor inputs
-        self.rotor_radius = 1.09 #m
+        # rotor inputs TODO: CHANGE WITH ITERATIONS
+        self.rotor_radius = 1.15 #m
         self.number_of_blades = 6
         self.number_of_rotors = 6
-        self.omega = 140 #rad/s
+        self.omega = 130 #rad/s
         self.C_l_alpha = 5.84 #1/rad
-        self.chord = 0.054 #m
+        self.chord = 0.0596 #m
         self.solidity = (self.chord*self.number_of_blades)/(self.rotor_radius*np.pi)
         #self.pitch_x = 8 # pitch angle variation over span aqs a function of x
 
         # structural inputs, TODO: INPUT CORRECT VALUES LATER
-        self.A_eq = 0.75
+        self.A_eq = 1.185
 
         # mission inputs
         self.gamma_climb = climb_angle #degrees
@@ -66,12 +66,12 @@ class PerformanceAnalysis:
         #self.phi_r = np.tan(self.v_i_momentum / (self.omega * self.rotor_radius)) * (180 / np.pi)
         
         def pitch_equation(x):
-            return (10 - (5 * (x - 0.15) / (1 - 0.15)))  # linear from 10 to 5
+            return (10 - (5 * (x - 0.15) / (1 - 0.15)))  # linear from 10 to 5 TODO: CHANE WITH ITERATION
         
         def chord_equation(x):
-            return 0.06 - (0.012 * (x - 0.15) / (1 - 0.15)) # linear from 0.06 to 0.048
+            return 0.0673 - (0.0153 * (x - 0.15) / (1 - 0.15)) # linear from 0.0673 to 0.0520 TODO: CHANGE WITH ITERATION
         
-        c_l_intercept = 0.6458
+        c_l_intercept = 0.6458 # TODO: CHANGE WITH ITERATION
         
         # def lambda_equation(lambda_i, x):
         #     return ((chord_equation(x) * self.number_of_blades) / (np.pi * self.rotor_radius)) * (self.C_l_alpha * ((pitch_equation(x) * (np.pi / 180)) - lambda_i / x) + c_l_intercept) * x - 8 * lambda_i**2
@@ -118,7 +118,7 @@ class PerformanceAnalysis:
         self.C_D_p_bar_3 = 0.009 + 0.73 * (self.alpha_m**2) #talbot
 
 
-        self.P_i_hov = 1 * self.thrust * self.v_i_hov # k factor is 1.1 cuz we account for some losses but not all
+        self.P_i_hov = 1.1 * self.thrust * self.v_i_hov # k factor is 1.1 cuz we account for some losses but not all
 
         # profile power
         self.C_D_p_bar = 0.008348 # TODO: CHANGE LATER based on airfoil tools
@@ -185,7 +185,7 @@ class PerformanceAnalysis:
         plt.title('Ceiling Altitude vs Weight for Different Temperatures')
         plt.legend()
         plt.grid(True)
-        #plt.show() # TODO 
+        plt.show() # TODO 
 
 
     def hige_powers(self):
@@ -229,20 +229,20 @@ class PerformanceAnalysis:
         plt.title('HIGE power vs Height Above Ground/Rotor Diameter')
         plt.legend()
         plt.grid()
-        #plt.show() # TODO
+        plt.show() # TODO
 
 
     def vertical_climb_descent_powers(self):
         # vertical climb and descent powers
-        self.P_vertical_climb = self.P_hoge + (self.MTOW_N * self.vertical_climb) / 2  # diktaat
-        self.P_vertical_descent = self.P_hoge + (self.MTOW_N * self.vertical_descent) / 2  # diktaat
+        self.P_vertical_climb = self.P_hoge + (self.MTOW * self.g * self.vertical_climb) / 2  # diktaat
+        self.P_vertical_descent = self.P_hoge + (self.MTOW * self.g * self.vertical_descent) / 2  # diktaat
 
     def forward_flight_powers(self):
 
         self.advance_ratio = self.V_point / (self.rotor_radius * self.omega) # advance ratio
 
         # Parasitic power
-        self.P_par_ff = self.A_eq * 0.5 * self.rho * self.V_point**3 # TODO: UPDATE A_eq
+        self.P_par_ff = self.A_eq * 0.5 * self.rho * self.V_point**3 
 
         # Induced power
         self.T = self.MTOW_N
@@ -260,10 +260,10 @@ class PerformanceAnalysis:
         self.v_i_ff = self.v_i_bar*self.v_i_hov
         #print(self.v_i_ff)
 
-        self.P_i_ff = self.T * self.v_i_ff
+        self.P_i_ff = 1.1 * self.T * self.v_i_ff
 
         # Profile + Drag power
-        self.P_p_ff = self.P_p_hov * (1 + 4.65*(self.advance_ratio**2)) # TODO: LOOK FOR A BETTER VALUE THAN 4.65
+        self.P_p_ff = self.P_p_hov * (1 + 4.65*(self.advance_ratio**2)) 
 
         # Total power
         self.P_ff = self.P_par_ff + self.P_i_ff + self.P_p_ff
@@ -272,27 +272,29 @@ class PerformanceAnalysis:
 
         # climb power
         self.ROC = self.V_point * math.tan(math.radians(self.gamma_climb)) # rate of climb
-        self.P_loss_climb = self.MTOW_N * self.ROC # power loss due to climb
+        self.P_loss_climb = self.MTOW * self.g * self.ROC # power loss due to climb
         self.P_climb = self.P_loss_climb * 1.045 # Accounts for power losses
 
         self.P_total_climb = self.P_ff + self.P_climb
 
         # descent power
         self.ROC_descent = self.V_point * math.tan(math.radians(self.gamma_descent)) # rate of descent
-        self.P_loss_descent = self.MTOW_N * self.ROC_descent # power loss due to descent
+        self.P_loss_descent = self.MTOW * self.g * self.ROC_descent # power loss due to descent
         self.P_descent = self.P_loss_descent * 1.045 # Accounts for power losses
 
         self.P_total_descent = self.P_ff + self.P_descent
 
         # steep descent power
-        self.P_loss_steep_descent = self.MTOW_N * self.steep_descent # power loss due to steep descent
+        self.P_loss_steep_descent = self.MTOW * self.g * self.steep_descent # power loss due to steep descent
         self.P_steep_descent = self.P_loss_steep_descent * 1.045 # Accounts for power losses
 
         self.P_total_steep_descent = self.P_ff + self.P_steep_descent
 
-    def iterate_design(self, new_MTOW_N=None, new_V_point=None, new_solidity=None, new_gamma_CD=None, new_rho=None, new_ROC_VCD=None, new_min_power_velocity_CD = None, new_min_power_velocity = None, new_min_power_velocity_descent = None, new_gamma_descent = None):
+    def iterate_design(self, new_MTOW_N=None, new_MTOW = None, new_V_point=None, new_solidity=None, new_gamma_CD=None, new_rho=None, new_ROC_VCD=None, new_min_power_velocity_CD = None, new_min_power_velocity = None, new_min_power_velocity_descent = None, new_gamma_descent = None):
         if new_MTOW_N:
             self.MTOW_N = new_MTOW_N
+        if new_MTOW:
+            self.MTOW = new_MTOW
         if new_V_point:
             self.V_point = new_V_point
         if new_solidity:
@@ -358,7 +360,7 @@ class PerformanceAnalysis:
         plt.title('Level Flight Power Components vs Velocity')
         plt.legend(loc='best', fontsize='small')
         plt.grid(True)
-        #plt.show() # TODO
+        plt.show() # TODO
 
     def plot_CD_power(self):
 
@@ -409,7 +411,7 @@ class PerformanceAnalysis:
         plt.title('Climb, Descent, and Steep Descent Power Components vs Velocity')
         plt.legend(loc='best', fontsize='small')
         plt.grid(True)
-        #plt.show() # TODO
+        plt.show() # TODO
 
     def plot_power_pie_chart(self):
         # Draw a pie chart showing the composition of the total level flight power
@@ -425,7 +427,7 @@ class PerformanceAnalysis:
         plt.pie(sizes, labels=labels[:-1], colors=colors, autopct=lambda p: f'{p:.1f}%\n({p * sum(sizes) / 100 / 1000:.2f} kW)', startangle=140, textprops={'color': 'w'})
         plt.title('Composition of Total Level Flight Power')
         plt.legend(labels, loc="upper center", bbox_to_anchor=(0.5, 0.1), ncol=1)
-        #plt.show() # TODO
+        plt.show() # TODO
 
     def plot_power_breakdown(self):
 
@@ -466,7 +468,7 @@ class PerformanceAnalysis:
             plt.text(index[i], profile_power[i] + induced_power[i] / 2, f'{induced_power[i] / total_power[i] * 100:.1f}%', ha='center', va='center', color='black', fontsize=8)
             plt.text(index[i], profile_power[i] + induced_power[i] + parasitic_power[i] / 2, f'{parasitic_power[i] / total_power[i] * 100:.1f}%', ha='center', va='center', color='black', fontsize=8)
 
-        #plt.show() # TODO
+        plt.show() # TODO
 
     def print_results(self):
         # Create a table of flight phases and corresponding power usage, vertical speed, and horizontal speed
