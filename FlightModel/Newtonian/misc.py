@@ -129,7 +129,7 @@ def SCfunc_CSV_reading(folder_path, file, velocity_input, alpha_input):
     return interpolated_value
 
 
-DEBUG = True
+DEBUG = False
 if DEBUG:
     # print(SCfunc_EulerRotation([1,0,0],[10,5,10])[0])
     # print(SCfunc_CartesianToSpherical([15,-5,1]))
@@ -137,5 +137,5 @@ if DEBUG:
     # Example Usage
     velocity = 45  # Example velocity input
     alpha = 30  # Example angle of attack input (degrees)
-    result = SCfunc_CSV_reading(r"DSE24_eVTOL_Final\FlightModel\Newtonian\CSV_rotor_data", r"C_T_interpolated_iter1.csv", velocity, alpha)
+    result = SCfunc_CSV_reading(r"FlightModel\Newtonian\CSV_rotor_data", r"C_T_interpolated_iter4.csv", velocity, alpha)
     print("interpolated result is :", result) 
