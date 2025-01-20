@@ -18,8 +18,8 @@ from aircraft import *
 from simulation import *
 import matplotlib.pyplot as plt
 
-aircraft = SCobj_Aircraft(points=SCcraft_VerifyAircraft(), position=[0,0,0], rotation=[0,0,0])
-log_state, log_forces, log_time, log_extras, log_acc, log_setpoints = SCfunc_FlightSimulation(aircraft, runtime=20)
+aircraft = SCobj_Aircraft(points=SCcraft_Airligator(), position=[0,0,0], rotation=[0,0,0])
+log_state, log_forces, log_time, log_extras, log_acc, log_setpoints = SCfunc_FlightSimulation(aircraft, runtime=0.1)
 
 DEBUG = False
 if DEBUG:
