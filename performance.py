@@ -5,7 +5,7 @@ from scipy.optimize import fsolve
 
 class PerformanceAnalysis:
 
-    def __init__(self, MTOW = 765.13, climb_angle = 9, descent_angle = -5, vertical_climb = 0.76, vertical_descent = -0.5, steep_descent = -7.6):
+    def __init__(self, MTOW = 832.03, climb_angle = 9, descent_angle = -5, vertical_climb = 0.76, vertical_descent = -0.5, steep_descent = -7.6):
         
         # constants
         self.g = 9.80665
@@ -20,17 +20,17 @@ class PerformanceAnalysis:
         self.MTOW_N = self.MTOW * self.g / np.cos(10*(np.pi/180)) #N
 
         # rotor inputs TODO: CHANGE WITH ITERATIONS
-        self.rotor_radius = 1.15 #m
+        self.rotor_radius = 1.22 #m
         self.number_of_blades = 6
         self.number_of_rotors = 6
-        self.omega = 130 #rad/s
+        self.omega = 120 #rad/s
         self.C_l_alpha = 5.84 #1/rad
-        self.chord = 0.0596 #m
+        self.chord = 0.0640 #m
         self.solidity = (self.chord*self.number_of_blades)/(self.rotor_radius*np.pi)
         #self.pitch_x = 8 # pitch angle variation over span aqs a function of x
 
         # structural inputs, TODO: INPUT CORRECT VALUES LATER
-        self.A_eq = 1.185
+        self.A_eq = 1.120
 
         # mission inputs
         self.gamma_climb = climb_angle #degrees
@@ -69,7 +69,7 @@ class PerformanceAnalysis:
             return (10 - (5 * (x - 0.15) / (1 - 0.15)))  # linear from 10 to 5 TODO: CHANE WITH ITERATION
         
         def chord_equation(x):
-            return 0.0673 - (0.0153 * (x - 0.15) / (1 - 0.15)) # linear from 0.0673 to 0.0520 TODO: CHANGE WITH ITERATION
+            return 0.0725 - (0.0165 * (x - 0.15) / (1 - 0.15)) # linear from 0.0725 to 0.0560 TODO: CHANGE WITH ITERATION
         
         c_l_intercept = 0.6458 # TODO: CHANGE WITH ITERATION
         
@@ -146,7 +146,7 @@ class PerformanceAnalysis:
         
         C_D_p_bar_mom = 0.008348 # TODO: CHANGE LATER based on airfoil tools
 
-        weight_values = np.linspace(600, 870, 100)  # Varying weight from 400 to 800 kg
+        weight_values = np.linspace(600, 700, 100)  # Varying weight from 400 to 800 kg
         temperature_range = [-30, -20, -10, 0, 10, 20, 30]  # Temperature range
         ceiling_altitudes_dict = {temp: [] for temp in temperature_range}
 
@@ -161,7 +161,7 @@ class PerformanceAnalysis:
 
                     feet_per_meter = 3.28084
                     altitude_ft = altitude * feet_per_meter
-                    P_available = 200000 * (1 - 0.005 * (altitude_ft / 1000))
+                    P_available = 35341.83 + 50168.09 * (1 - 0.005 * (altitude_ft / 1000))
 
                     P_i_mom = mtow_v * v_i_mom
                     P_p_mom = ((self.solidity * C_D_p_bar_mom) / 8) * rho * ((self.omega * self.rotor_radius) ** 3) * (self.pi * (self.rotor_radius ** 2)) * self.number_of_rotors
@@ -181,7 +181,7 @@ class PerformanceAnalysis:
             plt.plot(weight_values, ceiling_altitudes_dict[temp], label=f'Temperature: {temp}°C')
         
         plt.xlabel('Weight (kg)')
-        plt.ylabel('Ceiling Altitude (m)')
+        plt.ylabel('HOGE Ceiling Altitude (m)')
         plt.title('Ceiling Altitude vs Weight for Different Temperatures')
         plt.legend()
         plt.grid(True)
@@ -243,6 +243,8 @@ class PerformanceAnalysis:
 
         # Parasitic power
         self.P_par_ff = self.A_eq * 0.5 * self.rho * self.V_point**3 
+
+        self.D_par_ff = self.A_eq * 0.5 * self.rho * self.V_point**2
 
         # Induced power
         self.T = self.MTOW_N
@@ -711,7 +713,7 @@ class EnergyAnalysis:
 
         #Generate list of potential pemfc line values
         line_values = np.linspace(powers_dict['Cruise1'],powers_dict['V_climb'],100000)
-        tolerance = 100
+        tolerance = 500
         self.pemfc_line = 0
 
         for i in line_values:
@@ -890,6 +892,7 @@ def run():
     analysis.print_results()
     print(f'avg alpha: {analysis.alpha_m}')
     print(f'max C_D_p: {max(analysis.C_D_p_bar_1, analysis.C_D_p_bar_2, analysis.C_D_p_bar_3)}')
+    print(f'parasitic drag: {analysis.D_par_ff}')
 
     # Final power
     analysis.final_power()
