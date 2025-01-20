@@ -48,7 +48,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
         rot_z = 0
 
         # Aircraft Config
-        rotor_count = 4
+        rotor_count = 6
         
         # Control
         setpoint_pos = np.array([0,0,-20])
