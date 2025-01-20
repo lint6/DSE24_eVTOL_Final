@@ -198,7 +198,6 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
                 mix_value = 0
                 
             rpm = SCfunc_RotorRPM(throttle, rpm, dt)
-            print(rpm)
             
             # Update aircraft
             for i in range(len(rpm)): #Limiting RPM

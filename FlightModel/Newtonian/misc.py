@@ -103,7 +103,6 @@ def SCfunc_CSV_reading(folder_path, file, velocity_input, alpha_input):
     folder_path = folder_path
     file_name = file  # CSV filename
     cwd = os.getcwd()
-    print("cwd:", cwd)
     file_path = os.path.join(cwd, folder_path, file_name)  # Full file path
 
     # Define alpha_v (angle of attack) and velocity ranges

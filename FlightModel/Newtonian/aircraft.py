@@ -354,7 +354,7 @@ def SCcraft_FastAircraft(): # Fast flying fixed-wing aircraft
 
 '''End'''
 
-Testing = True
+Testing = False
 if Testing:
     aircraft = SCobj_Aircraft(points=SCcraft_Airligator(), position=[0,0,0], rotation=[0,0,0])
     print(aircraft.points)
