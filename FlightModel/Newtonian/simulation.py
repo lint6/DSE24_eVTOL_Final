@@ -126,6 +126,11 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
                 if vel_z >=0:
                     vel_z = 0
             
+            vel_x = 0
+            vel_y = 0
+            
+            
+            
             rot_x = rot_x + ang_acc_x * dt 
             rot_y = rot_y + ang_acc_y * dt 
             rot_z = rot_z + ang_acc_z * dt 

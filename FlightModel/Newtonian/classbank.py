@@ -90,12 +90,12 @@ class SCobj_ForcePoint():
         # Update ForcePoint property
         for i in range(len(self.forces_func)): #update force base on functions
             if type(self.forces_func[i]) == function_def:
-                self.forces_local[i] = float(self.forces_func[i](state, np.array(u_forces[i])))
+                self.forces_local[i] = float(self.forces_func[i](self.state, np.array(u_forces[i])))
         self.forces_local = [float(i) for i in self.forces_local]
 
         for i in range(len(self.moments_func)): #update moments base on functions
             if type(self.moments_func[i]) == function_def:
-                self.moments_local[i] = float(self.moments_func[i](state, np.array(u_moments[i])))
+                self.moments_local[i] = float(self.moments_func[i](self.state, np.array(u_moments[i])))
         self.moments_local = [float(i) for i in self.moments_local]
         
         if type(self.mass_func) == function_def: #update mass base on functions
@@ -105,19 +105,19 @@ class SCobj_ForcePoint():
         for i in range(len(self.inertia_func)): #update inertia base on functions
             for j in range(len(self.inertia_func[i])):
                 if type(self.inertia_func[i][j]) == function_def:
-                    self.inertia_local[i] = float(self.inertia_func[i][j](state, np.array(u_inertia[i][j])))
+                    self.inertia_local[i] = float(self.inertia_func[i][j](self.state, np.array(u_inertia[i][j])))
         for i in range(len(self.inertia_local)):
             for j in range(len(self.inertia_local[i])):
                 self.inertia_local[i][j] = np.array(self.inertia_local[i][j])
 
         for i in range(len(self.position_func)): #update position base on functions wrt AC frame
             if type(self.position_func[i]) == function_def:
-                self.position[i] = float(self.position_func[i](state, np.array(u_position[i])))
+                self.position[i] = float(self.position_func[i](self.state, np.array(u_position[i])))
         self.position = np.array(self.position)
         
         for i in range(len(self.rotation_func)): #update rotation base on functions wrt AC frame
             if type(self.rotation_func[i]) == function_def:
-                self.rotation[i] = float(self.rotation_func[i](state, np.array(u_rotation[i])))
+                self.rotation[i] = float(self.rotation_func[i](self.state, np.array(u_rotation[i])))
 
         ''' IMPORTANT'''
         ''' All force and moments stored in this class is already rotated to be the next level of reference frame
