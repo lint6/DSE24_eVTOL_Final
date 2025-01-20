@@ -86,6 +86,18 @@ def SCphy_Thrust(state, rpm, R, rho=1.225):
     tip_spd = SCfunc_RPM2RadSec(rpm)*R
     return CT * rho * area * tip_spd**2
 
+def SCphy_Rotor_Drag(state, rpm, R, rho=1.225):
+    CX = SCphy_XCoef(state)
+    area = np.pi * R**2
+    tip_spd = SCfunc_RPM2RadSec(rpm)*R
+    Drag = CX * rho * area * tip_spd**2
+    if state:
+        beta = state[-1][1]
+    else:
+        beta = 0
+    return Drag * np.cos(beta), Drag * np.sin(beta)
+
+
 def SCphy_Torque(state, rpm, R, rho=1.225):
     CT = SCphy_TorqueCoef(state)
     area = np.pi * R**2

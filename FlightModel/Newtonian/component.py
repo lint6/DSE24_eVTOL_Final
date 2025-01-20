@@ -31,3 +31,10 @@ def SCfunc_RotorTorque(R, clockwise): #Mimic single input (RPM) function for tor
     else:
         return lambda state, control: SCphy_Torque(state, control, R) * -1
     
+def SCfunc_RotorDrag(R, X=False): #Mimic single input (RPM) function for thrust
+    if X:
+        return lambda state, control: SCphy_Rotor_Drag(state, control, R)[0]
+    else:
+        return lambda state, control: SCphy_Rotor_Drag(state, control, R)[1]
+
+    
