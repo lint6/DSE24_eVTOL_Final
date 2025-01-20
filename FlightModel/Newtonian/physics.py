@@ -65,6 +65,7 @@ def SCphy_TorqueCoef(state):
     if state:
         velocity = state[-1][0]
         alpha = state[-1][2]
+        print(state[-1])
     else:
         velocity = 0
         alpha = 0
@@ -101,7 +102,6 @@ def SCphy_Rotor_Drag(state, rpm, R, rho=1.225):
 def SCphy_Torque(state, rpm, R, rho=1.225):
     CQ = SCphy_TorqueCoef(state)
     area = np.pi * R**2
-    print(CQ)
     tip_spd = SCfunc_RPM2RadSec(rpm)*R
     return CQ * rho * area * tip_spd**2 * R
 

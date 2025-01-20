@@ -19,7 +19,7 @@ from simulation import *
 import matplotlib.pyplot as plt
 
 aircraft = SCobj_Aircraft(points=SCcraft_Airligator(), position=[0,0,0], rotation=[0,0,0])
-log_state, log_forces, log_time, log_extras, log_acc, log_setpoints, log_control = SCfunc_FlightSimulation(aircraft, runtime=4)
+log_state, log_forces, log_time, log_extras, log_acc, log_setpoints, log_control = SCfunc_FlightSimulation(aircraft, runtime=0.4)
 
 
 fig_pos, pos_plt = plt.subplots(4)

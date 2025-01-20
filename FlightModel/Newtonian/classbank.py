@@ -33,11 +33,13 @@ class SCobj_ForcePoint():
         self.inertia = inertia*1
         self.position = position*1
         self.rotation = rotation*1
-        
         # make local frame vectors
         self.forces_local = np.array(self.forces)
         self.moments_local = np.array(self.moments)
         self.inertia_local = np.array(self.inertia)
+        
+        self.rotation_mat = SCfunc_EulerRotation([0,0,0], self.rotation)[1]
+        self.rotation_mat_inv = SCfunc_EulerRotation([0,0,0], self.rotation)[2]
         
         self.Update()
         ''' IMPORTANT'''
@@ -55,9 +57,12 @@ class SCobj_ForcePoint():
         # Updating self state to be within the local frame of the point
         if state:
             for i in range(len(state)):
-                self.state[i] = self.rotation_mat @ state[i]
+                self.state[i] = np.matmul(self.rotation_mat,state[i])
+                print(self.rotation_mat)
+                print(self.rotation)
             self.state.append([0,0,0])
             self.state[2] = self.state[2] + np.cross(self.state[3], self.position) # Add in velocity from rotation
+            print(f'velocity {self.state[2]}')
             self.state[6] = SCfunc_CartesianToSpherical(self.state[2])[1] # The vector of side slip and aoa
             self.state[0] = self.position
             self.state[1] = self.rotation

@@ -42,7 +42,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
         # Velocity
         vel_x = 0
         vel_y = 0
-        vel_z = 0
+        vel_z = 10
         # Rotational Velocity
         rot_x = 0
         rot_y = 0
@@ -107,7 +107,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
             # Acceleration
             lat_acc_x = aircraft.forces[0] / (aircraft.mass)
             lat_acc_y = aircraft.forces[1] / (aircraft.mass) 
-            lat_acc_z = aircraft.forces[2] / (aircraft.mass) + 9.81
+            lat_acc_z = aircraft.forces[2] / (aircraft.mass) #+ 9.81
             
             
             ang_acc = np.linalg.inv(aircraft.inertia).dot(aircraft.moments)
