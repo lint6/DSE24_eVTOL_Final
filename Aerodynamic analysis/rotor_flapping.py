@@ -24,7 +24,7 @@ class BEMT():
         self.r_bar_e = 0.96 #effective blade radius due to tip losses, approximate input for now
 
         #rotational velocity
-        self.omega = 97 # rad/s, rotational velocity
+        self.omega = 120 # rad/s, rotational velocity
 
         #transition
         self.SOS = 343 # m/s, transition air speed
@@ -592,8 +592,8 @@ if __name__ == '__main__':
     BEMT = BEMT()
 
     #which analysis
-    vertical = False
-    forward = True
+    vertical = True
+    forward = False
     interpolation = False
     controlstability = False
 
@@ -606,7 +606,7 @@ if __name__ == '__main__':
         print("\033[34mVertical Flight:\033[0m")
 
         #specify vertical flight regime
-        V_c = -1
+        V_c = 0.76
 
         dL_r_list1 = []
         dD_r_list1 = []
