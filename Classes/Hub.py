@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 
 class HubStuff:
     
-    def __init__(self, g_0=9.80665, r_R=1.2, b=6, m_R=10, d=270, z=70, G=44, rho=4.43, T=213, L=1312.23, D=15.66):
+    def __init__(self, g_0=9.80665, r_R=1.2, b=6, m_R=5.705, d_sh=23.95, d=270, z=70, G=44, rho=4.43, T=213, L=426.6, D=15.66):
         # Initialize the HubStress Class
-        # Input r_R in [m], b in [-], m_R (1 rotor) in [kg], d in [mm], z in [mm], T in [Nm], G in [GPa], rho in [g/cc], L (1 rotor) in [N], and D (1 rotor) in [N]
+        # Input r_R in [m], b in [-], m_R (1 rotor) in [kg], d_sh in [mm], d in [mm], z in [mm], T in [Nm], G in [GPa], rho in [g/cc], L (1 blade) in [N], and D (1 rotor) in [N]
         
         "Material Selection"
         # Aluminium 7075-T6: G = 26.9 [GPa], rho = 2.81 [g/cc]
@@ -16,20 +16,21 @@ class HubStuff:
         self.r_R = r_R  # Radius of the rotor in [m]
         self.b = b  # Number of blades [-]
         self.W_R = (m_R * g_0) / self.b # Weight of 1 blade in [N]
+        self.d_sh = d_sh / 1000 # Diameter of the shaft [m]
         self.d = d / 1000  # Diameter of the hub in [m]
         self.z = z / 1000  # Thickness of the hub in [m]
         self.G = G * 10**9  # Shear Modulus of the material in [Pa]
         self.rho = rho * 1000  # Density of the material in [kg/m^3]
         self.T = T  # Torque in [Nm]
-        self.L = L / self.b  # Lift of 1 blade in [N]
+        self.L = L  # Lift of 1 blade in [N]
         self.D = D / self.b  # Drag of 1 blade in [N]
 
         
     def calculate_polar_moment_of_inertia(self):
-        return (np.pi / 32) * (self.d**4) # returns in [m^4]
+        return (np.pi / 32) * ((self.d**4) - (self.d_sh**4)) # returns in [m^4]
     
     def calculate_moment_of_inertia(self):
-        return (np.pi / 64) * (self.d**4) # returns in [m^4]
+        return (np.pi / 64) * ((self.d**4) - (self.d_sh**4)) # returns in [m^4]
     
     def calculate_moment_lift(self):
         return self.L * self.r_R  # returns in [Nm]
@@ -65,7 +66,7 @@ class HubStuff:
         return ((M_x * r_i) / I)   # returns in [Pa]
 
     def calculate_hub_mass(self):
-        return np.pi * (self.d**2 / 4) * self.z * self.rho  # returns in [kg]
+        return np.pi * (((self.d**2) - self.d_sh**2) / 4) * self.z * self.rho  # returns in [kg]
 
 
 if __name__ == "__main__":
