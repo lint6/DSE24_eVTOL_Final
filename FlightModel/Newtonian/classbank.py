@@ -224,10 +224,12 @@ class SCobj_Aircraft():
         self.rotation_mat_inv = SCfunc_EulerRotation([0,0,0], self.rotation)[2]
         
         # Rotating states into aicraft frame
+        # TODO: check if the rotation mat here is inversed or no
         state_rotated = []
+        print(np.array(state))
         if state:
             for i in state:
-                state_rotated.append(self.rotation_mat @ i)
+                state_rotated.append(self.rotation_mat_inv @ i)
             state_rotated[0] = self.position # Changing position back to global
             state_rotated[1] = self.rotation # Changing rotation back to global
         

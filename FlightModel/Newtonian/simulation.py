@@ -20,7 +20,7 @@ import time
 from aircraft import *
 from controller import *
 
-def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
+def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.01):
     if Run:
         print('Warning: Simulation Running')
         '''DOWNWARD IS POSTIVE'''
@@ -106,8 +106,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
             # Acceleration
             lat_acc_x = aircraft.forces[0] / (aircraft.mass)
             lat_acc_y = aircraft.forces[1] / (aircraft.mass) 
-            lat_acc_z = aircraft.forces[2] / (aircraft.mass) + 9.81
-            print(aircraft.forces)
+            lat_acc_z = aircraft.forces[2] / (aircraft.mass) #+ 9.81
             
             
             ang_acc = np.linalg.inv(aircraft.inertia).dot(aircraft.moments)
