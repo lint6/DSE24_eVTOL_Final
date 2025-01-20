@@ -208,12 +208,12 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.01):
                     rpm[i] = 4000
                     
                     
-            updates = [ SCfunc_UpdateAssembly(u_forces=[[0],[0],[rpm[0]]], u_moments=[[0],[0],[rpm[0]]]), # Rotor 1
-                        SCfunc_UpdateAssembly(u_forces=[[0],[0],[rpm[1]]], u_moments=[[0],[0],[rpm[1]]]), # Rotor 2
-                        SCfunc_UpdateAssembly(u_forces=[[0],[0],[rpm[2]]], u_moments=[[0],[0],[rpm[2]]]), # Rotor 3
-                        SCfunc_UpdateAssembly(u_forces=[[0],[0],[rpm[3]]], u_moments=[[0],[0],[rpm[3]]]), # Rotor 4
-                        SCfunc_UpdateAssembly(u_forces=[[0],[0],[rpm[3]]], u_moments=[[0],[0],[rpm[3]]]), # Rotor 5
-                        SCfunc_UpdateAssembly(u_forces=[[0],[0],[rpm[3]]], u_moments=[[0],[0],[rpm[3]]]), # Rotor 6
+            updates = [ SCfunc_UpdateAssembly(u_forces=[[rpm[0]],[rpm[0]],[rpm[0]]], u_moments=[[rpm[0]],[rpm[0]],[rpm[0]]]), # Rotor 1
+                        SCfunc_UpdateAssembly(u_forces=[[rpm[1]],[rpm[1]],[rpm[1]]], u_moments=[[rpm[1]],[rpm[1]],[rpm[1]]]), # Rotor 2
+                        SCfunc_UpdateAssembly(u_forces=[[rpm[2]],[rpm[2]],[rpm[2]]], u_moments=[[rpm[2]],[rpm[2]],[rpm[2]]]), # Rotor 3
+                        SCfunc_UpdateAssembly(u_forces=[[rpm[3]],[rpm[3]],[rpm[3]]], u_moments=[[rpm[3]],[rpm[3]],[rpm[3]]]), # Rotor 4
+                        SCfunc_UpdateAssembly(u_forces=[[rpm[4]],[rpm[4]],[rpm[4]]], u_moments=[[rpm[4]],[rpm[4]],[rpm[4]]]), # Rotor 5
+                        SCfunc_UpdateAssembly(u_forces=[[rpm[5]],[rpm[5]],[rpm[5]]], u_moments=[[rpm[5]],[rpm[5]],[rpm[5]]]), # Rotor 6
                         SCfunc_UpdateAssembly(), #1
                         SCfunc_UpdateAssembly(),
                         SCfunc_UpdateAssembly(),
