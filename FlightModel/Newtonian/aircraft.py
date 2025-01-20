@@ -46,24 +46,24 @@ def SCcraft_Airligator():
     radius_rotor = 1.17 #radius of rotor
     radius_rotor_ring = 5 # radius of rotor position ring
     rotor_mass = 23.32
-    rotor_inertia =[[SCphy_Inertia_Disc[0],0,0],
-                    [0,SCphy_Inertia_Disc[1],0],
-                    [0,0,SCphy_Inertia_Disc[2]]]
+    rotor_inertia =[[SCphy_Inertia_Disc(23.32, 1.22)[0],0,0],
+                    [0,SCphy_Inertia_Disc[1](23.32, 1.22),0],
+                    [0,0,SCphy_Inertia_Disc[2](23.32, 1.22)]]
     
-    motor_mass = 22.3 + 12.814
-    motor_inertia =[[SCphy_Inertia_Cylinder[0],0,0],
-                    [0,SCphy_Inertia_Cylinder[1],0],
-                    [0,0,SCphy_Inertia_Cylinder[2]]]
+    motor_mass = 13.5 + 12.814
+    motor_inertia =[[SCphy_Inertia_Cylinder(26.314,0.114, 0.086 )[0],0,0],
+                    [0,SCphy_Inertia_Cylinder(26.314,0.114, 0.086 )[1],0],
+                    [0,0,SCphy_Inertia_Cylinder(26.314,0.114, 0.086 )[2]]]
     
-    arm_mass = 23.698/6
-    arm_inertia = [[SCphy_Inertia_Cylinder[0],0,0],
-                   [0,SCphy_Inertia_Cylinder[1],0],
-                   [0,0,SCphy_Inertia_Cylinder[2]]]
+    arm_mass = 38.729/6
+    arm_inertia = [[SCphy_Inertia_Rod(38.729/6, 2.93)[0],0,0],
+                   [0,SCphy_Inertia_Rod(38.729/6, 2.93)[1],0],
+                   [0,0,SCphy_Inertia_Rod(38.729/6, 2.93)[2]]]
     
     pax_mass = 185/2
-    pax_inertia = [[SCphy_Intertia_Sphere[0],0,0],
-                   [0,SCphy_Intertia_Sphere[1],0],
-                   [0,0,SCphy_Intertia_Sphere[2]]]
+    pax_inertia = [[SCphy_Intertia_Sphere(185/2, 0.6)[0],0,0],
+                   [0,SCphy_Intertia_Sphere(185/2, 0.6)[1],0],
+                   [0,0,SCphy_Intertia_Sphere(185/2, 0.6)[2]]]
     
     rotor_1 = SCobj_ForcePoint( forces   = [0, 0, SCfunc_RotorTorque(radius_rotor)], #[N, WITHOUT gravitational froce]
                                 moments  = [0, 0, SCfunc_RotorTorque(radius_rotor, clockwise=True)],   #[N*m]
