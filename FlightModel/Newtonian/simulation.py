@@ -211,6 +211,29 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
                         SCfunc_UpdateAssembly(u_forces=[[0],[0],[rpm[1]]], u_moments=[[0],[0],[rpm[1]]]), # Rotor 2
                         SCfunc_UpdateAssembly(u_forces=[[0],[0],[rpm[2]]], u_moments=[[0],[0],[rpm[2]]]), # Rotor 3
                         SCfunc_UpdateAssembly(u_forces=[[0],[0],[rpm[3]]], u_moments=[[0],[0],[rpm[3]]]), # Rotor 4
+                        SCfunc_UpdateAssembly(u_forces=[[0],[0],[rpm[3]]], u_moments=[[0],[0],[rpm[3]]]), # Rotor 5
+                        SCfunc_UpdateAssembly(u_forces=[[0],[0],[rpm[3]]], u_moments=[[0],[0],[rpm[3]]]), # Rotor 6
+                        SCfunc_UpdateAssembly(), #1
+                        SCfunc_UpdateAssembly(),
+                        SCfunc_UpdateAssembly(),
+                        SCfunc_UpdateAssembly(),#4
+                        SCfunc_UpdateAssembly(),
+                        SCfunc_UpdateAssembly(),
+                        SCfunc_UpdateAssembly(),
+                        SCfunc_UpdateAssembly(),
+                        SCfunc_UpdateAssembly(),
+                        SCfunc_UpdateAssembly(),#10
+                        SCfunc_UpdateAssembly(),
+                        SCfunc_UpdateAssembly(),
+                        SCfunc_UpdateAssembly(),
+                        SCfunc_UpdateAssembly(),
+                        SCfunc_UpdateAssembly(),
+                        SCfunc_UpdateAssembly(),
+                        SCfunc_UpdateAssembly(),
+                        SCfunc_UpdateAssembly(),
+                        SCfunc_UpdateAssembly(),
+                        SCfunc_UpdateAssembly(),#20
+                        SCfunc_UpdateAssembly(),
                         SCfunc_UpdateAssembly()]
             state = [i[-1] for i in log_state]
             aircraft.Update(state = state, update_variables = updates)
