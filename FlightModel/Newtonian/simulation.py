@@ -107,6 +107,8 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
             lat_acc_x = aircraft.forces[0] / (aircraft.mass)
             lat_acc_y = aircraft.forces[1] / (aircraft.mass) 
             lat_acc_z = aircraft.forces[2] / (aircraft.mass) + 9.81
+            print(aircraft.forces)
+            
             
             ang_acc = np.linalg.inv(aircraft.inertia).dot(aircraft.moments)
             ang_acc_x = ang_acc[0]
@@ -177,7 +179,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
             log_state_spherical[2].append([0,0,0]) # For compeletness, updated in SCcon_ForwardFlight if in autopilot
             
             # Controllers
-            autopilot = True
+            autopilot = False
             flybywire = False
             if autopilot: # Waypoint mode, mimicing autopilot
                 throttle_ForwardFlight, log_state_spherical[2], log_error_spherical, setpoint_ang_for = SCcon_ForwardFlight(log_state_spherical, log_state, log_error_spherical, allocation, dt=dt)

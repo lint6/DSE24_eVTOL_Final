@@ -259,7 +259,7 @@ def SCcraft_Airligator():
                                             [0,0,SCphy_Intertia_Box(35.67, 0.5923, 0.8133, 0.6204)[2]]],
                                 position = [0,0,0],   # [m from the body axis origin ]
                                 rotation = [0,0,0],)  # euler angle degrees 
-    body    = SCobj_ForcePoint( forces   = [-4390.4, 0, 0], #[N, WITHOUT gravitational froce]
+    body    = SCobj_ForcePoint( forces   = [0, 0, 0], #[N, WITHOUT gravitational froce]
                                 moments  = [0, 0, 0],   #[N*m]
                                 mass     = 74.108,       #[kg] 
                                 inertia  = [[SCphy_Intertia_Sphere(74.108 + 74.108/0.113, 1.7/2)[0]-SCphy_Intertia_Sphere(74.108/0.113, (1.7/2) - 0.03)[0],0,0],

@@ -23,7 +23,7 @@ def ExampleFunction(Constant): #the input modify the function that is to be retu
 
 '''Verification Functions''' #functions used for verification of the simulation model
 def SCfunc_RotorThrust(R): #Mimic single input (RPM) function for thrust
-    return lambda state, control: SCphy_Thrust(state, control, R)
+    return lambda state, control: SCphy_Thrust(state, control, R) * (-1)
 
 def SCfunc_RotorTorque(R, clockwise): #Mimic single input (RPM) function for torque
     if clockwise:
@@ -33,8 +33,8 @@ def SCfunc_RotorTorque(R, clockwise): #Mimic single input (RPM) function for tor
     
 def SCfunc_RotorDrag(R, X=False): #Mimic single input (RPM) function for thrust
     if X:
-        return lambda state, control: SCphy_Rotor_Drag(state, control, R)[0]
+        return lambda state, control: SCphy_Rotor_Drag(state, control, R)[0]*(-1)
     else:
-        return lambda state, control: SCphy_Rotor_Drag(state, control, R)[1]
+        return lambda state, control: SCphy_Rotor_Drag(state, control, R)[1]*(-1)
 
     

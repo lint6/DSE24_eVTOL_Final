@@ -130,6 +130,8 @@ class SCobj_ForcePoint():
         self.forces  = self.rotation_mat @ self.forces_local
         self.moments = self.rotation_mat @ self.moments_local
         self.inertia = self.rotation_mat @ self.inertia_local @ self.rotation_mat.T
+
+
         
         
 '''
