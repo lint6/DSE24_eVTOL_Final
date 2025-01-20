@@ -103,3 +103,6 @@ def SCphy_Torque(state, rpm, R, rho=1.225):
     area = np.pi * R**2
     tip_spd = SCfunc_RPM2RadSec(rpm)*R
     return CT * rho * area * tip_spd**2 * R
+
+def SCphy_body_drag(state):
+    return 1.12 * 0.5 * 1.225 * (state[-1][0]**2)

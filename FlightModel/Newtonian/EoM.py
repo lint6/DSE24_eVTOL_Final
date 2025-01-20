@@ -25,7 +25,7 @@ import matplotlib.pyplot as plt
 # - Side movement from 
 
 #Defining "constant" variable for now 
-rpm = 2000
+rpm = 0
 mass = 100
 g = 9.81 
 
