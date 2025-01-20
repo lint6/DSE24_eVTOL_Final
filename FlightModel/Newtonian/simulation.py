@@ -20,7 +20,7 @@ import time
 from aircraft import *
 from controller import *
 
-def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.01):
+def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
     if Run:
         print('Warning: Simulation Running')
         '''DOWNWARD IS POSTIVE'''
