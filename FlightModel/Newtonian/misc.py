@@ -15,6 +15,9 @@ All
 '''
 
 import numpy as np
+import os
+import csv
+from scipy.interpolate import RectBivariateSpline
 
 def SCfunc_ForceVector(force_in):
     import numpy as np
@@ -91,50 +94,38 @@ def SCfunc_RadSec2RPM(omega):
     return omega * 60 / (2*np.pi)
 
 
+def SCmisc_GetCT(vel, aoa):
+    global CSV_ct_spline
+    return CSV_ct_spline.ev(vel, aoa)
 
+def SCmisc_GetCQ(vel, aoa):
+    global CSV_cq_spline
+    return CSV_cq_spline.ev(vel, aoa)
 
-def SCfunc_CSV_reading(folder_path, file, velocity_input, alpha_input):
+def SCmisc_GetCX(vel, aoa):
+    global CSV_cx_spline
+    return CSV_cx_spline.ev(vel, aoa)
 
-    import numpy as np
-    import os
-    import csv
-    from scipy.interpolate import interp2d
-    
-    folder_path = folder_path
-    file_name = file  # CSV filename
-    cwd = os.getcwd()
-    file_path = os.path.join(cwd, folder_path, file_name)  # Full file path
+print('Loading CSV')
+cwd = os.getcwd()
+path = os.path.join(cwd, r'FlightModel\Newtonian\CSV_rotor_data', 'C_T_interpolated_iter4.csv')
+CSV_ct = np.loadtxt(path, delimiter=',')
+path = os.path.join(cwd, r'FlightModel\Newtonian\CSV_rotor_data', 'C_q_interpolated_iter4.csv')
+CSV_cq = np.loadtxt(path, delimiter=',')
+path = os.path.join(cwd, r'FlightModel\Newtonian\CSV_rotor_data', 'C_x_interpolated_iter4.csv')
+CSV_cx = np.loadtxt(path, delimiter=',')
+print('Loaded CSV')
+print('Creating Splines')
+aoa = np.linspace(-90, 90, 100)
+vel = np.linspace(0, 50, 100)
+CSV_ct_spline = RectBivariateSpline(vel, aoa, CSV_ct)
+CSV_cq_spline = RectBivariateSpline(vel, aoa, CSV_cq)
+CSV_cx_spline = RectBivariateSpline(vel, aoa, CSV_cx)
+print('Created Splines')
 
-    # Define alpha_v (angle of attack) and velocity ranges
-    alpha_v_rad = np.linspace(-np.pi/2, np.pi/2, 100)  # 100 values from -90 to 90 degrees
-    alpha_v_deg = alpha_v_rad * 180 / np.pi  # Convert radians to degrees
-    velocities = np.linspace(0, 50, 100)  # 100 values from 0 to 50 m/s
-
-    # Read CSV data into a NumPy array
-    with open(file_path, newline='') as csvfile:
-        reader = csv.reader(csvfile)
-        data = np.array([list(map(float, row)) for row in reader])  # Convert to float array
-
-    # Ensure the data has the correct shape (100x100)
-    if data.shape != (100, 100):
-        raise ValueError(f"Expected CSV shape (100,100), but got {data.shape}")
-
-    # Create an interpolation function
-    interp_func = interp2d(velocities, alpha_v_deg, data, kind='linear')
-
-    # Interpolate the value at the given velocity and alpha
-    interpolated_value = interp_func(velocity_input, alpha_input)[0]
-
-    return interpolated_value
 
 
 DEBUG = False
 if DEBUG:
     # print(SCfunc_EulerRotation([1,0,0],[10,5,10])[0])
-    # print(SCfunc_CartesianToSpherical([15,-5,1]))
-    # print(SCfunc_LinearRamp(x1=0, x2=5, x=-5, value1=0, value2=-5))
-    # Example Usage
-    velocity = 45  # Example velocity input
-    alpha = 30  # Example angle of attack input (degrees)
-    result = SCfunc_CSV_reading(r"FlightModel\Newtonian\CSV_rotor_data", r"C_T_interpolated_iter4.csv", velocity, alpha)
-    print("interpolated result is :", result) 
+    pass

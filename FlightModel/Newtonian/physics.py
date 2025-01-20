@@ -59,7 +59,7 @@ def SCphy_ThrustCoef(state):
     else:
         velocity = 0
         alpha = 0
-    return SCfunc_CSV_reading(r"FlightModel\Newtonian\CSV_rotor_data", r"C_T_interpolated_iter4.csv", velocity, alpha)
+    return SCmisc_GetCT(velocity, alpha)
 
 def SCphy_TorqueCoef(state):
     if state:
@@ -68,7 +68,7 @@ def SCphy_TorqueCoef(state):
     else:
         velocity = 0
         alpha = 0
-    return SCfunc_CSV_reading(r"FlightModel\Newtonian\CSV_rotor_data", r"C_Q_interpolated_iter4.csv" , velocity, alpha)
+    return SCmisc_GetCQ(velocity, alpha)
 
 def SCphy_XCoef(state):
     if state:
@@ -77,7 +77,7 @@ def SCphy_XCoef(state):
     else:
         velocity = 0
         alpha = 0
-    return SCfunc_CSV_reading(r"FlightModel\Newtonian\CSV_rotor_data", r"C_X_interpolated_iter4.csv" , velocity, alpha)
+    return SCmisc_GetCX(velocity, alpha)
 
 
 def SCphy_Thrust(state, rpm, R, rho=1.225):
