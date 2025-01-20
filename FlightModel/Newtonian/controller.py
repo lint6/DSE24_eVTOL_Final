@@ -170,13 +170,6 @@ def SCcon_FlyByWire(state_in, error_in, allocation, dt):
     pos_error = error_in[0] # Historical position error
     ang_error = error_in[1] # Historical angle error in
     
-    
-    
-    
-    
-    
-    
-    
     # Throttle
     roll_throttle  = np.clip(SCfunc_PIDController(np.array(ang_error).T[0], k_p=0.05, t_i=250, t_d=5, dt=dt),
                              a_min=-1, a_max=1)

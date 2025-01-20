@@ -295,9 +295,9 @@ def SCcraft_Airligator():
     HTC = SCobj_ForcePoint( forces   = [0, 0, 0], #[N, WITHOUT gravitational froce]
                                    moments  = [0, 0, 0],   #[N*m]
                                    mass     = 12.56,       #[kg] 
-                                   inertia  = [[SCphy_Intertia_Box(12.56, np.sqrt(0.98), np.sqrt(0.98), 0.035),0,0],
-                                               [0,SCphy_Intertia_Box(12.56, np.sqrt(0.98), np.sqrt(0.98), 0.035),0],
-                                               [0,0,SCphy_Intertia_Box(12.56, np.sqrt(0.98), np.sqrt(0.98), 0.035)]],
+                                   inertia  = [[SCphy_Intertia_Box(12.56, np.sqrt(0.98), np.sqrt(0.98), 0.035)[0],0,0],
+                                               [0,SCphy_Intertia_Box(12.56, np.sqrt(0.98), np.sqrt(0.98), 0.035)[1],0],
+                                               [0,0,SCphy_Intertia_Box(12.56, np.sqrt(0.98), np.sqrt(0.98), 0.035)[2]]],
                                    position = [0,0,0],   # [m from the body axis origin ]
                                    rotation = [0,0,0],)
 
