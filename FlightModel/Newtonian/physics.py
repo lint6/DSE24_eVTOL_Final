@@ -105,4 +105,9 @@ def SCphy_Torque(state, rpm, R, rho=1.225):
     return CT * rho * area * tip_spd**2 * R
 
 def SCphy_body_drag(state):
-    return 1.12 * 0.5 * 1.225 * (state[-1][0]**2)
+    if state:
+        velocity = state[-1][0]
+    else:
+        velocity = 0
+    return 1.12 * 0.5 * 1.225 * (velocity**2)
+

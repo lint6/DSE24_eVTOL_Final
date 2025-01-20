@@ -38,5 +38,5 @@ def SCfunc_RotorDrag(R, X=False): #Mimic single input (RPM) function for thrust
         return lambda state, control: SCphy_Rotor_Drag(state, control, R)[1]*(-1)
 
 def SCfunc_bodydrag(): #Mimic single input (RPM) function for thrust
-    return lambda state : SCphy_body_drag(state) * (-1)
+    return lambda state, dummy : SCphy_body_drag(state) * (-1)
 
