@@ -19,6 +19,7 @@ import numpy as np
 import time
 from aircraft import *
 from controller import *
+from misc import *
 
 def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
     if Run:
@@ -33,7 +34,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
         # Position
         pos_x = 0
         pos_y = 0
-        pos_z = 0
+        pos_z = -50
         # Angles
         ang_x = 0
         ang_y = 0
@@ -55,7 +56,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
         setpoint_ang = np.array([0,0,0])
         setpoint_vel = np.array([0,0,0])
         setpoint_rot = np.array([0,0,0])
-        rpm = np.array([1, 1, 1, 1, 1, 1]) * 1136.366
+        rpm = np.array([1, 1, 1, 1, 1, 1]) * SCfunc_RadSec2RPM(114.14)
         far_distance = 75
         close_distance = 25
         allocation = np.array([[0, 0, 0.1, 0, 0, -0.1],
@@ -197,8 +198,13 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
             else: # Uncontrolled Flight
                 throttle = 0
                 mix_value = 0
-                
-            rpm = SCfunc_RotorRPM(throttle, rpm, dt)
+            
+            rotor_torque = [0,0,0,0,0,0]
+
+            for i in range(rotor_count):
+                rotor_torque[i] = aircraft.points[i].moments[2]
+
+            rpm = SCfunc_RotorRPM(throttle, rpm, dt, counter_torque=rotor_torque)
             
             # Update aircraft
             for i in range(len(rpm)): #Limiting RPM
@@ -250,6 +256,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
             log_extras[1].append(setpoint_pos)
             log_extras[2].append([setpoint_ang[0],setpoint_ang[1],setpoint_ang[2]])
             log_extras[4].append([mix_value, 1-mix_value])
+            log_control[0].append(rpm)
             # log_extras[3].append([np.max(throttle_hover), np.max(throttle_rotate_x), np.max(throttle_rotate_y), np.max(throttle_rotate_z)])
 
             log_time.append(log_time[-1]+dt)
@@ -266,7 +273,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
                 time_mark = time.time()
             if Run == False:
                 print(f' {time.time()-start_time:.2f} seconds')
-        return log_state, log_forces, log_time, log_extras, log_acc, log_setpoints
+        return log_state, log_forces, log_time, log_extras, log_acc, log_setpoints, log_control
         
 
 def ExampleFunction(Constant): #the input modify the function that is to be returned
@@ -275,8 +282,8 @@ def ExampleFunction(Constant): #the input modify the function that is to be retu
 def SCfunc_RotorRPM(throttle, current_rpm, dt, counter_torque = 0, max_torque = 230, inertia_rotor = 60, radius = 1):
     omega = SCfunc_RPM2RadSec(current_rpm)
     tip_speed = omega * radius
-    counter_torque += 0.0001 * np.pi * radius**3 * 1.225 *  tip_speed**2#temp value for rotor resistance
     torque_delivery = throttle * max_torque
+    counter_torque = -1*np.abs(counter_torque)
     detla_omega = (torque_delivery - counter_torque)/inertia_rotor
     rpm_new = SCfunc_RadSec2RPM(omega + detla_omega*dt)
     return rpm_new
