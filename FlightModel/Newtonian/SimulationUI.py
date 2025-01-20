@@ -19,17 +19,7 @@ from simulation import *
 import matplotlib.pyplot as plt
 
 aircraft = SCobj_Aircraft(points=SCcraft_Airligator(), position=[0,0,0], rotation=[0,0,0])
-log_state, log_forces, log_time, log_extras, log_acc, log_setpoints = SCfunc_FlightSimulation(aircraft, runtime=.1)
-
-DEBUG = False
-if DEBUG:
-  debug_plot = plt.figure()
-  debug = debug_plot.add_subplot()
-  debug.plot(log_time, np.array(log_state[2]).T[2], label = 'Aircraft')
-  debug.plot(log_time, np.array(log_setpoints[2]).T[2], 'r', label = 'setpoint')
-  debug.legend()
-  debug_plot.show()
-  input()
+log_state, log_forces, log_time, log_extras, log_acc, log_setpoints = SCfunc_FlightSimulation(aircraft, runtime=30)
 
 
 fig_pos, pos_plt = plt.subplots(4)

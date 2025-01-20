@@ -184,6 +184,8 @@ class SCobj_Aircraft():
         for i in range(len(self.points)):
             cog = np.add(cog, self.points[i].mass * self.points[i].position)
         cog = np.array(cog)/self.mass
+        print(self.mass)
+        cog = 0
         return cog
         
     def Inertia(self): #find inertia tensor of the full aircraft
@@ -226,7 +228,6 @@ class SCobj_Aircraft():
         # Rotating states into aicraft frame
         # TODO: check if the rotation mat here is inversed or no
         state_rotated = []
-        print(np.array(state))
         if state:
             for i in state:
                 state_rotated.append(self.rotation_mat_inv @ i)
