@@ -89,16 +89,21 @@ class BEMT():
         V_t = omega * self.R
         dr_bar = dr / self.R
 
-        # compute induced velocity at point r
-        induced_1 = (a_r * self.b * c_r)/(16 * math.pi * self.R)
-        induced_2 = -1 * (induced_1 + (V_c / (2 * V_t)))
-        induced_3 = math.sqrt((induced_1 + (V_c /(2 * V_t)))**2 + ((induced_1 * 2) * ((r_bar * theta_r) - (V_c / V_t))))
-        v_r = V_t * (induced_2 + induced_3)
+        indic = 0
 
-        # return self.number_of_blades * (self.C_l_alpha * (
-        #             (pitch_equation(x) * (np.pi / 180)) - lambda_i / x) + c_l_intercept) * x * chord_equation(
-        #     x) - 8 * lambda_i ** 2 * np.pi * self.rotor_radius
-        #v_r = 5.8
+        if indic==0:
+            # compute induced velocity at point r
+            induced_1 = (a_r * self.b * c_r)/(16 * math.pi * self.R)
+            induced_2 = -1 * (induced_1 + (V_c / (2 * V_t)))
+            induced_3 = math.sqrt((induced_1 + (V_c /(2 * V_t)))**2 + ((induced_1 * 2) * ((r_bar * theta_r) - (V_c / V_t))))
+            v_r = V_t * (induced_2 + induced_3)
+
+        if indic==1:
+            # compute induced velocity
+            constant = (0.5 * (1))
+            abc = [1,V_c,]
+
+
 
         phi = np.arctan((V_c + v_r)/(omega * r))
         alpha = theta_r - phi
@@ -592,13 +597,13 @@ if __name__ == '__main__':
     BEMT = BEMT()
 
     #which analysis
-    vertical = True
-    forward = False
+    vertical = False
+    forward = True
     interpolation = False
     controlstability = False
 
     #initialise discretisation and insert number of elements (minimum 100 for accuracy)
-    num_elements = 100
+    num_elements = 300
     BEMT.discretise(num_elements=num_elements)
 
     if vertical==True:
@@ -689,7 +694,7 @@ if __name__ == '__main__':
         print(f"for {BEMT.n_rotors} rotors:")
         print(f"L {L * BEMT.b * BEMT.n_rotors} D {D * BEMT.b * BEMT.n_rotors} T {T * BEMT.b * BEMT.n_rotors} Q {Q * BEMT.b * BEMT.n_rotors} P_r {P_r * BEMT.b * BEMT.n_rotors}  Fx {Fx * BEMT.b * BEMT.n_rotors}")
 
-        T_req = (832.034 * 9.80665 * 1.10)/(np.cos(10*(np.pi/180)))
+        T_req = (832.034 * 9.80665)/(np.cos(10*(np.pi/180)))
         n_rotor = T_req/(T*BEMT.b)
         print("---------------------")
         print(f"You would need {n_rotor} rotors to generate {T_req} [N] of thrust")
@@ -721,20 +726,25 @@ if __name__ == '__main__':
 
         plot = True
         if plot==True:
-            fig, axes = plt.subplots(4, 1, figsize=(8, 10), sharex=True)
+            fig, axes = plt.subplots(2, 2, figsize=(16, 9), sharex=True)
 
-            axes[0].plot(BEMT.r_list, dL_r_list1)
-            axes[0].set_ylabel("Lift [N]")
+            axes[0][0].plot(BEMT.r_list, dL_r_list1, color='dodgerblue')
+            axes[0][0].set_ylabel("Lift [N]")
+            axes[0][0].grid(True)  # Add grid lines
 
-            axes[1].plot(BEMT.r_list, dD_r_list1)
-            axes[1].set_ylabel("Drag [N]")
+            axes[1][0].plot(BEMT.r_list, dD_r_list1, color='sandybrown')
+            axes[1][0].set_ylabel("Drag [N]")
+            axes[1][0].set_xlabel("Radial position [m]")
+            axes[1][0].grid(True)  # Add grid lines
 
-            axes[2].plot(BEMT.r_list, alpha_r_list1)
-            axes[2].set_ylabel("alpha [rad]")
+            axes[0][1].plot(BEMT.r_list, alpha_r_list1, color='navy')
+            axes[0][1].set_ylabel("Alpha [rad]")
+            axes[0][1].grid(True)  # Add grid lines
 
-            axes[3].plot(BEMT.r_list, v_r_list1)
-            axes[3].set_ylabel("Induced velocity [m/s]")
-            axes[3].set_xlabel("Radial position [m]")
+            axes[1][1].plot(BEMT.r_list, v_r_list1, color='k')
+            axes[1][1].set_ylabel("Induced velocity [m/s]")
+            axes[1][1].set_xlabel("Radial position [m]")
+            axes[1][1].grid(True)  # Add grid lines
 
             plt.show()
 
@@ -743,7 +753,7 @@ if __name__ == '__main__':
         print("\033[32mForward flight:\033[0m")
 
         #specify forward flight regime
-        V_f = 37
+        V_f = 22
         gamma = 0.0
         alpha_v = 0.0 * (np.pi/180) #in radians
 
@@ -971,12 +981,16 @@ if __name__ == '__main__':
         plot = True
         if plot == True:
 
-            plt.plot(BEMT.r_list, dL_r_list2[0])
-            plt.plot(BEMT.r_list, dL_r_list2[30], color='k')
-            plt.plot(BEMT.r_list, dL_r_list2[60], color='r')
-            plt.plot(BEMT.r_list, dL_r_list2[90], color='b')
-            haha = [(x + y + z + t)/4 for x, y, z, t in zip(dL_r_list2[0], dL_r_list2[30], dL_r_list2[60], dL_r_list2[90])]
-            plt.plot(BEMT.r_list, haha, color='b')
+            plt.plot(BEMT.r_list, dL_r_list2[0], color='deepskyblue', label='psi = 0 [deg]')
+            plt.plot(BEMT.r_list, dL_r_list2[30], color='k', label='psi = 90 [deg]', linestyle='dotted')
+            plt.plot(BEMT.r_list, dL_r_list2[60], color='blue', label='psi = 180 [deg]', linestyle='dashdot')
+            plt.plot(BEMT.r_list, dL_r_list2[90], color='dimgray', label='psi = 270 [deg]', linestyle='dashed')
+            plt.xlabel('Radial position [m]')
+            plt.ylabel('Lift [N]')
+            plt.legend()
+            plt.grid(True)
+            #haha = [(x + y + z + t)/4 for x, y, z, t in zip(dL_r_list2[0], dL_r_list2[30], dL_r_list2[60], dL_r_list2[90])]
+            #plt.plot(BEMT.r_list, haha, color='b')
 
             plt.show()
 
@@ -984,6 +998,49 @@ if __name__ == '__main__':
             plt.plot(BEMT.r_list, alpha_r_list2[30],color='k')
             plt.plot(BEMT.r_list, alpha_r_list2[60])
             plt.plot(BEMT.r_list, alpha_r_list2[90],color='b')
+            plt.show()
+
+            import numpy as np
+            import matplotlib.pyplot as plt
+
+            import numpy as np
+            import matplotlib.pyplot as plt
+
+            # Example data: list of lists (lift distribution for different azimuthal angles and radial positions)
+            # Assuming dL_r_list2 contains the lift values for each radial position at a specific azimuthal angle.
+            lift_data = np.array(dL_r_list2)  # Convert to 2D numpy array
+
+            # Define the corresponding radial and azimuthal positions
+            r_list = np.linspace(0.0, BEMT.R, lift_data.shape[1])  # Radial positions (columns in lift_data)
+            theta_list = np.linspace(0, 2 * np.pi, lift_data.shape[0])  # Azimuthal angles (rows in lift_data)
+
+            # Create grid for polar coordinates (r, psi)
+            r, psi = np.meshgrid(BEMT.r_list, BEMT.psi_list)
+
+            # Convert polar to Cartesian coordinates
+            X = r * np.sin(psi)
+            Y = r * np.cos(psi)
+
+            # Plotting in 2D with colors representing lift
+            fig, ax = plt.subplots(figsize=(8, 8))
+
+            # Create a colormap plot
+            colormap = ax.pcolormesh(X, Y, lift_data, cmap='cividis', shading='auto')
+
+            # Add color bar to show lift values
+            cbar = plt.colorbar(colormap, ax=ax, label="Lift (N)")
+
+            # Hatching areas where lift is equal to zero
+            # We'll overlay a contour plot with hatching for regions where lift is zero or close to zero.
+            hatch_areas = ax.contourf(X, Y, lift_data, levels=[-1e-5, 1e-5], hatches=['////'], colors='white')
+
+            # Customize labels and title
+            ax.set_title("2D Lift Distribution for Rotor Blade in Forward Flight")
+            ax.set_xlabel("X (m)")
+            ax.set_ylabel("Y (m)")
+            ax.set_aspect('equal')  # Equal aspect ratio for proper scaling
+
+            # Show plot
             plt.show()
 
     if interpolation==True:
