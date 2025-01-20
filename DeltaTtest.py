@@ -35,12 +35,18 @@ class DeltaTtest:
         #Converter
         self.converter_efficiency = 0.981
 
+        self.m_airflow = 0.0742 #kg/s
+        self.P = 4557 #W
+
 
     def AirPower(self): #Assumes ISA SL conditions for now
         #Calculate compressor power
-        self.eta_comp = 0.80    #Compressor efficiency, assumed value for now
+        self.eta_comp = 0.75    #Compressor efficiency, assumed value for now
         self.delta_T_comp = ((self.p_s/self.p_ambient)**((self.air_gamma-1)/self.air_gamma)-1)*self.T_ambient*(1/self.eta_comp) #Temperature change, assumes isentropic compression
-        
+        self.ps_over_pa = ((self.eta_comp*self.P)/(self.m_airflow*self.C_p*self.T_ambient))**(self.air_gamma/(self.air_gamma-1))
+        self.pa_max = self.p_s/self.ps_over_pa
+        print(self.ps_over_pa[34])
+
         plt.figure(figsize=(10, 6))
         plt.plot(self.T_ambient-273.15, self.T_ambient+self.delta_T_comp-273.15, label='Relation', color='blue')
         plt.axhline(y=80, color='black', label='Stack Temperature', linestyle='--', linewidth=1)

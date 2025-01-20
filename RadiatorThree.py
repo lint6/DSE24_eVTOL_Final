@@ -28,13 +28,13 @@ class Radiator:
         self.c_pa = 1.006e3 #[J/kg K]
 
         #Battery heat (only if using for battery thermal system)
-        self.n_cells = 111 #Number of Superbattery cells
+        self.n_cells = 102 #Number of Superbattery cells
         self.ESR = 0.3e-3 #[mOhm], from Superbattery data sheet
         self.I_max = 460 #[A], max current from BatteryTest
         self.Q_battery = self.n_cells*(self.ESR*(self.I_max**2))
 
         #Heat
-        self.Q_rad = 5.48e3 + self.Q_battery  #Heat to be rejected by radiator, calculated in BalanceOfPlant
+        self.Q_rad = 69205.06  #Heat to be rejected by radiator, calculated in BalanceOfPlant [W]
 
     def RadiatorSizing(self):
         self.T_a_out = np.linspace(273.15+20,323.15,500)
@@ -71,18 +71,18 @@ class Radiator:
         print(f"Radiator weight is {self.W_radiator:.2f} [kg]")
 
 
-        # plt.figure(figsize=(10, 6))
-        # plt.plot(self.T_a_out, self.air_balance, label='Air side', color='blue')
-        # plt.plot(self.T_a_out, self.rad_balance, label='Radiator side', color='green')
+        plt.figure(figsize=(10, 6))
+        plt.plot(self.T_a_out, self.air_balance, label='Air side', color='blue')
+        plt.plot(self.T_a_out, self.rad_balance, label='Radiator side', color='green')
 
-        # plt.title(f"Radiator balance")
-        # plt.legend(loc='upper left', fontsize='large')
-        # plt.grid(color='gray', linestyle=':', linewidth=0.5)
-        # plt.xlabel("Air out T [K]")
-        # plt.ylabel("Q/A [W/m^2]")
+        plt.title(f"Radiator balance")
+        plt.legend(loc='upper left', fontsize='large')
+        plt.grid(color='gray', linestyle=':', linewidth=0.5)
+        plt.xlabel("Air out T [K]")
+        plt.ylabel("Q/A [W/m^2]")
 
-        # plt.tight_layout()
-        # plt.show()
+        plt.tight_layout()
+        plt.show()
 
         # plt.figure(figsize=(10, 6))
         # plt.plot(self.V_a, self.A_r, label='Relation', color='blue')

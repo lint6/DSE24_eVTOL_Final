@@ -90,7 +90,7 @@ class BalanceOfPlant:
         self.HTC_coolant_flow = self.Q_htc/(self.C_p_HTC_coolant*self.delta_T_HTC_coolant) #Required mass flow of HTC coolant [kg/s]
 
         #Calculate radiator area.
-        self.HTC_rad_convec_coeff = 800 #HTC radiator heat transfer coefficient [W/m^2-K]
+        self.HTC_rad_convec_coeff = 875 #HTC radiator heat transfer coefficient [W/m^2-K]
         self.HTC_rad_Tr = 273.15+95 #HTC radiator temperature [K]
         self.HTC_rad_emissivity = 0.8 #HTC radiator emissivity
 

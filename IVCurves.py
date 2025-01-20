@@ -73,8 +73,8 @@ class IVCurves:
         #Calculate power density [W/cm^2]
         self.p = self.i*self.v
 
-        #Ideal reversible cell voltage (Placeholder)
-        self.E_h = self.E_r/0.8
+        #Ideal reversible cell voltage 
+        self.E_h = 1.4722
 
         #Calculate heat [W/cm^2]
         self.q = self.i * (self.E_h - self.v)
@@ -98,7 +98,7 @@ class IVCurves:
         plt.plot(self.i, self.p, label='Power Density', color='green')
         plt.plot(self.i, self.q, label='Heat', color='red')
 
-        plt.title(f"IV Curves for {self.p_s/101325} atm")
+        plt.title(f"IV Curves for {self.p_s/101325:.2f} atm")
         plt.legend(loc='upper left', fontsize='large')
         plt.grid(color='gray', linestyle=':', linewidth=0.5)
         plt.xlabel("Current density [A/cm^2]")

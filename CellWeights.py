@@ -160,12 +160,12 @@ class CellWeights:
 
     def WeightsPieChart(self):
         #Create pie chart of the weight components
-        labels = ["Stack", "H2", "H2 Tank", "Air", "HTC", "LTC", "Electrical"]
+        labels = ["Stack", "H2", "H2 Tank", "Air", "HTC", "Electrical"]
         index = 0
         for i in range(len(self.W_PEMFC)):
             if self.W_PEMFC[i] == min(self.W_PEMFC):
                 index = i
-        values = [self.W_stack[i],self.W_hydrogen[i],self.W_tank[i],self.W_air,self.W_HTC[i],self.W_LTC[i],self.W_Elec]
+        values = [self.W_stack[i]/self.W_PEMFC[i],self.W_hydrogen[i]/self.W_PEMFC[i],self.W_tank[i]/self.W_PEMFC[i],self.W_air/self.W_PEMFC[i],self.W_HTC[i]/self.W_PEMFC[i],self.W_Elec/self.W_PEMFC[i]]
 
         plt.pie(values, labels=labels, autopct='%1.1f%%')
         plt.title("PEMFC System Weight Components")
@@ -201,7 +201,7 @@ class CellWeights:
 
         plt.scatter(self.IVCurves.i[maxpin],self.IVCurves.p[maxpin], color='black', label='Max P',zorder=5)
 
-        plt.title(f"IV Curves for {self.IVCurves.p_s/101325} atm")
+        plt.title(f"IV Curves for {self.IVCurves.p_s/101325:.1f} atm")
         plt.legend(loc='upper left', fontsize='large')
         plt.grid(color='gray', linestyle=':', linewidth=0.5)
         plt.xlabel("Current density [A/cm^2]")

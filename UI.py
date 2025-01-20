@@ -16,20 +16,20 @@ from CellWeights import CellWeights
 #Because highest stack pressures give lower weights for a set design power, but they also give lower net power (due to higher P_BOP)
 
 safety_factor = 1 
-P_motor = 42713.81 #Input from performance
-P_battery = 6902.44 #Input from performance
+P_motor = 44232.31 #Input from performance
+P_battery = 5935.78 #Input from performance
 P_avionics = 2110.50 #Get this from the Avionics class [W]
 
 converter_efficiency = 0.98 #Based on NASA SoA DC/DC converter 
 inverter_efficiency = 0.98 #Based on Yamaguchi IEEE paper for SiC inverter efficiency
-motor_efficiency = 0.93 #From motor graph, check if accurate
+motor_efficiency = 0.94 #From motor graph, check if accurate
 
 P_net = safety_factor * (((P_motor)/(converter_efficiency*motor_efficiency*inverter_efficiency))+P_avionics/(converter_efficiency**2)+P_battery/converter_efficiency)  #Power that fuel cell needs to deliver during cruise. Note that BoP power and converter is already included in BalanceOfPlant.
 P_range = 0.5*P_net #Range to iterate over
 P_iterate = np.linspace(P_net,P_net+P_range,1000)
 tolerance = 100
 
-mission_time = 79.28*60 #Mission time [s]
+mission_time = 81.63*60 #Mission time [s]
 
 input_pressures = np.linspace(1.00,2.50,100) #Input stack pressures
 P_D_list = []
@@ -64,7 +64,7 @@ for j in input_pressures:
         for n in range(len(Weights.W_PEMFC)):
             if Weights.W_PEMFC[n] == min(Weights.W_PEMFC):
                 index = n
-
+        
         if P_net - tolerance <= (inputCell.P_D-BOP.P_BOP_gross[index]) <= P_net + tolerance:
             P_D_list.append(i)
             Weight_list.append(Weights.W_PEMFC[index])
@@ -81,7 +81,6 @@ bindex = 0
 for i in range(len(Weight_list)):
     if Weight_list[i] == min(Weight_list):
         bindex = i
-
 print(f"The best combination for a PEMFC with a net power of {P_net:.2f} [W] is a pressure of {input_pressures[bindex]:.2f} [atm] and a design power of {P_D_list[bindex]:.2f} [W], which gives a weight of {Weight_list[bindex]:.2f} [kg]")
 
 #Get the best stack characteristics

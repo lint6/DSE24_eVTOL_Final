@@ -6,12 +6,12 @@ class Converter:
     def __init__(self):
         self.converter_efficiency = 0.98 #NASA SoA
         self.inverter_efficiency = 0.98 #Yamaguchi
-        self.motor_efficiency = 0.93
+        self.motor_efficiency = 0.94
 
         #Power inputs from performance
-        self.P_net_motor = 42713.81e-3 #Net motor power [kW]
-        self.P_net_bat = 6902.44e-3 
-        self.P_net_BOP = 4457.41e-3
+        self.P_net_motor = 44232.31e-3 #Net motor power [kW]
+        self.P_net_bat = 5935.78e-3 
+        self.P_net_BOP = 4506.07e-3
         self.P_net_av = 2.11
 
         self.P_bat = self.P_net_bat/self.converter_efficiency #Power through battery converter [kW]

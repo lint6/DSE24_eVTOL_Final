@@ -108,10 +108,10 @@ inputs = {
     "diameter_mm": 60,
     "height_mm": 138,
     "max_discharge_power_cell_w": 1060,
-    "power_required_w": 38415.4773,
-    "battery_energy_req": 2755.69,
+    "power_required_w": 35341.83479,
+    "battery_energy_req": 2622.14,
     "max_cell_current_a": 460 ,
-    "additional_energy_wh": 1573.43,
+    "additional_energy_wh": 1441.62,
     "battery_weight_LV": 20,                         #[kg] average 24v helicopter batteries     42961
 
 }
