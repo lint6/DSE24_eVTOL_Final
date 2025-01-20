@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 class NVM:
 
-    def __init__(self, length=3, rho=2710, area=5200, E=70, I=35.6*10**6, thrust_load=1000):
+    def __init__(self, length=2.93, rho=2810, area=784, E=71.7, I=1255445, thrust_load=1281.75):
         ''' Thrust acts upwards at the end of the beam , distributed load acts downwards along the entire length of the beam
         Note that the beam itself is fixed at one end, and free on the other end '''
         ### input area in [mm^2], input E in [GPa], input I in [mm^4]
@@ -12,7 +12,7 @@ class NVM:
         self.area = area * (0.001)**2 # m^2
         self.E = E * 10**9 # Pa
         self.I = I * (0.001)**4 # m^4
-        self.thrust_load = thrust_load # N
+        self.thrust_load = thrust_load #* 1.5 # N (safety factor of 1.5?)
         self.g = 9.80665 # m/s^2
 
         # calculations based on inputs
@@ -47,6 +47,7 @@ class NVM:
         deflections = [self.deflection(i) for i in x]
         deflection_angles = [self.deflection_angle(i) for i in x]
         maximum = [max(shear_forces, key=abs), max(bending_moments, key=abs), max(deflections, key=abs), max(deflection_angles, key=abs)]
+        print(f'Max Deflection: {max(deflections, key=abs)} [m]')
         return maximum
 
     def sigma_z(self, x=0.085, y=-0.100, Iyy=8.2*10**6, drag_force=1000):

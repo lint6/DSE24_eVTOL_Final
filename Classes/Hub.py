@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 class HubStuff:
     
-    def __init__(self, g_0=9.80665, r_R=1.2, b=6, m_R=10, d=270, z=50, G=44, rho=4.43, T=213, L=1312.23, D=15.66):
+    def __init__(self, g_0=9.80665, r_R=1.2, b=6, m_R=10, d=270, z=70, G=44, rho=4.43, T=213, L=1312.23, D=15.66):
         # Initialize the HubStress Class
         # Input r_R in [m], b in [-], m_R (1 rotor) in [kg], d in [mm], z in [mm], T in [Nm], G in [GPa], rho in [g/cc], L (1 rotor) in [N], and D (1 rotor) in [N]
         
