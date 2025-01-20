@@ -47,8 +47,8 @@ def SCcraft_Airligator():
     radius_rotor_ring = 5 # radius of rotor position ring
     rotor_mass = 23.32
     rotor_inertia =[[SCphy_Inertia_Disc(23.32, 1.22)[0],0,0],
-                    [0,SCphy_Inertia_Disc[1](23.32, 1.22),0],
-                    [0,0,SCphy_Inertia_Disc[2](23.32, 1.22)]]
+                    [0,SCphy_Inertia_Disc(23.32, 1.22)[1],0],
+                    [0,0,SCphy_Inertia_Disc(23.32, 1.22)[2]]]
     
     motor_mass = 13.5 + 12.814
     motor_inertia =[[SCphy_Inertia_Cylinder(26.314,0.114, 0.086 )[0],0,0],
@@ -65,7 +65,7 @@ def SCcraft_Airligator():
                    [0,SCphy_Intertia_Sphere(185/2, 0.6)[1],0],
                    [0,0,SCphy_Intertia_Sphere(185/2, 0.6)[2]]]
     
-    rotor_1 = SCobj_ForcePoint( forces   = [0, 0, SCfunc_RotorTorque(radius_rotor)], #[N, WITHOUT gravitational froce]
+    rotor_1 = SCobj_ForcePoint( forces   = [0, 0, SCfunc_RotorThrust(radius_rotor)], #[N, WITHOUT gravitational froce]
                                 moments  = [0, 0, SCfunc_RotorTorque(radius_rotor, clockwise=True)],   #[N*m]
                                 mass     = rotor_mass,       #[kg] 
                                 inertia  = rotor_inertia,
@@ -74,7 +74,7 @@ def SCcraft_Airligator():
                                             -1.6],   # [m from the body axis origin ]
                                 rotation = [10,0,0],)  # euler angle degrees 
     
-    rotor_2 = SCobj_ForcePoint( forces   = [0, 0, SCfunc_RotorTorque(radius_rotor)], #[N, WITHOUT gravitational froce]
+    rotor_2 = SCobj_ForcePoint( forces   = [0, 0, SCfunc_RotorThrust(radius_rotor)], #[N, WITHOUT gravitational froce]
                                 moments  = [0, 0, SCfunc_RotorTorque(radius_rotor, clockwise=False)],   #[N*m]
                                 mass     = rotor_mass,       #[kg] 
                                 inertia  = rotor_inertia,
@@ -83,7 +83,7 @@ def SCcraft_Airligator():
                                             -1.6],   # [m from the body axis origin ]
                                 rotation = [-10,0,0],)  # euler angle degrees 
     
-    rotor_3 = SCobj_ForcePoint( forces   = [0, 0, SCfunc_RotorTorque(radius_rotor)], #[N, WITHOUT gravitational froce]
+    rotor_3 = SCobj_ForcePoint( forces   = [0, 0, SCfunc_RotorThrust(radius_rotor)], #[N, WITHOUT gravitational froce]
                                 moments  = [0, 0, SCfunc_RotorTorque(radius_rotor, clockwise=True)],   #[N*m]
                                 mass     = rotor_mass,       #[kg] 
                                 inertia  = rotor_inertia,
@@ -92,7 +92,7 @@ def SCcraft_Airligator():
                                             -1.6],   # [m from the body axis origin ]
                                 rotation = [0,0,0],)  # euler angle degrees 
     
-    rotor_4 = SCobj_ForcePoint( forces   = [0, 0, SCfunc_RotorTorque(radius_rotor)], #[N, WITHOUT gravitational froce]
+    rotor_4 = SCobj_ForcePoint( forces   = [0, 0, SCfunc_RotorThrust(radius_rotor)], #[N, WITHOUT gravitational froce]
                                 moments  = [0, 0, SCfunc_RotorTorque(radius_rotor, clockwise=True)],   #[N*m]
                                 mass     = rotor_mass,       #[kg] 
                                 inertia  = rotor_inertia,
@@ -101,7 +101,7 @@ def SCcraft_Airligator():
                                             -1.6],   # [m from the body axis origin ]
                                 rotation = [-10,0,0],)  # euler angle degrees 
     
-    rotor_5 = SCobj_ForcePoint( forces   = [0, 0, SCfunc_RotorTorque(radius_rotor)], #[N, WITHOUT gravitational froce]
+    rotor_5 = SCobj_ForcePoint( forces   = [0, 0, SCfunc_RotorThrust(radius_rotor)], #[N, WITHOUT gravitational froce]
                                 moments  = [0, 0, SCfunc_RotorTorque(radius_rotor, clockwise=False)],   #[N*m]
                                 mass     = rotor_mass,       #[kg] 
                                 inertia  = rotor_inertia,
@@ -110,7 +110,7 @@ def SCcraft_Airligator():
                                             -1.6],   # [m from the body axis origin ]
                                 rotation = [10,0,0],)  # euler angle degrees 
         
-    rotor_6 = SCobj_ForcePoint( forces   = [0, 0, SCfunc_RotorTorque(radius_rotor)], #[N, WITHOUT gravitational froce]
+    rotor_6 = SCobj_ForcePoint( forces   = [0, 0, SCfunc_RotorThrust(radius_rotor)], #[N, WITHOUT gravitational froce]
                                 moments  = [0, 0, SCfunc_RotorTorque(radius_rotor, clockwise=False)],   #[N*m]
                                 mass     = rotor_mass,       #[kg] 
                                 inertia  = rotor_inertia,
@@ -312,6 +312,7 @@ def SCcraft_Airligator():
               PEMFC,
               HTC,
               Electrical_system, flight_control]
+    print("number of points are:", len(points))
     return points
      
 def SCcraft_PointGenerationExample(): #Returns a list of points with ForcePoint class, modify this function to add or remove points from the aicraft
@@ -337,6 +338,7 @@ def SCcraft_PointGenerationExample(): #Returns a list of points with ForcePoint 
     '''Collect Points'''
     points = [example_point, example_point2]
     return points
+
 
 def SCcraft_VerifyAircraft(): #Returns a list of points with ForcePoint class, modify this function to add or remove points from the aicraft
     '''Points'''
@@ -397,7 +399,9 @@ def SCcraft_FastAircraft(): # Fast flying fixed-wing aircraft
 
 '''End'''
 
-Testing = False
+Testing = True
 if Testing:
     aircraft = SCobj_Aircraft(points=SCcraft_Airligator(), position=[0,0,0], rotation=[0,0,0])
     print(aircraft.points)
+    print("Number of collected points are:", len(aircraft.points))
+    
