@@ -34,7 +34,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
         # Position
         pos_x = 0
         pos_y = 0
-        pos_z = -50
+        pos_z = -5000
         # Angles
         ang_x = 0
         ang_y = 0
@@ -130,6 +130,11 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
             rot_y = rot_y + ang_acc_y * dt 
             rot_z = rot_z + ang_acc_z * dt 
             vel = [vel_x,vel_y,vel_z]
+            
+            rot_x = 0
+            rot_y = 0
+            rot_z = 0
+            
             rot = [rot_x,rot_y,rot_z]
             
             # Position
@@ -260,7 +265,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
             # log_extras[3].append([np.max(throttle_hover), np.max(throttle_rotate_x), np.max(throttle_rotate_y), np.max(throttle_rotate_z)])
 
             log_time.append(log_time[-1]+dt)
-
+            print('-------------------------------------')
             '''Exit Conditions'''
             if time.time() - start_time >= 600:
                 Run = False
@@ -279,11 +284,11 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
 def ExampleFunction(Constant): #the input modify the function that is to be returned
     return lambda variable: variable*Constant #Return a function that can be stored in a variable
 
-def SCfunc_RotorRPM(throttle, current_rpm, dt, counter_torque = 0, max_torque = 230, inertia_rotor = 60, radius = 1):
+def SCfunc_RotorRPM(throttle, current_rpm, dt, counter_torque = 0, max_torque = 230, inertia_rotor = 60):
     omega = SCfunc_RPM2RadSec(current_rpm)
-    tip_speed = omega * radius
     torque_delivery = throttle * max_torque
-    counter_torque = -1*np.abs(counter_torque)
+    counter_torque = counter_torque * np.array([1, -1, 1, 1, -1, -1])
+    # print(counter_torque)
     detla_omega = (torque_delivery - counter_torque)/inertia_rotor
     rpm_new = SCfunc_RadSec2RPM(omega + detla_omega*dt)
     return rpm_new

@@ -99,10 +99,11 @@ def SCphy_Rotor_Drag(state, rpm, R, rho=1.225):
 
 
 def SCphy_Torque(state, rpm, R, rho=1.225):
-    CT = SCphy_TorqueCoef(state)
+    CQ = SCphy_TorqueCoef(state)
+    print(CQ)
     area = np.pi * R**2
     tip_spd = SCfunc_RPM2RadSec(rpm)*R
-    return CT * rho * area * tip_spd**2 * R
+    return CQ * rho * area * tip_spd**2 * R
 
 def SCphy_body_drag(state):
     if state:

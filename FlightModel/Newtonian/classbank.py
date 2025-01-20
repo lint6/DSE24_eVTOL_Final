@@ -77,6 +77,7 @@ class SCobj_ForcePoint():
         # initial
         function_def = type(lambda x: x) #telling Python what a lambda function is so we can do conditions later
         self.state = state
+
         
         # Making rotation Matrix
         self.rotation = np.array(self.rotation)
