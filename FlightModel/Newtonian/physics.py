@@ -46,18 +46,18 @@ def SCphy_Intertia_Sphere(m, r):
     I_zz = (2/5) * m * r**2
     return I_xx, I_yy, I_zz
 
-def SCphy_ThrustCoef(state):
-    velocity = float(input("what is the velocity of your interest?"))
+def SCphy_ThrustCoef(state): # TODO use state inputs instead 
+    velocity = float(input("what is the velocity of your interest? from physics.py"))
     alpha = float(input("what is the alpha of your interest?"))
     return SCfunc_CSV_reading(r"DSE24_eVTOL_Final\FlightModel\Newtonian\CSV_rotor_data", r"C_T_interpolated_iter4.csv", velocity, alpha)
 
-def SCphy_TorqueCoef(state):
-    velocity = float(input("what is the velocity of your interest?"))
+def SCphy_TorqueCoef(state): # TODO use state inputs instead 
+    velocity = float(input("what is the velocity of your interest? from physics.py"))
     alpha = float(input("what is the alpha of your interest?"))
     return SCfunc_CSV_reading(r"DSE24_eVTOL_Final\FlightModel\Newtonian\CSV_rotor_data", r"C_Q_interpolated_iter4.csv" , velocity, alpha)
 
-def SCphy_XCoef(state):
-    velocity = float(input("what is the velocity of your interest?"))
+def SCphy_XCoef(state): # TODO use state inputs instead 
+    velocity = float(input("what is the velocity of your interest? from physics.py"))
     alpha = float(input("what is the alpha of your interest?"))
     return SCfunc_CSV_reading(r"DSE24_eVTOL_Final\FlightModel\Newtonian\CSV_rotor_data", r"C_X_interpolated_iter4.csv" , velocity, alpha)
 
