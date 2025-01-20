@@ -179,13 +179,11 @@ class SCobj_Aircraft():
             mass += self.points[i].mass
         return mass
     
-    def COG(self): #location of center of gravity, in body frame
+    def COG(self): #location of center of gravity, in body frame !!! NOT PHYSICALLY UPDATED !!!
         cog = [0,0,0]
-        for i in range(len(self.points)):
-            cog = np.add(cog, self.points[i].mass * self.points[i].position)
-        cog = np.array(cog)/self.mass
-        print(self.mass)
-        cog = 0
+        # for i in range(len(self.points)):
+        #     cog = np.add(cog, self.points[i].mass * self.points[i].position)
+        # cog = np.array(cog)/self.mass
         return cog
         
     def Inertia(self): #find inertia tensor of the full aircraft

@@ -44,13 +44,13 @@ def SCfunc_UpdateAssembly(u_forces   = [[0],[0],[0]], #Assembles the ForcePoint 
 
 def SCcraft_Airligator():
     radius_rotor = 1.22 #radius of rotor
-    radius_rotor_ring = 5 # radius of rotor position ring
+    radius_rotor_ring = 2.93 # radius of rotor position ring
     rotor_mass = 81.47/6
     rotor_inertia =[[SCphy_Inertia_Disc(23.32, 1.22)[0],0,0],
                     [0,SCphy_Inertia_Disc(23.32, 1.22)[1],0],
                     [0,0,SCphy_Inertia_Disc(23.32, 1.22)[2]]]
     
-    motor_mass = 13.5
+    motor_mass = 82.68/6
     motor_inertia =[[SCphy_Inertia_Cylinder(26.314,0.114, 0.086 )[0],0,0],
                     [0,SCphy_Inertia_Cylinder(26.314,0.114, 0.086 )[1],0],
                     [0,0,SCphy_Inertia_Cylinder(26.314,0.114, 0.086 )[2]]]
@@ -302,6 +302,15 @@ def SCcraft_Airligator():
                                                [0,0,SCphy_Intertia_Box(12.56, np.sqrt(0.98), np.sqrt(0.98), 0.035)[2]]],
                                    position = [0,0,0],   # [m from the body axis origin ]
                                    rotation = [0,0,0],)
+    
+    Ballast = SCobj_ForcePoint( forces   = [0, 0, 0], #[N, WITHOUT gravitational froce]
+                                   moments  = [0, 0, 0],   #[N*m]
+                                   mass     = 832.03-792.78,       #[kg] 
+                                   inertia  = [[SCphy_Intertia_Box(12.56, np.sqrt(0.98), np.sqrt(0.98), 0.035)[0],0,0],
+                                               [0,SCphy_Intertia_Box(12.56, np.sqrt(0.98), np.sqrt(0.98), 0.035)[1],0],
+                                               [0,0,SCphy_Intertia_Box(12.56, np.sqrt(0.98), np.sqrt(0.98), 0.035)[2]]],
+                                   position = [0,0,0],   # [m from the body axis origin ]
+                                   rotation = [0,0,0],)
 
     '''Collect Points'''
     points = [rotor_1, rotor_2, rotor_3, rotor_4, rotor_5, rotor_6,
@@ -313,7 +322,8 @@ def SCcraft_Airligator():
               tank,
               PEMFC,
               HTC,
-              Electrical_system, flight_control]
+              Electrical_system, flight_control,
+              Ballast]
     print("number of points are:", len(points))
     return points
      

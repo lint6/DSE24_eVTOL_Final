@@ -55,7 +55,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
         setpoint_ang = np.array([0,0,0])
         setpoint_vel = np.array([0,0,0])
         setpoint_rot = np.array([0,0,0])
-        rpm = np.array([1, 1, 1, 1, 1, 1]) * .25* 4000
+        rpm = np.array([1, 1, 1, 1, 1, 1]) * 1136.366
         far_distance = 75
         close_distance = 25
         allocation = np.array([[0, 0, 0.1, 0, 0, -0.1],
@@ -106,7 +106,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
             # Acceleration
             lat_acc_x = aircraft.forces[0] / (aircraft.mass)
             lat_acc_y = aircraft.forces[1] / (aircraft.mass) 
-            lat_acc_z = aircraft.forces[2] / (aircraft.mass) #+ 9.81
+            lat_acc_z = aircraft.forces[2] / (aircraft.mass) + 9.81
             
             
             ang_acc = np.linalg.inv(aircraft.inertia).dot(aircraft.moments)
@@ -235,6 +235,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
                         SCfunc_UpdateAssembly(),
                         SCfunc_UpdateAssembly(),#20
                         SCfunc_UpdateAssembly(),
+                        SCfunc_UpdateAssembly(),
                         SCfunc_UpdateAssembly()]
             state = [i[-1] for i in log_state]
             aircraft.Update(state = state, update_variables = updates)
@@ -271,7 +272,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
 def ExampleFunction(Constant): #the input modify the function that is to be returned
     return lambda variable: variable*Constant #Return a function that can be stored in a variable
 
-def SCfunc_RotorRPM(throttle, current_rpm, dt, counter_torque = 0, max_torque = 500, inertia_rotor = 60, radius = 1):
+def SCfunc_RotorRPM(throttle, current_rpm, dt, counter_torque = 0, max_torque = 230, inertia_rotor = 60, radius = 1):
     omega = SCfunc_RPM2RadSec(current_rpm)
     tip_speed = omega * radius
     counter_torque += 0.0001 * np.pi * radius**3 * 1.225 *  tip_speed**2#temp value for rotor resistance
