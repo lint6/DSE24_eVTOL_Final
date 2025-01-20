@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 
 class HubStuff:
     
-    def __init__(self, g_0=9.80665, r_R=1.2, b=6, m_R=5.705, d_sh=23.95, d=270, z=70, G=44, rho=4.43, T=213, L=426.6, D=15.66):
+    def __init__(self, g_0=9.80665, r_R=1.22, b=6, m_R=3.747, d_sh=16.95, d=230, z=70, G=44, rho=4.43, T=112, L=257.794, D=0.6337):
         # Initialize the HubStress Class
-        # Input r_R in [m], b in [-], m_R (1 rotor) in [kg], d_sh in [mm], d in [mm], z in [mm], T in [Nm], G in [GPa], rho in [g/cc], L (1 blade) in [N], and D (1 rotor) in [N]
+        # Input r_R in [m], b in [-], m_R (1 rotor) in [kg], d_sh in [mm], d in [mm], z in [mm], T in [Nm], G in [GPa], rho in [g/cc], L (1 blade) in [N], and D (1 blade) in [N]
         
         "Material Selection"
         # Aluminium 7075-T6: G = 26.9 [GPa], rho = 2.81 [g/cc]
@@ -23,7 +23,7 @@ class HubStuff:
         self.rho = rho * 1000  # Density of the material in [kg/m^3]
         self.T = T  # Torque in [Nm]
         self.L = L  # Lift of 1 blade in [N]
-        self.D = D / self.b  # Drag of 1 blade in [N]
+        self.D = D  # Drag of 1 blade in [N]
 
         
     def calculate_polar_moment_of_inertia(self):
@@ -56,17 +56,17 @@ class HubStuff:
         return ((self.T - (self.b * M_D)) * r) / J  # returns in [Pa]
     
     def calculate_bending_stress(self):
-        # Input location of bending stress (r_i) in [mm], default as the radius of the hub
+        # Input location of bending stress (r_i) in [m], default as the radius of the hub
         r_i = self.d / 2
+        self.r_i = r_i
         I = self.calculate_moment_of_inertia()
         M_L = self.calculate_moment_lift()
         M_W = self.calculate_moment_weight()
         M_x = M_L - M_W
-        self.r_i = r_i / 1000   # Location on the cross section along the hub's radius in [m]
         return ((M_x * r_i) / I)   # returns in [Pa]
 
     def calculate_hub_mass(self):
-        return np.pi * (((self.d**2) - self.d_sh**2) / 4) * self.z * self.rho  # returns in [kg]
+        return np.pi * (((self.d**2) - (self.d_sh**2)) / 4) * self.z * self.rho  # returns in [kg]
 
 
 if __name__ == "__main__":
