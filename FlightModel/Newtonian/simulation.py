@@ -55,7 +55,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.01):
         setpoint_ang = np.array([0,0,0])
         setpoint_vel = np.array([0,0,0])
         setpoint_rot = np.array([0,0,0])
-        rpm = np.ones(rotor_count) * .25*4000
+        rpm = np.ones(rotor_count) * .25* 4000
         far_distance = 75
         close_distance = 25
         allocation = np.array([[0, 0, 0.1, 0, 0, -0.1],
