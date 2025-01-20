@@ -56,17 +56,16 @@ class SCobj_ForcePoint():
         
         # Updating self state to be within the local frame of the point
         if state:
+            state = list(state)
+            state.append([0,0,0])
+            self.state = np.zeros_like(state)
             for i in range(len(state)):
-                self.state[i] = np.matmul(self.rotation_mat,state[i])
-                print(self.rotation_mat)
-                print(self.rotation)
-            self.state.append([0,0,0])
+                self.state[i] = np.matmul(self.rotation_mat, state[i])
             self.state[2] = self.state[2] + np.cross(self.state[3], self.position) # Add in velocity from rotation
-            print(f'velocity {self.state[2]}')
             self.state[6] = SCfunc_CartesianToSpherical(self.state[2])[1] # The vector of side slip and aoa
             self.state[0] = self.position
             self.state[1] = self.rotation
-            self.state = self.state[:7]
+            self.state = np.array(self.state[:7])
         
     def Update(self, #variables to update, one element for each term. 
                state = None,
@@ -81,7 +80,7 @@ class SCobj_ForcePoint():
         
         # initial
         function_def = type(lambda x: x) #telling Python what a lambda function is so we can do conditions later
-        self.state = state
+        self.state = None
 
         
         # Making rotation Matrix

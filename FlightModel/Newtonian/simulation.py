@@ -268,9 +268,9 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
             log_extras[4].append([mix_value, 1-mix_value])
             log_control[0].append(rpm)
             # log_extras[3].append([np.max(throttle_hover), np.max(throttle_rotate_x), np.max(throttle_rotate_y), np.max(throttle_rotate_z)])
-
+            print(aircraft.forces)
             log_time.append(log_time[-1]+dt)
-            print('-------------------------------------')
+            # print('-------------------------------------')
             '''Exit Conditions'''
             if time.time() - start_time >= 600:
                 Run = False
@@ -292,8 +292,7 @@ def ExampleFunction(Constant): #the input modify the function that is to be retu
 def SCfunc_RotorRPM(throttle, current_rpm, dt, counter_torque = 0, max_torque = 230, inertia_rotor = 60):
     omega = SCfunc_RPM2RadSec(current_rpm)
     torque_delivery = throttle * max_torque
-    counter_torque = counter_torque * np.array([1, -1, 1, 1, -1, -1])
-    # print(counter_torque)
+    counter_torque = counter_torque * np.array([-1, 1, -1, -1, 1, 1])
     detla_omega = (torque_delivery - counter_torque)/inertia_rotor
     rpm_new = SCfunc_RadSec2RPM(omega + detla_omega*dt)
     return rpm_new

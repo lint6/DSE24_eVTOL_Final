@@ -53,28 +53,27 @@ def SCphy_Inertia_Rod(m, l):
     return I_xx, I_yy, I_zz
 
 def SCphy_ThrustCoef(state):
-    if state:
+    if type(state) != type(None):
         velocity = state[-1][0]
-        alpha = state[-1][2]
+        alpha = state[-1][2] - 90
     else:
         velocity = 0
         alpha = 0
     return SCmisc_GetCT(velocity, alpha)
 
 def SCphy_TorqueCoef(state):
-    if state:
+    if type(state) != type(None):
         velocity = state[-1][0]
-        alpha = state[-1][2]
-        print(state[-1])
+        alpha = state[-1][2] - 90
     else:
         velocity = 0
         alpha = 0
     return SCmisc_GetCQ(velocity, alpha)
 
 def SCphy_XCoef(state):
-    if state:
+    if type(state) != type(None):
         velocity = state[-1][0]
-        alpha = state[-1][2]
+        alpha = state[-1][2] - 90
     else:
         velocity = 0
         alpha = 0
@@ -92,7 +91,7 @@ def SCphy_Rotor_Drag(state, rpm, R, rho=1.225):
     area = np.pi * R**2
     tip_spd = SCfunc_RPM2RadSec(rpm)*R
     Drag = CX * rho * area * tip_spd**2
-    if state:
+    if type(state) != type(None):
         beta = state[-1][1]
     else:
         beta = 0
@@ -106,7 +105,7 @@ def SCphy_Torque(state, rpm, R, rho=1.225):
     return CQ * rho * area * tip_spd**2 * R
 
 def SCphy_body_drag(state):
-    if state:
+    if type(state) != type(None):
         velocity = state[-1][0]
     else:
         velocity = 0

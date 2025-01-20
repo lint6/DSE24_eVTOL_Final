@@ -322,7 +322,6 @@ def SCcraft_Airligator():
               HTC,
               Electrical_system, flight_control,
               Ballast]
-    print("number of points are:", len(points))
     return points
      
 def SCcraft_PointGenerationExample(): #Returns a list of points with ForcePoint class, modify this function to add or remove points from the aicraft
