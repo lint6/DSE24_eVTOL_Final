@@ -58,10 +58,10 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
         rpm = np.ones(rotor_count) * .25*4000
         far_distance = 75
         close_distance = 25
-        allocation = np.array([[0.1,-0.1,-0.1,0.1],
-                               [-0.1,-0.1,0.1,0.1],
-                               [-0.1,0.1,-0.1,0.1],
-                               [1,1,1,1]]) # Roll, Pitch, Yaw, Hover
+        allocation = np.array([[0, 0, 0.1, 0, 0, -0.1],
+                               [0.1, 0.1, 0, -0.1, -0.1, 0],
+                               [0.1, -0.1, 0, 0.1, -0.1, 0],
+                               [1, 1, 1, 1, 1, 1]]) # Roll, Pitch, Yaw, Hover
         
         
         
