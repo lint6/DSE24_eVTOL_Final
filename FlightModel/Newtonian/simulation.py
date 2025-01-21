@@ -21,7 +21,7 @@ from aircraft import *
 from controller import *
 from misc import *
 
-def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.001):
+def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.01):
     if Run:
         print('Warning: Simulation Running')
         '''DOWNWARD IS POSTIVE'''
@@ -50,7 +50,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.001):
 
         # Aircraft Config
         rotor_count = 6
-        trim_hover = np.array([1.011822872, 1.011822872, 1, 0.988177128, 0.988177128, 1])
+        trim_hover = np.array([1.011822872, 1.011822872, 1, 0.988177128, 0.988177128, 1]) *.99
         rpm =  trim_hover * 1029.254067
         throttle_trim_hover = 0.225689825
         
@@ -288,7 +288,13 @@ def SCfunc_RotorRPM(throttle, current_rpm, dt, counter_torque = 0, max_torque = 
     omega = SCfunc_RPM2RadSec(current_rpm)
     torque_delivery = throttle * max_torque
     counter_torque = counter_torque * np.array([1, -1, 1, 1, -1, -1])
-    # print(counter_torque)
+    print(torque_delivery)
+    print(counter_torque)
+    print(torque_delivery - counter_torque)
+    print(current_rpm)
+    print('-------------------')
     detla_omega = (torque_delivery - counter_torque)/inertia_rotor
+    print(detla_omega)
     rpm_new = SCfunc_RadSec2RPM(omega + detla_omega*dt)
+    print('-------------------')
     return rpm_new
