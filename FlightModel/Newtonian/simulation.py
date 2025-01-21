@@ -21,7 +21,7 @@ from aircraft import *
 from controller import *
 from misc import *
 
-def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
+def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.001):
     if Run:
         print('Warning: Simulation Running')
         '''DOWNWARD IS POSTIVE'''
@@ -34,7 +34,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
         # Position
         pos_x = 0
         pos_y = 0
-        pos_z = -15000
+        pos_z = -100
         # Angles
         ang_x = 0
         ang_y = 0
@@ -42,7 +42,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
         # Velocity
         vel_x = 0
         vel_y = 0
-        vel_z = 10
+        vel_z = 0
         # Rotational Velocity
         rot_x = 0
         rot_y = 0
@@ -50,13 +50,16 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
 
         # Aircraft Config
         rotor_count = 6
+        trim_hover = np.array([1.011822872, 1.011822872, 1, 0.988177128, 0.988177128, 1])
+        rpm =  trim_hover * 1029.254067
+        throttle_trim_hover = 0.225689825
         
         # Control
-        setpoint_pos = np.array([0,0,0])
+        setpoint_pos = np.array([0,0,-100])
         setpoint_ang = np.array([0,0,0])
         setpoint_vel = np.array([0,0,0])
         setpoint_rot = np.array([0,0,0])
-        rpm = np.array([1, 1, 1, 1, 1, 1]) * SCfunc_RadSec2RPM(114.14)
+
         far_distance = 75
         close_distance = 25
         allocation = np.array([[0,    0,   0.1, 0,    0,   -0.1],
@@ -107,7 +110,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
             # Acceleration
             lat_acc_x = aircraft.forces[0] / (aircraft.mass)
             lat_acc_y = aircraft.forces[1] / (aircraft.mass) 
-            lat_acc_z = aircraft.forces[2] / (aircraft.mass) #+ 9.81
+            lat_acc_z = aircraft.forces[2] / (aircraft.mass) + 9.81
             
             
             ang_acc = np.linalg.inv(aircraft.inertia).dot(aircraft.moments)
@@ -126,8 +129,8 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
                 if vel_z >=0:
                     vel_z = 0
             
-            vel_x = 0
-            vel_y = 0
+            # vel_x = 0
+            # vel_y = 0
             
             
             
@@ -136,9 +139,9 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
             rot_z = rot_z + ang_acc_z * dt 
             vel = [vel_x,vel_y,vel_z]
             
-            rot_x = 0
-            rot_y = 0
-            rot_z = 0
+            # rot_x = 0
+            # rot_y = 0
+            # rot_z = 0
             
             rot = [rot_x,rot_y,rot_z]
             
@@ -203,27 +206,20 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
 
             elif flybywire: # angle mode, mimicing fly-by-wire
                 # TODO: Finish implemting FBW control scheme
-                print(log_error_cartesian[-1])
+                pass
                 
             else: # Uncontrolled Flight
                 throttle = 0
+                throttle = throttle_trim_hover
                 mix_value = 0
             
+            # Updating RPM of rotor
             rotor_torque = [0,0,0,0,0,0]
-
             for i in range(rotor_count):
                 rotor_torque[i] = aircraft.points[i].moments[2]
-
             rpm = SCfunc_RotorRPM(throttle, rpm, dt, counter_torque=rotor_torque)
             
-            # Update aircraft
-            for i in range(len(rpm)): #Limiting RPM
-                if rpm[i] < 0:
-                    rpm[i] = 0
-                if rpm[i] > 4000:
-                    rpm[i] = 4000
-                    
-                    
+            # Update aircraft                    
             updates = [ SCfunc_UpdateAssembly(u_forces=[[rpm[0]],[rpm[0]],[rpm[0]]], u_moments=[[rpm[0]],[rpm[0]],[rpm[0]]]), # Rotor 1
                         SCfunc_UpdateAssembly(u_forces=[[rpm[1]],[rpm[1]],[rpm[1]]], u_moments=[[rpm[1]],[rpm[1]],[rpm[1]]]), # Rotor 2
                         SCfunc_UpdateAssembly(u_forces=[[rpm[2]],[rpm[2]],[rpm[2]]], u_moments=[[rpm[2]],[rpm[2]],[rpm[2]]]), # Rotor 3
@@ -267,9 +263,8 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
             log_extras[2].append([setpoint_ang[0],setpoint_ang[1],setpoint_ang[2]])
             log_extras[4].append([mix_value, 1-mix_value])
             log_control[0].append(rpm)
-            # log_extras[3].append([np.max(throttle_hover), np.max(throttle_rotate_x), np.max(throttle_rotate_y), np.max(throttle_rotate_z)])
-            print(aircraft.forces)
             log_time.append(log_time[-1]+dt)
+            # print(vel)
             # print('-------------------------------------')
             '''Exit Conditions'''
             if time.time() - start_time >= 600:
@@ -289,10 +284,11 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
 def ExampleFunction(Constant): #the input modify the function that is to be returned
     return lambda variable: variable*Constant #Return a function that can be stored in a variable
 
-def SCfunc_RotorRPM(throttle, current_rpm, dt, counter_torque = 0, max_torque = 230, inertia_rotor = 60):
+def SCfunc_RotorRPM(throttle, current_rpm, dt, counter_torque = 0, max_torque = 230, inertia_rotor = 6*SCphy_Inertia_Rod(m=.764,l=1.22)[2]):
     omega = SCfunc_RPM2RadSec(current_rpm)
     torque_delivery = throttle * max_torque
-    counter_torque = counter_torque * np.array([-1, 1, -1, -1, 1, 1])
+    counter_torque = counter_torque * np.array([1, -1, 1, 1, -1, -1])
+    # print(counter_torque)
     detla_omega = (torque_delivery - counter_torque)/inertia_rotor
     rpm_new = SCfunc_RadSec2RPM(omega + detla_omega*dt)
     return rpm_new

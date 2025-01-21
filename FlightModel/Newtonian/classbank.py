@@ -63,6 +63,7 @@ class SCobj_ForcePoint():
                 self.state[i] = np.matmul(self.rotation_mat, state[i])
             self.state[2] = self.state[2] + np.cross(self.state[3], self.position) # Add in velocity from rotation
             self.state[6] = SCfunc_CartesianToSpherical(self.state[2])[1] # The vector of side slip and aoa
+            self.state[6][2] = -1*self.state[6][2]
             self.state[0] = self.position
             self.state[1] = self.rotation
             self.state = np.array(self.state[:7])
@@ -90,7 +91,6 @@ class SCobj_ForcePoint():
         
         # Updating point state
         self.UpdateForcePointState(state)
-
         # Update ForcePoint property
         for i in range(len(self.forces_func)): #update force base on functions
             if type(self.forces_func[i]) == function_def:

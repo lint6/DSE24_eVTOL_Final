@@ -90,7 +90,7 @@ def SCcraft_Airligator():
                                 position = [radius_rotor_ring * np.sin(np.pi), 
                                             radius_rotor_ring * np.cos(np.pi),
                                             -1.6],   # [m from the body axis origin ]
-                                rotation = [0,0,0],)  # euler angle degrees 
+                                rotation = [10,0,0],)  # euler angle degrees 
     
     rotor_4 = SCobj_ForcePoint( forces   = [SCfunc_RotorDrag(radius_rotor, X=True), SCfunc_RotorDrag(radius_rotor), SCfunc_RotorThrust(radius_rotor)], #[N, WITHOUT gravitational froce]
                                 moments  = [0, 0, SCfunc_RotorTorque(radius_rotor, clockwise=True)],   #[N*m]
@@ -117,7 +117,7 @@ def SCcraft_Airligator():
                                 position = [radius_rotor_ring * np.sin(0), 
                                             radius_rotor_ring * np.cos(0),
                                             -1.6],   # [m from the body axis origin ]
-                                rotation = [0,0,0],)  # euler angle degrees 
+                                rotation = [-10,0,0],)  # euler angle degrees 
     
     motor_1 = SCobj_ForcePoint( forces   = [0, 0, 0], #[N, WITHOUT gravitational froce]
                                 moments  = [0, 0, 0],   #[N*m]
@@ -303,7 +303,7 @@ def SCcraft_Airligator():
     
     Ballast = SCobj_ForcePoint( forces   = [0, 0, 0], #[N, WITHOUT gravitational froce]
                                    moments  = [0, 0, 0],   #[N*m]
-                                   mass     = 832.03-792.78,       #[kg] 
+                                   mass     = 845.49-792.78,       #[kg] 
                                    inertia  = [[SCphy_Intertia_Box(12.56, np.sqrt(0.98), np.sqrt(0.98), 0.035)[0],0,0],
                                                [0,SCphy_Intertia_Box(12.56, np.sqrt(0.98), np.sqrt(0.98), 0.035)[1],0],
                                                [0,0,SCphy_Intertia_Box(12.56, np.sqrt(0.98), np.sqrt(0.98), 0.035)[2]]],
@@ -410,6 +410,6 @@ def SCcraft_FastAircraft(): # Fast flying fixed-wing aircraft
 Testing = False
 if Testing:
     aircraft = SCobj_Aircraft(points=SCcraft_Airligator(), position=[0,0,0], rotation=[0,0,0])
-    print(aircraft.points)
+    print(aircraft.mass)
     print("Number of collected points are:", len(aircraft.points))
 

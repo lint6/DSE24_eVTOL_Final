@@ -164,33 +164,34 @@ def SCcon_HoverFlight(state_in, error_in, allocation, dt):
     return throttle, np.array(vel_set), np.array(ang_set), vel_error, ang_error
 
 def SCcon_FlyByWire(state_in, error_in, allocation, dt):
-    # Assign data in
-    pos = state_in[0] # Historical position
-    ang = state_in[1] # Historical angle in
-    pos_error = error_in[0] # Historical position error
-    ang_error = error_in[1] # Historical angle error in
+    # # Assign data in
+    # pos = state_in[0] # Historical position
+    # ang = state_in[1] # Historical angle in
+    # pos_error = error_in[0] # Historical position error
+    # ang_error = error_in[1] # Historical angle error in
     
-    # Throttle
-    roll_throttle  = np.clip(SCfunc_PIDController(np.array(ang_error).T[0], k_p=0.05, t_i=250, t_d=5, dt=dt),
-                             a_min=-1, a_max=1)
-    pitch_throttle = np.clip(SCfunc_PIDController(-1*np.array(ang_error).T[1], k_p=0.05, t_i=250, t_d=5, dt=dt),
-                             a_min=-1, a_max=1)
-    yaw_throttle   = np.clip(SCfunc_PIDController( -1 *np.array(rot).T[2], k_p=0.012, t_i=120, t_d=0.3, dt=dt),
-                             a_min=-1, a_max=1)
-    hover_throttle = np.clip(SCfunc_PIDController(np.array(vel_error).T[2], k_p=0.5, t_i=0, t_d=3, dt=dt),
-                             a_min=-1, a_max=1)
+    # # Throttle
+    # roll_throttle  = np.clip(SCfunc_PIDController(np.array(ang_error).T[0], k_p=0.05, t_i=250, t_d=5, dt=dt),
+    #                          a_min=-1, a_max=1)
+    # pitch_throttle = np.clip(SCfunc_PIDController(-1*np.array(ang_error).T[1], k_p=0.05, t_i=250, t_d=5, dt=dt),
+    #                          a_min=-1, a_max=1)
+    # yaw_throttle   = np.clip(SCfunc_PIDController( -1 *np.array(rot).T[2], k_p=0.012, t_i=120, t_d=0.3, dt=dt),
+    #                          a_min=-1, a_max=1)
+    # hover_throttle = np.clip(SCfunc_PIDController(np.array(vel_error).T[2], k_p=0.5, t_i=0, t_d=3, dt=dt),
+    #                          a_min=-1, a_max=1)
     
-    # Allocation
-    roll_throttle  = allocation[0] * roll_throttle
-    pitch_throttle = allocation[1] * pitch_throttle
-    yaw_throttle   = allocation[2] * yaw_throttle
-    hover_throttle = allocation[3] * hover_throttle
+    # # Allocation
+    # roll_throttle  = allocation[0] * roll_throttle
+    # pitch_throttle = allocation[1] * pitch_throttle
+    # yaw_throttle   = allocation[2] * yaw_throttle
+    # hover_throttle = allocation[3] * hover_throttle
     
-    #Grouping
-    throttle = 0
-    throttle += roll_throttle
-    throttle += pitch_throttle
-    throttle += yaw_throttle
-    throttle += hover_throttle
+    # #Grouping
+    # throttle = 0
+    # throttle += roll_throttle
+    # throttle += pitch_throttle
+    # throttle += yaw_throttle
+    # throttle += hover_throttle
     
-    return throttle, ang_set, error
+    # return throttle, ang_set, error
+    pass

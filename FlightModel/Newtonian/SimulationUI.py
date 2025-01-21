@@ -19,7 +19,7 @@ from simulation import *
 import matplotlib.pyplot as plt
 
 aircraft = SCobj_Aircraft(points=SCcraft_Airligator(), position=[0,0,0], rotation=[0,0,0])
-log_state, log_forces, log_time, log_extras, log_acc, log_setpoints, log_control = SCfunc_FlightSimulation(aircraft, runtime=200)
+log_state, log_forces, log_time, log_extras, log_acc, log_setpoints, log_control = SCfunc_FlightSimulation(aircraft, runtime=1)
 
 
 fig_pos, pos_plt = plt.subplots(4)
@@ -40,8 +40,8 @@ pos_plt[2].set_ylabel('Z')
 pos_plt[3].plot(log_time, np.array(np.array(log_control[0]).T[0]), label = 'Rotor1')
 pos_plt[3].plot(log_time, np.array(np.array(log_control[0]).T[1]), label = 'Rotor2')
 pos_plt[3].plot(log_time, np.array(np.array(log_control[0]).T[2]), '--', label = 'Rotor3')
-pos_plt[3].plot(log_time, np.array(np.array(log_control[0]).T[3]), label = 'Rotor4')
-pos_plt[3].plot(log_time, np.array(np.array(log_control[0]).T[4]), label = 'Rotor5')
+pos_plt[3].plot(log_time, np.array(np.array(log_control[0]).T[3]), '-.', label = 'Rotor4')
+pos_plt[3].plot(log_time, np.array(np.array(log_control[0]).T[4]), '-.', label = 'Rotor5')
 pos_plt[3].plot(log_time, np.array(np.array(log_control[0]).T[5]), '--', label = 'Rotor6')
 pos_plt[3].legend()
 pos_plt[3].set_ylabel('RPM')
