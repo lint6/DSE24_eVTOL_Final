@@ -50,9 +50,9 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.01):
 
         # Aircraft Config
         rotor_count = 6
-        trim_hover = np.array([1.011822872, 1.011822872, 1, 0.988177128, 0.988177128, 1]) *.99
-        rpm =  trim_hover * 1029.254067
-        throttle_trim_hover = 0.225689825
+        trim_hover = np.array([1.011822872, 1.011822872, 1, 0.988177128, 0.988177128, 1])
+        rpm =  trim_hover * (1000-10)
+        throttle_trim_hover = 0.210
         
         # Control
         setpoint_pos = np.array([0,0,-100])
@@ -288,13 +288,13 @@ def SCfunc_RotorRPM(throttle, current_rpm, dt, counter_torque = 0, max_torque = 
     omega = SCfunc_RPM2RadSec(current_rpm)
     torque_delivery = throttle * max_torque
     counter_torque = counter_torque * np.array([1, -1, 1, 1, -1, -1])
-    print(torque_delivery)
-    print(counter_torque)
-    print(torque_delivery - counter_torque)
-    print(current_rpm)
-    print('-------------------')
+    # print(torque_delivery)
+    # print(counter_torque)
+    # print(torque_delivery - counter_torque)
+    # print(current_rpm)
+    # print('-------------------')
     detla_omega = (torque_delivery - counter_torque)/inertia_rotor
-    print(detla_omega)
+    # print(detla_omega)
     rpm_new = SCfunc_RadSec2RPM(omega + detla_omega*dt)
-    print('-------------------')
+    # print('-------------------')
     return rpm_new

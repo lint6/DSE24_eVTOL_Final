@@ -59,7 +59,8 @@ def SCphy_ThrustCoef(state):
     else:
         velocity = 0
         alpha = 0
-    return SCmisc_GetCT(velocity, alpha)
+    # return SCmisc_GetCT(velocity, alpha)
+    return 0.01504660470957013 #Fixed value during hover
 
 def SCphy_TorqueCoef(state):
     if type(state) != type(None):
@@ -70,7 +71,8 @@ def SCphy_TorqueCoef(state):
     else:
         velocity = 0
         alpha = 0
-    return SCmisc_GetCQ(velocity, alpha)
+    # return SCmisc_GetCQ(velocity, alpha)
+    return 0.00042958813826815095 #Fixed value during hover
 
 def SCphy_XCoef(state):
     if type(state) != type(None):
@@ -79,14 +81,15 @@ def SCphy_XCoef(state):
     else:
         velocity = 0
         alpha = 0
-    return SCmisc_GetCX(velocity, alpha)
+    # return SCmisc_GetCX(velocity, alpha)
+    return 3.6252743440884245e-20 #Fixed value during hover
 
 
 def SCphy_Thrust(state, rpm, R, rho=1.225):
     CT = SCphy_ThrustCoef(state)
     area = np.pi * R**2
     tip_spd = SCfunc_RPM2RadSec(rpm)*R
-    print(f'CT {CT}')
+    # print(f'CT {CT}')
     return CT * rho * area * tip_spd**2
 
 def SCphy_Rotor_Drag(state, rpm, R, rho=1.225):
@@ -119,4 +122,5 @@ testing = False
 if testing:
     print(SCmisc_GetCQ(0, -80))
     print(SCmisc_GetCT(0, -80))
+    print(SCmisc_GetCX(0, -80))
     print('----------')

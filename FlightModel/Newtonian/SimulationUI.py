@@ -19,7 +19,7 @@ from simulation import *
 import matplotlib.pyplot as plt
 
 aircraft = SCobj_Aircraft(points=SCcraft_Airligator(), position=[0,0,0], rotation=[0,0,0])
-log_state, log_forces, log_time, log_extras, log_acc, log_setpoints, log_control = SCfunc_FlightSimulation(aircraft, runtime=1)
+log_state, log_forces, log_time, log_extras, log_acc, log_setpoints, log_control = SCfunc_FlightSimulation(aircraft, runtime=15)
 
 
 fig_pos, pos_plt = plt.subplots(4)
@@ -68,9 +68,37 @@ ang_plt[3].legend()
 ang_plt[3].set_ylabel('Flight mode divide')
 ang_plt[3].set_xlabel('time')
 
-# plt.tight_layout()
-# plt.show()
-# plt.clf()
+fig_vel, vel_plt = plt.subplots(3)
+vel_plt[0].title.set_text('Velocity')
+vel_plt[0].plot(log_time, np.array(log_state[2]).T[0], label = 'Aircraft')
+# ang_plt[0].plot(log_time, np.array(log_setpoints[1]).T[0], 'r', label = 'setpoint')
+vel_plt[0].legend()
+vel_plt[0].set_ylabel('X_dot')
+
+vel_plt[1].plot(log_time, np.array(log_state[2]).T[1], label = 'Aircraft')
+# ang_plt[1].plot(log_time, np.array(log_setpoints[1]).T[1], 'r', label = 'setpoint')
+vel_plt[1].set_ylabel('Y_dot')
+
+vel_plt[2].plot(log_time, -1*np.array(log_state[2]).T[2], label = 'Aircraft')
+# ang_plt[2].plot(log_time, np.array(log_setpoints[1]).T[2], 'r', label = 'setpoint')
+vel_plt[2].set_ylabel('Z_dot')
+vel_plt[2].set_xlabel('time')
+
+fig_rot, rot_plt = plt.subplots(3)
+rot_plt[0].title.set_text('Rotation rate')
+rot_plt[0].plot(log_time, np.array(log_state[3]).T[0], label = 'Aircraft')
+# ang_plt[0].plot(log_time, np.array(log_setpoints[1]).T[0], 'r', label = 'setpoint')
+rot_plt[0].legend()
+rot_plt[0].set_ylabel('X_rot')
+
+rot_plt[1].plot(log_time, np.array(log_state[3]).T[1], label = 'Aircraft')
+# ang_plt[1].plot(log_time, np.array(log_setpoints[1]).T[1], 'r', label = 'setpoint')
+rot_plt[1].set_ylabel('Y_rot')
+
+rot_plt[2].plot(log_time, np.array(log_state[3]).T[2], label = 'Aircraft')
+# ang_plt[2].plot(log_time, np.array(log_setpoints[1]).T[2], 'r', label = 'setpoint')
+rot_plt[2].set_ylabel('Z_rot')
+rot_plt[2].set_xlabel('time')
 
 fltpath = plt.figure(figsize=(12,10))
 path = fltpath.add_subplot( projection='3d')
