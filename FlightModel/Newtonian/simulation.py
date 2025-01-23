@@ -21,7 +21,7 @@ from aircraft import *
 from controller import *
 from misc import *
 
-def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.01):
+def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
     if Run:
         print('Warning: Simulation Running')
         '''DOWNWARD IS POSTIVE'''
@@ -51,17 +51,18 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.01):
         # Aircraft Config
         rotor_count = 6
         trim_hover = np.array([1.011822872, 1.011822872, 1, 0.988177128, 0.988177128, 1])
-        rpm =  trim_hover * (1000-10)
-        throttle_trim_hover = 0.210
-        
+        trim_forward = np.ones(6)
+        rpm =  trim_forward * 915
+        throttle_trim_hover = 0.1615
+                
         # Control
-        setpoint_pos = np.array([0,0,-100])
+        setpoint_pos = np.array([300,0,-140])
         setpoint_ang = np.array([0,0,0])
         setpoint_vel = np.array([0,0,0])
         setpoint_rot = np.array([0,0,0])
 
-        far_distance = 75
-        close_distance = 25
+        far_distance = 100
+        close_distance = 50
         allocation = np.array([[0,    0,   0.1, 0,    0,   -0.1],
                                [0.1,  0.1, 0,  -0.1, -0.1,  0],
                                [0.1, -0.1, 0,   0.1, -0.1,  0],
@@ -130,18 +131,16 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.01):
                     vel_z = 0
             
             # vel_x = 0
-            # vel_y = 0
-            
-            
+            vel_y = 0
             
             rot_x = rot_x + ang_acc_x * dt 
             rot_y = rot_y + ang_acc_y * dt 
             rot_z = rot_z + ang_acc_z * dt 
             vel = [vel_x,vel_y,vel_z]
             
-            # rot_x = 0
+            rot_x = 0
             # rot_y = 0
-            # rot_z = 0
+            rot_z = 0
             
             rot = [rot_x,rot_y,rot_z]
             
@@ -161,6 +160,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.01):
             else:
                 ang_z = ang_z + rot_z * dt 
                 
+            
             ang_x = np.clip(ang_x, a_max=90, a_min=-90)
             ang_y = np.clip(ang_y, a_max=90, a_min=-90)
             ang_z = np.clip(ang_z, a_max=180, a_min=-180)
@@ -192,7 +192,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.01):
             log_state_spherical[2].append([0,0,0]) # For compeletness, updated in SCcon_ForwardFlight if in autopilot
             
             # Controllers
-            autopilot = False
+            autopilot = True
             flybywire = False
             if autopilot: # Waypoint mode, mimicing autopilot
                 throttle_ForwardFlight, log_state_spherical[2], log_error_spherical, setpoint_ang_for = SCcon_ForwardFlight(log_state_spherical, log_state, log_error_spherical, allocation, dt=dt)
@@ -217,6 +217,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.01):
             rotor_torque = [0,0,0,0,0,0]
             for i in range(rotor_count):
                 rotor_torque[i] = aircraft.points[i].moments[2]
+            # TODO: Add RPM limiter 
             rpm = SCfunc_RotorRPM(throttle, rpm, dt, counter_torque=rotor_torque)
             
             # Update aircraft                    
@@ -258,13 +259,12 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.01):
             log_setpoints[0].append(setpoint_pos)
             log_setpoints[1].append([setpoint_ang[0],setpoint_ang[1],setpoint_ang[2]])
             log_setpoints[2].append(setpoint_vel)
-            log_extras[0].append(rpm/4000)
-            log_extras[1].append(setpoint_pos)
-            log_extras[2].append([setpoint_ang[0],setpoint_ang[1],setpoint_ang[2]])
+            # log_extras[0].append(rpm/4000)
+            # log_extras[1].append(setpoint_pos)
+            # log_extras[2].append([setpoint_ang[0],setpoint_ang[1],setpoint_ang[2]])
             log_extras[4].append([mix_value, 1-mix_value])
             log_control[0].append(rpm)
             log_time.append(log_time[-1]+dt)
-            # print(vel)
             # print('-------------------------------------')
             '''Exit Conditions'''
             if time.time() - start_time >= 600:
@@ -284,7 +284,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.01):
 def ExampleFunction(Constant): #the input modify the function that is to be returned
     return lambda variable: variable*Constant #Return a function that can be stored in a variable
 
-def SCfunc_RotorRPM(throttle, current_rpm, dt, counter_torque = 0, max_torque = 230, inertia_rotor = 6*SCphy_Inertia_Rod(m=.764,l=1.22)[2]):
+def SCfunc_RotorRPM(throttle, current_rpm, dt, counter_torque = 0, max_torque = 100, inertia_rotor = 6*SCphy_Inertia_Rod(m=.764,l=1.22)[2]):
     omega = SCfunc_RPM2RadSec(current_rpm)
     torque_delivery = throttle * max_torque
     counter_torque = counter_torque * np.array([1, -1, 1, 1, -1, -1])

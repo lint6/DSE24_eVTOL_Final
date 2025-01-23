@@ -255,14 +255,14 @@ class SCobj_Aircraft():
         self.forces_body = self.Forces()
         self.moments_body = self.Moments()
         self.inertia_body = self.Inertia()
-
+        # print(self.forces_body)
+        # print(self.moments_body)
         ''' IMPORTANT'''
         ''' All force and moments stored in this class is already rotated to be the next level of reference frame
             !!But the translation component is not included here!!'''
         self.forces  = self.rotation_mat @ self.forces_body #total force experianced by the aircraft
         self.moments = self.rotation_mat @ self.moments_body #total moments experianced by the aircraft
         self.inertia = self.rotation_mat @ self.inertia_body @ self.rotation_mat.T #inertia tensor of the full aircraft
-    
     def UpdateAircraftState(self, state):
         if state:
             self.position = state[0]

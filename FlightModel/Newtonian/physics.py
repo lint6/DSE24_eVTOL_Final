@@ -97,6 +97,7 @@ def SCphy_Rotor_Drag(state, rpm, R, rho=1.225):
     area = np.pi * R**2
     tip_spd = SCfunc_RPM2RadSec(rpm)*R
     Drag = CX * rho * area * tip_spd**2
+
     if type(state) != type(None):
         beta = state[-1][1]
     else:
