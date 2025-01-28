@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 class BoomIdealization:
 
-    def __init__(self, r=0.75, Vy=-7873.38, A=70.5, tau_y=283, t=1.5):
+    def __init__(self, r=0.85, Vy=-9300.87, A=70.5, tau_y=283, t=1.5):
         ''' Initialize the BoomIdealization Class '''
         ### Input radius r in [m], Vy in [N], Ixx in [mm^4], stringer area A in [mm^2], yield shear stress tau_y in [MPa], t in [mm]
         self.r = r  # [m]

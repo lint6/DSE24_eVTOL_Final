@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 class SquareBeamStress: 
 
-    def __init__(self, Mx=1000, My=2000, h=200, t=10, beam_length=3, density=2710):
+    def __init__(self, Mx=3650, My=667.606, h=100, t=2, beam_length=1.71, density=2810):
         ''' Initialize the SquareBeamStress Class'''
         ### input Mx and My in [Nm], h in [mm], t in [mm], beam_length in [m], and density in [kg/m^3]
         self.Mx = Mx # in [Nm]
@@ -114,3 +114,4 @@ if __name__ == '__main__':
     print(f'Weight of the Beam: {round(beam.calculate_weight(), 4)} [kg]')
     print(f'Maximum Positive Stress: {round(beam.calculate_maximum_stress()/10**6, 4)} [MPa]')
     print(f'Maximum Negative Stress: {round(beam.calculate_minimum_stress()/10**6, 4)} [MPa]')
+    print(f'Cross section A: {beam.calculate_cross_sectional_area()} [m^2]')

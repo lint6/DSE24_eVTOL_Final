@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 class CripplingStres:
 
-    def __init__(self, alpha=0.8, n=0.6, E=70, v=1/3,  t=1.5, sigma_y=503):
+    def __init__(self, alpha=0.8, n=0.6, E=71.7, v=1/3,  t=1.5, sigma_y=503):
         ### E in [GPa], t in [mm], sigma_y in [MPa]
         ### t is stringer thickness
         self.alpha = alpha 
@@ -46,12 +46,13 @@ class CripplingStres:
 
     def calculate_total_crippling(self):
         # total criplling of panel (including skin)
-        t_skin = 0.001 # [m] DERIVED FROM BOOM IDEALIZATION
-        b_stiffener_spacing = 0.196 # [m] DERIVED FROM BOOM IDEALIZATION
-        sigma_buckling_skin = 8.56 * 10**6 #[Pa] DERIVED FROM BOOM IDEALIZATION
+        t_skin = 0.0005 # [m] DERIVED FROM BOOM IDEALIZATION
+        b_stiffener_spacing = 0.22253 # [m] DERIVED FROM BOOM IDEALIZATION
+        sigma_buckling_skin = 0.43 * 10**6 #[Pa] DERIVED FROM BOOM IDEALIZATION
         average_cripple = self.calculate_average_crippling()
         area_stringer = self.calculate_stringer_area()
         sigma_total = ((average_cripple * area_stringer) + (t_skin * b_stiffener_spacing * sigma_buckling_skin)) / (area_stringer + b_stiffener_spacing * t_skin)
+        print(sigma_total/10**6) # [MPa]
         return sigma_total
     
     def plot_ratio1_vs_yield(self):

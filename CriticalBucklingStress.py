@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 class CriticalBucklingStress:
 
-    def __init__(self, C=4, E=70, v=1/3, t=2, r=0.75):
+    def __init__(self, C=4, E=71.7, v=1/3, t=0.5, r=0.85):
         ### E in [GPa], t in [mm], r in [m]
         self.C = C
         self.E = E * 10**9 # [Pa]

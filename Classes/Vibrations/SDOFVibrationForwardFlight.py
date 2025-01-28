@@ -5,7 +5,7 @@ from scipy.fft import fft
 
 class SDOFVibrationForwardFlight:
 
-    def __init__(self, L=1.2, E=220, I=135000, T_min=900, T_max=1100, C_damp=0.03, m=1, RPM=1000, gust_velocity=19, gust_time=0, impulse_duration=0.1):
+    def __init__(self, L=1.22, E=163, I=46053.46, T_min=66.82, T_max=512.75, C_damp=0.03, m=0.764, RPM=926.28, gust_velocity=9.15, gust_time=0, impulse_duration=0.01):
         '''Initialize the SDOFVibration Class'''
         ### Input length in [m], E in [GPA], I in [mm^4], T_min and T_max in [N], C_damp in [-]
         self.L = L # [m]
@@ -16,7 +16,7 @@ class SDOFVibrationForwardFlight:
         self.C_damp = C_damp # [-] dimensionless
         self.m = m # [kg]
         self.RPM = RPM # [rev/min]
-        self.gust_velocity = gust_velocity # [m/s]
+        self.gust_velocity = gust_velocity # [m/s] from RFP
         self.gust_time = gust_time # [s]
         self.impulse_duration = impulse_duration # [s]
 
