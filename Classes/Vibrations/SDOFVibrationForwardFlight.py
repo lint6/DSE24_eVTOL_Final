@@ -5,7 +5,7 @@ from scipy.fft import fft
 
 class SDOFVibrationForwardFlight:
 
-    def __init__(self, L=1.22, E=163, I=46053.46, T_min=66.82, T_max=512.75, C_damp=0.03, m=0.764, RPM=926.28, gust_velocity=9.15, gust_time=0, impulse_duration=0.01):
+    def __init__(self, L=1.22, E=163, I=46053.46, T_min=66.82, T_max=512.75, C_damp=0.03, m=0.764, RPM=926.28, gust_velocity=9.15, gust_time=0, impulse_duration=0.5):
         '''Initialize the SDOFVibration Class'''
         ### Input length in [m], E in [GPA], I in [mm^4], T_min and T_max in [N], C_damp in [-]
         self.L = L # [m]
@@ -95,7 +95,7 @@ class SDOFVibrationForwardFlight:
         plt.xlabel('Time [s]')
         plt.ylabel('Force [N]')
         plt.title('Applied Force with Gust Impulse')
-        plt.grid(True)
+        plt.grid(False)
         plt.legend()
         plt.show()
 

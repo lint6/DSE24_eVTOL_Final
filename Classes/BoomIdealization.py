@@ -151,7 +151,7 @@ class BoomIdealization:
 
         # Plot the booms
         plt.scatter(boom_x, boom_y, color='blue', label='Booms', s=100)  # Blue points for the booms
-
+        plt.plot([], [], ' ', label=f'Max Shear Flow: {q_max:.2f} [N/m]')
         # Add labels and grid for clarity
         plt.xlabel('X-axis')
         plt.ylabel('Y-axis')

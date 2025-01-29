@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 class CircularBeamStress:
 
-    def __init__(self, Mx=1000, My=2000, D_outer=200, t=10, beam_length=3, density=2710):
+    def __init__(self, Mx=3650, My=667.7, D_outer=100, t=2, beam_length=2.93, density=2810):
         ''' Initialize the CircularBeamStress Class'''
         ### input Mx and My in [Nm], D_outer and t in [mm], beam_length in [m], and density in [kg/m^3]
         self.Mx = Mx  # in [Nm]

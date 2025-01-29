@@ -42,7 +42,7 @@ class BeamStress:
         _, _, stresses = self.calculate_stress_distribution()
         return np.min(stresses)
     
-    def calculate_stress_distribution(self, resolution=200):
+    def calculate_stress_distribution(self, resolution=500):
         x_coords = np.linspace(-self.w/2, self.w/2, resolution) * 1000
         y_coords = np.linspace(-self.h/2, self.h/2, resolution) * 1000
 
@@ -65,7 +65,7 @@ class BeamStress:
         ax.invert_xaxis()
         ax.invert_yaxis()
 
-        plt.title('Stress Distribution along the Beam')
+        plt.title('Stress Distribution Throughout the Cross-Section')
         plt.axis('equal')
         plt.grid(False)
         plt.show()
@@ -73,18 +73,18 @@ class BeamStress:
         
 if __name__ == '__main__':
     # Example for a square beam
-    square_beam = BeamStress()
-    square_beam.plot_stress_distribution()
-    print('-------- Square Beam Stress Analysis --------')
-    print(f'Moment of Inertia (Ixx) = {square_beam.calculate_Ixx()} [m^4]')
-    print(f'Moment of Inertia (Iyy) = {square_beam.calculate_Iyy()} [m^4]')
-    print(f'Stress at Point 1 = {round(square_beam.calculate_stress_point(0.1, -0.1)/10**6, 4)} [MPa]')
-    print(f'Stress at Point 2 = {round(square_beam.calculate_stress_point(-0.1, -0.1)/10**6, 4)} [MPa]')
-    print(f'Stress at Point 3 = {round(square_beam.calculate_stress_point(-0.1, 0.1)/10**6, 4)} [MPa]')
-    print(f'Stress at Point 4 = {round(square_beam.calculate_stress_point(0.1, 0.1)/10**6, 4)} [MPa]')
-    print(f'Weight of the Beam: {round(square_beam.calculate_weight(), 4)} [kg]')
-    print(f'Maximum Positive Stress: {round(square_beam.calculate_maximum_stress()/10**6, 4)} [MPa]')
-    print(f'Maximum Negative Stress: {round(square_beam.calculate_minimum_stress()/10**6, 4)} [MPa]')
+    # square_beam = BeamStress()
+    # square_beam.plot_stress_distribution()
+    # print('-------- Square Beam Stress Analysis --------')
+    # print(f'Moment of Inertia (Ixx) = {square_beam.calculate_Ixx()} [m^4]')
+    # print(f'Moment of Inertia (Iyy) = {square_beam.calculate_Iyy()} [m^4]')
+    # print(f'Stress at Point 1 = {round(square_beam.calculate_stress_point(0.1, -0.1)/10**6, 4)} [MPa]')
+    # print(f'Stress at Point 2 = {round(square_beam.calculate_stress_point(-0.1, -0.1)/10**6, 4)} [MPa]')
+    # print(f'Stress at Point 3 = {round(square_beam.calculate_stress_point(-0.1, 0.1)/10**6, 4)} [MPa]')
+    # print(f'Stress at Point 4 = {round(square_beam.calculate_stress_point(0.1, 0.1)/10**6, 4)} [MPa]')
+    # print(f'Weight of the Beam: {round(square_beam.calculate_weight(), 4)} [kg]')
+    # print(f'Maximum Positive Stress: {round(square_beam.calculate_maximum_stress()/10**6, 4)} [MPa]')
+    # print(f'Maximum Negative Stress: {round(square_beam.calculate_minimum_stress()/10**6, 4)} [MPa]')
 
     # Example for a rectangular beam
     rectangular_beam = BeamStress(w=64)

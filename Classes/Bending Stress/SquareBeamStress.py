@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 class SquareBeamStress: 
 
-    def __init__(self, Mx=3650, My=667.606, h=100, t=2, beam_length=1.71, density=2810):
+    def __init__(self, Mx=3650, My=667.606, h=100, t=2, beam_length=2.93, density=2810):
         ''' Initialize the SquareBeamStress Class'''
         ### input Mx and My in [Nm], h in [mm], t in [mm], beam_length in [m], and density in [kg/m^3]
         self.Mx = Mx # in [Nm]

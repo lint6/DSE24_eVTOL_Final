@@ -4,7 +4,7 @@ from scipy.integrate import solve_ivp
 
 class SDOFVibrationVerticalClimb:
 
-    def __init__(self, L=0.8, E=70, I=1000, T=500, C_damp=0.01, m=1, RPM=1000, gust_velocity=19, gust_time=0.0, impulse_duration=0.1):
+    def __init__(self, L=0.8, E=70, I=46053, T=500, C_damp=0.01, m=1, RPM=926.28, gust_velocity=19, gust_time=0.0, impulse_duration=0.1):
         ''' Initialize the SDOFVibrationHover Class '''
         ### Input length in [m], E in [GPa], I in [mm^4], T in [N], C_damp in [-], RPM in [rev/min]
         self.L = L # [m]

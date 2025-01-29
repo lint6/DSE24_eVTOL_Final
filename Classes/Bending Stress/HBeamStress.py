@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 class HBeamStress:
 
-    def __init__(self, Mx=1000, My=2000, h_t=10, w_t=170, h_w=180, w_w=10, h_b=10, w_b=170, beam_length=3, density=2710):
+    def __init__(self, Mx=3650, My=667.7, h_t=2, w_t=100, h_w=100, w_w=2, h_b=2, w_b=100, beam_length=2.93, density=2810):
         ''' Initialize the HBeamStress Class'''
         self.Mx = Mx
         self.My = My

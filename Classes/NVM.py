@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 class NVM:
 
-    def __init__(self, length=2.93, rho=2810, area=784, E=71.7, I=1255445, thrust_load=1281.75):
+    def __init__(self, length=1.22, rho=1274, area=491.52, E=163, I=46056, thrust_load=513):
         ''' Thrust acts upwards at the end of the beam , distributed load acts downwards along the entire length of the beam
         Note that the beam itself is fixed at one end, and free on the other end '''
         ### input area in [mm^2], input E in [GPa], input I in [mm^4]
@@ -104,17 +104,17 @@ class NVM:
         plt.subplot(1, 2, 1)
         plt.plot(x, deflections, color='blue')
         plt.axhline(y=0, color='black')
-        plt.title('Deflection Along the Beam')
+        plt.title('Deflection Along the Blade')
         plt.xlabel('Distance from Fixed End [m]')
-        plt.ylabel('Deflection Along the Beam [mm]')
+        plt.ylabel('Deflection Along the Blade [mm]')
         plt.grid(True)
         
         plt.subplot(1, 2, 2)
         plt.plot(x, deflection_angles, color='red')
         plt.axhline(y=0, color='black')
-        plt.title('Deflection Angle Along the Beam')
+        plt.title('Deflection Angle Along the Blade')
         plt.xlabel('Distance from Fixed End [m]')
-        plt.ylabel('Deflection Angle [deg]')
+        plt.ylabel('Deflection Angle Along the Blade [deg]')
         plt.grid(True)
 
         plt.tight_layout()
