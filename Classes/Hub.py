@@ -3,18 +3,21 @@ import matplotlib.pyplot as plt
 
 class HubStuff:
     
-    def __init__(self, g_0=9.80665, r_R=1.22, b=6, m_R=3.747, d_sh=16.95, d=230, z=70, G=44, rho=4.43, T=112, L=257.794, D=0.6337):
+    def __init__(self, g_0=9.80665, r_R=1.22, b=6, m_R=4.584, RPM=1150, d_sh=16.95, d=230, z=70, G=44, rho=4.43, T=230, L=257.794, D=0.6337):
         # Initialize the HubStress Class
-        # Input r_R in [m], b in [-], m_R (1 rotor) in [kg], d_sh in [mm], d in [mm], z in [mm], T in [Nm], G in [GPa], rho in [g/cc], L (1 blade) in [N], and D (1 blade) in [N]
+        # Input r_R in [m], b in [-], m_R (1 rotor) in [kg], RPM in [-] d_sh in [mm], d in [mm], z in [mm], T in [Nm], G in [GPa], rho in [g/cc], L (1 blade) in [N], and D (1 blade) in [N]
         
         "Material Selection"
         # Aluminium 7075-T6: G = 26.9 [GPa], rho = 2.81 [g/cc]
         # Ti-6Al-4V: G = 44 [GPa], rho = 4.43 [g/cc]
         # Steel AlSl 4130: G = 80 [GPa], rho = 7.85 [g/cc]
+        # Inconel X-750: G = 80 [GPa], rho = 8.27 [g/cc]
 
         self.g_0 = g_0  # Acceleration due to gravity in [m/s^2]
         self.r_R = r_R  # Radius of the rotor in [m]
         self.b = b  # Number of blades [-]
+        self.m_R = m_R # Rotor mass [kg]
+        self.RPM = RPM # RPM of the rotor
         self.W_R = (m_R * g_0) / self.b # Weight of 1 blade in [N]
         self.d_sh = d_sh / 1000 # Diameter of the shaft [m]
         self.d = d / 1000  # Diameter of the hub in [m]
@@ -41,6 +44,13 @@ class HubStuff:
     def calculate_moment_drag(self):
         return self.D * self.r_R  # returns in [Nm]
     
+    def calculate_velocity_RPM(self):
+        return (self.RPM * self.r_R * np.pi) / 30 # returns in [m/s]
+    
+    def calculate_centrifugal_force(self):
+        v = self.calculate_velocity_RPM()
+        return ((self.m_R / 6) * (v**2)) / self.r_R # returns in [N]
+    
     def calculate_rate_of_twist(self):
         J = self.calculate_polar_moment_of_inertia()
         M_D = self.calculate_moment_drag()
@@ -48,6 +58,11 @@ class HubStuff:
     
     def calculate_twist_angle(self):
         return self.calculate_rate_of_twist() * self.z  # returns in [rad]
+    
+    def calculate_axial_stress(self):
+        F = self.calculate_centrifugal_force()
+        A = self.z * self.d
+        return 3 * (F / A) # returns in [Pa]
     
     def calculate_shear_stress(self):
         J = self.calculate_polar_moment_of_inertia()
@@ -76,8 +91,11 @@ if __name__ == "__main__":
     moment_lift = hub.calculate_moment_lift()
     moment_weight = hub.calculate_moment_weight()
     moment_drag = hub.calculate_moment_drag()
+    velocity_RPM = hub.calculate_velocity_RPM()
+    centrifugal_force = hub.calculate_centrifugal_force()
     rate_of_twist = hub.calculate_rate_of_twist()
     twist_angle = hub.calculate_twist_angle()
+    axial_stress = hub.calculate_axial_stress()
     shear_stress = hub.calculate_shear_stress()
     bending_stress = hub.calculate_bending_stress()
     hub_mass = hub.calculate_hub_mass()
@@ -86,8 +104,11 @@ if __name__ == "__main__":
     print(f"The moment due to lift (M_L) of 1 blade is {moment_lift} [Nm]")
     print(f"The moment due to weight (M_W) of 1 blade is {moment_weight} [Nm]")
     print(f"The moment due to drag (M_D) of 1 blade is {moment_drag} [Nm]")
-    print(f"The rate of twist of the hub is {rate_of_twist} [rad/m]")
+    print(f"The velocity at RPM = {hub.RPM} of 1 blade is {velocity_RPM} [m/s]")
+    print(f"The moment due to drag (M_D) of 1 blade is {moment_drag} [Nm]")
+    print(f"The centrifugal force is {centrifugal_force} [N]")
     print(f"The twist angle of the hub is {twist_angle} [rad] or {twist_angle * 180 / np.pi} [deg]")
+    print(f"The maximum axial stress in the hub is {axial_stress / 10**6} [MPa]")
     print(f"The maximum shear stress in the hub is {shear_stress / 10**6} [MPa]")
     print(f"The bending stress in the hub at r = {hub.r_i} [m] is {bending_stress / 10**6} [MPa]")
     print(f"The mass of the hub is {hub_mass} [kg]")
