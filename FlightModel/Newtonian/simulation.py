@@ -56,7 +56,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
         throttle_trim_hover = 0.1615
                 
         # Control
-        setpoint_pos = np.array([300,0,-140])
+        setpoint_pos = np.array([0,0,-140])
         setpoint_ang = np.array([0,0,0])
         setpoint_vel = np.array([0,0,0])
         setpoint_rot = np.array([0,0,0])
@@ -284,7 +284,7 @@ def SCfunc_FlightSimulation(aircraft, runtime, Run=True, dt=0.1):
 def ExampleFunction(Constant): #the input modify the function that is to be returned
     return lambda variable: variable*Constant #Return a function that can be stored in a variable
 
-def SCfunc_RotorRPM(throttle, current_rpm, dt, counter_torque = 0, max_torque = 100, inertia_rotor = 6*SCphy_Inertia_Rod(m=.764,l=1.22)[2]):
+def SCfunc_RotorRPM(throttle, current_rpm, dt, counter_torque = 0, max_torque = 100, inertia_rotor = 3*SCphy_Inertia_Rod(m=.764,l=1.22*2)[2]):
     omega = SCfunc_RPM2RadSec(current_rpm)
     torque_delivery = throttle * max_torque
     counter_torque = counter_torque * np.array([1, -1, 1, 1, -1, -1])
