@@ -5,7 +5,7 @@ from scipy.optimize import fsolve
 
 class RotorSizing:
 
-    def __init__(self, MTOW=718.89, n_blades=4, n_rotor = 6, DL = 34.2, bank_angle = 30, cto_fl = 0.12, cto_turn = 0.15, cto_turb = 0.17, co_ax = 1, d_fact = 0.05, max_v = 50, k_int = 1, A_eq = 0.48, FM = 0.7):
+    def __init__(self, MTOW=718.89, n_blades=6, n_rotor = 6, DL = 34.2, bank_angle = 30, cto_fl = 0.12, cto_turn = 0.15, cto_turb = 0.17, co_ax = 1, d_fact = 0.05, max_v = 50, k_int = 1, A_eq = 0.48, FM = 0.7):
 
         # conversions  
         self.celsius_to_kelvin = 273.15     # addition
@@ -159,13 +159,13 @@ class SoundAnalysis:
         self.r = (self.x**2+self.y**2+self.z**2)**0.5
 
         #Inputs for rotational noise
-        self.R = 1.2 #self.rotorsizing.rotor_radius*self.m_to_f #Get rotor radius in [f]
+        self.R = 1.29*self.m_to_f #self.rotorsizing.rotor_radius*self.m_to_f #Get rotor radius in [ft]
         self.A = np.pi*(self.R**2) #Rotor area [ft^2]
-        self.n = 145 #self.rotorsizing.omega #Rotor rotational speed [rad/s] 
-        self.V = 25*self.m_to_f #self.rotorsizing.V_max*self.m_to_f [ft/s] -> VH is defined as the airspeed in level flight obtained using the minimum specification engine power corresponding to maximum continuous power available
+        self.n = 120 #self.rotorsizing.omega #Rotor rotational speed [rad/s] 
+        self.V = 100*self.m_to_f #self.rotorsizing.V_max*self.m_to_f [ft/s] -> VH is defined as the airspeed in level flight obtained using the minimum specification engine power corresponding to maximum continuous power available
         self.c = self.rotorsizing.speed_of_sound*self.m_to_f #Speed of sound [ft/s]
         self.B = 6 #self.rotorsizing.n_blades
-        self.T = 7900*self.N_to_lbs/self.rotorsizing.N_rotors #self.rotorsizing.T_forward_flight*self.N_to_lbs/self.rotorsizing.N_rotors #Thrust [lbs]
+        self.T = 7758*self.N_to_lbs/self.rotorsizing.N_rotors #self.rotorsizing.T_forward_flight*self.N_to_lbs/self.rotorsizing.N_rotors #Thrust [lbs]
 
         #Inputs for vortex noise
         self.D = 2*self.R #Rotor diameter [ft]
